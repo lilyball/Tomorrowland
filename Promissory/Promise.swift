@@ -58,18 +58,18 @@ public enum PromiseContext {
     }
 }
 
-public struct Promise<T> {
+public struct Promise<Value,Error> {
     public struct Resolver {
-        private let _box: PromiseBox<T>
+        private let _box: PromiseBox<Value,Error>
         
-        fileprivate init(box: PromiseBox<T>) {
+        fileprivate init(box: PromiseBox<Value,Error>) {
             _box = box
         }
         
         /// Fulfills the promise with the given value.
         ///
         /// If the promise has already been resolved or cancelled, this does nothing.
-        public func fulfill(_ value: T) {
+        public func fulfill(_ value: Value) {
             _box.resolveOrCancel(with: .value(value))
         }
         
@@ -96,10 +96,10 @@ public struct Promise<T> {
         /// - Parameter context: The context that the callback is invoked on.
         /// - Parameter callback: The callback to invoke.
         public func onRequestCancel(on context: PromiseContext, _ callback: @escaping () -> Void) {
-            let nodePtr = UnsafeMutablePointer<PromiseBox<T>.RequestCancelNode>.allocate(capacity: 1)
+            let nodePtr = UnsafeMutablePointer<PromiseBox<Value,Error>.RequestCancelNode>.allocate(capacity: 1)
             nodePtr.initialize(to: .init(next: nil, context: context, callback: callback))
             if _box.swapRequestCancelLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
-                nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<T>.RequestCancelNode.self)
+                nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<Value,Error>.RequestCancelNode.self)
             }) == PMSLinkedListSwapFailed {
                 nodePtr.deinitialize()
                 nodePtr.deallocate(capacity: 1)
@@ -116,35 +116,30 @@ public struct Promise<T> {
     /// Returns the result of the promise.
     ///
     /// Once this value becomes non-`nil` it will never change.
-    public var result: PromiseResult<T>? {
+    public var result: PromiseResult<Value,Error>? {
         return _box.result
     }
     
-    private let _box: PromiseBox<T>
+    private let _box: PromiseBox<Value,Error>
     
     /// Returns a `Promise` and a `Promise.Resolver` that can be used to fulfill that promise.
     ///
     /// - Note: In most cases you want to use `Promise(on:_:)` instead.
-    public static func makeWithResolver() -> (Promise<T>, Promise<T>.Resolver) {
-        let promise = Promise<T>()
+    public static func makeWithResolver() -> (Promise<Value,Error>, Promise<Value,Error>.Resolver) {
+        let promise = Promise<Value,Error>()
         return (promise, Resolver(box: promise._box))
     }
     
     /// Returns a new `Promise` that will be resolved using the given block.
     ///
     /// - Parameter context: The context to execute the handler on.
-    /// - Parameter handler: A block that is executed in order to fulfill the promise. If the block
-    ///   throws an error the promise will be rejected (unless it was already resolved first).
+    /// - Parameter handler: A block that is executed in order to fulfill the promise.
     /// - Parameter resolver: The `Resolver` used to resolve the promise.
-    public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) throws -> Void) {
+    public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) -> Void) {
         _box = PromiseBox()
         let resolver = Resolver(box: _box)
         context.execute {
-            do {
-                try handler(resolver)
-            } catch {
-                resolver.reject(error)
-            }
+            handler(resolver)
         }
     }
     
@@ -153,7 +148,7 @@ public struct Promise<T> {
     }
     
     /// Returns a `Promise` that is already fulfilled with the given value.
-    public init(fulfilled value: T) {
+    public init(fulfilled value: Value) {
         _box = PromiseBox(result: .value(value))
     }
     
@@ -169,17 +164,13 @@ public struct Promise<T> {
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
-    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (T) throws -> U) -> Promise<U> {
-        let (promise, resolver) = Promise<U>.makeWithResolver()
+    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { (result) in
             context.execute {
                 switch result {
                 case .value(let value):
-                    do {
-                        resolver.fulfill(try onSuccess(value))
-                    } catch {
-                        resolver.reject(error)
-                    }
+                    resolver.fulfill(onSuccess(value))
                 case .error(let error):
                     resolver.reject(error)
                 case .cancelled:
@@ -190,7 +181,6 @@ public struct Promise<T> {
         return promise
     }
     
-    
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
     /// - Parameter context: The context to invoke the callback on.
@@ -198,18 +188,14 @@ public struct Promise<T> {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
-    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (T) throws -> Promise<U>) -> Promise<U> {
-        let (promise, resolver) = Promise<U>.makeWithResolver()
+    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { (result) in
             context.execute {
                 switch result {
                 case .value(let value):
-                    do {
-                        let nextPromise = try onSuccess(value)
-                        nextPromise.pipe(to: resolver)
-                    } catch {
-                        resolver.reject(error)
-                    }
+                    let nextPromise = onSuccess(value)
+                    nextPromise.pipe(to: resolver)
                 case .error(let error):
                     resolver.reject(error)
                 case .cancelled:
@@ -247,8 +233,210 @@ public struct Promise<T> {
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
-    public func recover(on context: PromiseContext, _ onError: @escaping (Error) throws -> T) -> Promise<T> {
-        let (promise, resolver) = Promise<T>.makeWithResolver()
+    public func recover(on context: PromiseContext, _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    resolver.fulfill(value)
+                case .error(let error):
+                    resolver.fulfill(onError(error))
+                case .cancelled:
+                    resolver.cancel()
+                }
+            }
+        }
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`. If the receiver is rejected or cancelled, the returned promise will also be
+    ///   rejected or cancelled.
+    public func recover(on context: PromiseContext, _ onError: @escaping (Error) -> Promise<Value,Error>) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    resolver.fulfill(value)
+                case .error(let error):
+                    let nextPromise = onError(error)
+                    nextPromise.pipe(to: resolver)
+                case .cancelled:
+                    resolver.cancel()
+                }
+            }
+        }
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is.
+    ///
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value.
+    /// - Returns: The same promise this method was invoked on.
+    @discardableResult
+    public func always(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
+        _box.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+        return self
+    }
+    
+    private func pipe(to resolver: Promise<Value,Error>.Resolver) {
+        _box.enqueue { (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(value)
+            case .error(let error):
+                resolver.reject(error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+    }
+}
+
+extension Promise where Error: Swift.Error {
+    private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver) {
+        _box.enqueue { (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(value)
+            case .error(let error):
+                resolver.reject(error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+    }
+}
+
+extension Promise where Error == Swift.Error {
+    /// Returns a new `Promise` that will be resolved using the given block.
+    ///
+    /// - Parameter context: The context to execute the handler on.
+    /// - Parameter handler: A block that is executed in order to fulfill the promise. If the block
+    ///   throws an error the promise will be rejected (unless it was already resolved first).
+    /// - Parameter resolver: The `Resolver` used to resolve the promise.
+    public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) throws -> Void) {
+        _box = PromiseBox()
+        let resolver = Resolver(box: _box)
+        context.execute {
+            do {
+                try handler(resolver)
+            } catch {
+                resolver.reject(error)
+            }
+        }
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`, or
+    ///   rejected if `onSuccess` throws an error. If the receiver is rejected or cancelled, the
+    ///   returned promise will also be rejected or cancelled.
+    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    do {
+                        resolver.fulfill(try onSuccess(value))
+                    } catch {
+                        resolver.reject(error)
+                    }
+                case .error(let error):
+                    resolver.reject(error)
+                case .cancelled:
+                    resolver.cancel()
+                }
+            }
+        }
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func then<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    do {
+                        let nextPromise = try onSuccess(value)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(error)
+                    }
+                case .error(let error):
+                    resolver.reject(error)
+                case .cancelled:
+                    resolver.cancel()
+                }
+            }
+        }
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func then<U,E: Swift.Error>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    do {
+                        let nextPromise = try onSuccess(value)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(error)
+                    }
+                case .error(let error):
+                    resolver.reject(error)
+                case .cancelled:
+                    resolver.cancel()
+                }
+            }
+        }
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onError`, or
+    ///   rejected if `onError` throws an error.. If the receiver is rejected or cancelled, the
+    ///   returned promise will also be rejected or cancelled.
+    public func recover(on context: PromiseContext, _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { (result) in
             context.execute {
                 switch result {
@@ -275,10 +463,10 @@ public struct Promise<T> {
     /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
-    ///   `onError`. If the receiver is rejected or cancelled, the returned promise will also be
-    ///   rejected or cancelled.
-    public func recover(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<T>) -> Promise<T> {
-        let (promise, resolver) = Promise<T>.makeWithResolver()
+    ///   `onError`, or rejected if `onError` throws an error.. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func recover(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { (result) in
             context.execute {
                 switch result {
@@ -299,45 +487,48 @@ public struct Promise<T> {
         return promise
     }
     
-    /// Registers a callback that will be invoked with the promise result, no matter what it is.
+    /// Registers a callback that is invoked when the promise is rejected.
     ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
     /// - Parameter context: The context to invoke the callback on.
-    /// - Parameter onComplete: The callback that is invoked with the promise's value.
-    /// - Returns: The same promise this method was invoked on.
-    @discardableResult
-    public func always(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<T>) -> Void) -> Promise<T> {
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`, or rejected if `onError` throws an error.. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func recover<E: Swift.Error>(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { (result) in
             context.execute {
-                onComplete(result)
+                switch result {
+                case .value(let value):
+                    resolver.fulfill(value)
+                case .error(let error):
+                    do {
+                        let nextPromise = try onError(error)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(error)
+                    }
+                case .cancelled:
+                    resolver.cancel()
+                }
             }
         }
-        return self
-    }
-    
-    private func pipe(to resolver: Promise<T>.Resolver) {
-        _box.enqueue { (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(value)
-            case .error(let error):
-                resolver.reject(error)
-            case .cancelled:
-                resolver.cancel()
-            }
-        }
+        return promise
     }
 }
 
-public enum PromiseResult<T> {
-    case value(T)
+public enum PromiseResult<Value,Error> {
+    case value(Value)
     case error(Error)
     case cancelled
 }
 
-private class PromiseBox<T>: PMSPromiseBox {
+private class PromiseBox<T,E>: PMSPromiseBox {
     struct CallbackNode {
         var next: UnsafeMutablePointer<CallbackNode>?
-        var callback: (PromiseResult<T>) -> Void
+        var callback: (PromiseResult<T,E>) -> Void
         
         static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<CallbackNode>? {
             guard let pointer = pointer, pointer != PMSLinkedListSwapFailed else { return nil }
@@ -403,7 +594,7 @@ private class PromiseBox<T>: PMSPromiseBox {
     /// Returns the result of the promise.
     ///
     /// Once this value becomes non-`nil` it will never change.
-    var result: PromiseResult<T>? {
+    var result: PromiseResult<T,E>? {
         switch state {
         case .empty, .resolving, .cancelling: return nil
         case .resolved:
@@ -437,7 +628,7 @@ private class PromiseBox<T>: PMSPromiseBox {
     /// Resolves or cancels the promise.
     ///
     /// If the promise has already been resolved or cancelled, this does nothing.
-    func resolveOrCancel(with result: PromiseResult<T>) {
+    func resolveOrCancel(with result: PromiseResult<T,E>) {
         func handleCallbacks() {
             if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
                 RequestCancelNode.destroyPointer(nodePtr)
@@ -471,11 +662,11 @@ private class PromiseBox<T>: PMSPromiseBox {
     /// Enqueues a callback onto the callback list.
     ///
     /// If the callback list has already been consumed, the callback is executed immediately.
-    func enqueue(callback: @escaping (PromiseResult<T>) -> Void) {
-        let nodePtr = UnsafeMutablePointer<PromiseBox<T>.CallbackNode>.allocate(capacity: 1)
+    func enqueue(callback: @escaping (PromiseResult<T,E>) -> Void) {
+        let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
         nodePtr.initialize(to: .init(next: nil, callback: callback))
         if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
-            nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<T>.CallbackNode.self)
+            nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
         }) == PMSLinkedListSwapFailed {
             nodePtr.deinitialize()
             nodePtr.deallocate(capacity: 1)
@@ -488,7 +679,7 @@ private class PromiseBox<T>: PMSPromiseBox {
     
     private enum Value {
         case value(T)
-        case error(Error)
+        case error(E)
     }
     
     /// The value of the box.
@@ -501,7 +692,7 @@ private class PromiseBox<T>: PMSPromiseBox {
         super.init(state: .empty)
     }
     
-    init(result: PromiseResult<T>) {
+    init(result: PromiseResult<T,E>) {
         switch result {
         case .value(let value):
             _value = .value(value)
