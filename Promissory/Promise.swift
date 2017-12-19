@@ -58,6 +58,26 @@ public enum PromiseContext {
     }
 }
 
+/// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
+/// when that happens.
+///
+/// Example usage:
+///
+///     Promise(on: .utility) { resolver in
+///         let value = try someLongComputation()
+///         resolver.fulfill(value)
+///     }.then(on: main) { value in
+///         self.updateUI(with: value)
+///     }.catch(on: .main) { error in
+///         self.handleError(error)
+///     }
+///
+/// Promises can also be cancelled. With a `Promise` object you can invoke `.requestCancel()`, which
+/// is merely advisory; the promise does not have to actually implement cancellation and may resolve
+/// anyway. But if a promise does implement cancellation, it can then call `resolver.cancel()`. Note
+/// that even if the promise supports cancellation, calling `.requestCancel()` on an unresolved
+/// promise does not guarantee that it will cancel, as the promise may be in the process of
+/// resolving when that method is invoked.
 public struct Promise<Value,Error> {
     public struct Resolver {
         private let _box: PromiseBox<Value,Error>
@@ -519,9 +539,13 @@ extension Promise where Error == Swift.Error {
     }
 }
 
+/// The result of a resolved promise.
 public enum PromiseResult<Value,Error> {
+    /// The value the promise was fulfilled with.
     case value(Value)
+    /// The error the promise was rejected with.
     case error(Error)
+    /// The promise was cancelled.
     case cancelled
 }
 
