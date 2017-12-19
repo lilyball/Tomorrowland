@@ -73,28 +73,26 @@
 }
 
 - (void *)swapCallbackLinkedListWith:(void *)node linkBlock:(nullable void (^)(void * _Nullable))linkBlock {
-    uintptr_t oldValue = atomic_load_explicit(&_callbackList, memory_order_relaxed);
-    while (1) {
-        if (oldValue == (uintptr_t)PMSLinkedListSwapFailed) {
-            atomic_thread_fence(memory_order_acquire);
-            return (void *)oldValue;
-        }
-        if (linkBlock) linkBlock((void *)oldValue);
-        if (atomic_compare_exchange_weak_explicit(&_callbackList, &oldValue, (uintptr_t)node, memory_order_acq_rel, memory_order_relaxed)) {
-            return (void *)oldValue;
-        }
-    }
+    return swapLinkedList(&_callbackList, node, linkBlock);
 }
 
 - (void *)swapRequestCancelLinkedListWith:(void *)node linkBlock:(nullable void (^)(void * _Nullable))linkBlock {
-    uintptr_t oldValue = atomic_load_explicit(&_requestCancelLinkedList, memory_order_relaxed);
+    return swapLinkedList(&_requestCancelLinkedList, node, linkBlock);
+}
+
+static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * _Nullable node, void (^ _Nullable linkBlock)(void * _Nullable)) {
+    memory_order successMemoryOrder = memory_order_release;
+    if (node == PMSLinkedListSwapFailed) {
+        successMemoryOrder = memory_order_acq_rel;
+    }
+    uintptr_t oldValue = atomic_load_explicit(list, memory_order_relaxed);
     while (1) {
         if (oldValue == (uintptr_t)PMSLinkedListSwapFailed) {
             atomic_thread_fence(memory_order_acquire);
             return (void *)oldValue;
         }
         if (linkBlock) linkBlock((void *)oldValue);
-        if (atomic_compare_exchange_weak_explicit(&_requestCancelLinkedList, &oldValue, (uintptr_t)node, memory_order_acq_rel, memory_order_relaxed)) {
+        if (atomic_compare_exchange_weak_explicit(list, &oldValue, (uintptr_t)node, successMemoryOrder, memory_order_relaxed)) {
             return (void *)oldValue;
         }
     }
