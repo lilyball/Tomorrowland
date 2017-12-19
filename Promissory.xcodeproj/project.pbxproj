@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A9482161FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */; };
 		0AFF275F1FE0E3F40006D95A /* Promissory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Promissory.framework */; };
 		0AFF27641FE0E3F40006D95A /* PromissoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */; };
 		0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Promissory.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -26,6 +28,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
+		0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
 		0AFF27551FE0E3F40006D95A /* Promissory.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Promissory.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AFF27581FE0E3F40006D95A /* Promissory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Promissory.h; sourceTree = "<group>"; };
 		0AFF27591FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -101,6 +105,8 @@
 			children = (
 				0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */,
 				0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */,
+				0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */,
+				0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -113,6 +119,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */,
+				0A9482161FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h in Headers */,
 				0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -218,6 +225,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
+				0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */,
 				0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

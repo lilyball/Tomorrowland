@@ -4,5 +4,6 @@ framework module Promissory {
 
 explicit module Promissory.Private {
     header "PMSPromiseBox.h"
+    header "PMSPromiseInvalidationTokenBox.h"
     export *
 }
