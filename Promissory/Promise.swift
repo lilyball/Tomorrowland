@@ -628,6 +628,58 @@ public enum PromiseResult<Value,Error> {
     case cancelled
 }
 
+extension PromiseResult where Value: Equatable, Error: Equatable {
+    public static func ==(lhs: PromiseResult, rhs: PromiseResult) -> Bool {
+        switch (lhs, rhs) {
+        case let (.value(a), .value(b)) where a == b: return true
+        case let (.error(a), .error(b)) where a == b: return true
+        case (.cancelled, .cancelled): return true
+        default: return false
+        }
+    }
+    
+    public static func !=(lhs: PromiseResult, rhs: PromiseResult) -> Bool {
+        return !(lhs == rhs)
+    }
+}
+#if swift(>=4.1)
+    extension PromiseResult: Equatable where Value: Equatable, Error: Equatable {}
+#else
+    public func ==<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
+        where T: Equatable, E: Equatable
+    {
+        switch (lhs, rhs) {
+        case let (a?, b?): return a == b
+        case (nil, _?), (_?, nil): return false
+        case (nil, nil): return true
+        }
+    }
+    
+    public func !=<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
+        where T: Equatable, E: Equatable
+    {
+        return !(lhs == rhs)
+    }
+#endif
+
+extension PromiseResult where Value: Hashable, Error: Hashable {
+    public var hashValue: Int {
+        switch self {
+        case .value(let value):
+            return value.hashValue << 2
+        case .error(let error):
+            return error.hashValue << 2 | 0x1
+        case .cancelled:
+            return 0x2
+        }
+    }
+}
+#if swift(>=4.1)
+    extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {}
+#endif
+
+// FIXME: (Swift 4.1) Implement Codable if Value and Error conform to it
+
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
 public struct PromiseInvalidationToken {
     private let _box = PMSPromiseInvalidationTokenBox()
