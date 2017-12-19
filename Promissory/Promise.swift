@@ -697,6 +697,8 @@ public struct PromiseInvalidationToken {
     }
 }
 
+// MARK: -
+
 private class PromiseBox<T,E>: PMSPromiseBox {
     struct CallbackNode {
         var next: UnsafeMutablePointer<CallbackNode>?
@@ -849,10 +851,7 @@ private class PromiseBox<T,E>: PMSPromiseBox {
         }
     }
     
-    private enum Value {
-        case value(T)
-        case error(E)
-    }
+    private typealias Value = PromiseBoxValue<T,E>
     
     /// The value of the box.
     ///
@@ -877,4 +876,9 @@ private class PromiseBox<T,E>: PMSPromiseBox {
             super.init(state: .cancelled)
         }
     }
+}
+
+private enum PromiseBoxValue<T,E> {
+    case value(T)
+    case error(E)
 }
