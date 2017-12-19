@@ -27,6 +27,19 @@
 - (instancetype)initWithState:(PMSPromiseBoxState)state {
     if ((self = [super init])) {
         atomic_init(&_state, state);
+        switch (state) {
+            case PMSPromiseBoxStateEmpty:
+            case PMSPromiseBoxStateCancelling:
+            case PMSPromiseBoxStateResolving:
+                atomic_init(&_callbackList, 0);
+                atomic_init(&_requestCancelLinkedList, 0);
+                break;
+            case PMSPromiseBoxStateResolved:
+            case PMSPromiseBoxStateCancelled:
+                atomic_init(&_callbackList, (uintptr_t)PMSLinkedListSwapFailed);
+                atomic_init(&_requestCancelLinkedList, (uintptr_t)PMSLinkedListSwapFailed);
+                break;
+        }
     }
     return self;
 }
