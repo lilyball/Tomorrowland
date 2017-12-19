@@ -10,6 +10,9 @@
 		0AFF275F1FE0E3F40006D95A /* Promissory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Promissory.framework */; };
 		0AFF27641FE0E3F40006D95A /* PromissoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */; };
 		0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Promissory.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF276F1FE0E4D10006D95A /* Promise.swift */; };
+		0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +32,10 @@
 		0AFF275E1FE0E3F40006D95A /* PromissoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromissoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromissoryTests.swift; sourceTree = "<group>"; };
 		0AFF27651FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0AFF276F1FE0E4D10006D95A /* Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
+		0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseBox.h; sourceTree = "<group>"; };
+		0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseBox.m; sourceTree = "<group>"; };
+		0AFF27761FE0E50C0006D95A /* promissory.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = promissory.modulemap; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +79,9 @@
 			isa = PBXGroup;
 			children = (
 				0AFF27581FE0E3F40006D95A /* Promissory.h */,
+				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
+				0AFF27711FE0E4D70006D95A /* Private */,
+				0AFF27761FE0E50C0006D95A /* promissory.modulemap */,
 				0AFF27591FE0E3F40006D95A /* Info.plist */,
 			);
 			path = Promissory;
@@ -86,6 +96,15 @@
 			path = PromissoryTests;
 			sourceTree = "<group>";
 		};
+		0AFF27711FE0E4D70006D95A /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */,
+				0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -93,6 +112,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */,
 				0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +168,7 @@
 				TargetAttributes = {
 					0AFF27541FE0E3F40006D95A = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
 					};
 					0AFF275D1FE0E3F40006D95A = {
@@ -196,6 +217,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
+				0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,14 +290,18 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos macosx";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -321,19 +348,24 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos macosx";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4";
+				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};
 		0AFF276A1FE0E3F40006D95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -344,17 +376,19 @@
 				INFOPLIST_FILE = Promissory/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = Promissory/promissory.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Promissory;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		0AFF276B1FE0E3F40006D95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -365,17 +399,18 @@
 				INFOPLIST_FILE = Promissory/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = Promissory/promissory.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Promissory;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 		0AFF276D1FE0E3F40006D95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 49Q455H8H7;
 				INFOPLIST_FILE = PromissoryTests/Info.plist;
@@ -383,13 +418,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.PromissoryTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		0AFF276E1FE0E3F40006D95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 49Q455H8H7;
 				INFOPLIST_FILE = PromissoryTests/Info.plist;
@@ -397,7 +432,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.PromissoryTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

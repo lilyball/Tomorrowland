@@ -6,7 +6,7 @@
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 //! Project version number for Promissory.
 FOUNDATION_EXPORT double PromissoryVersionNumber;

@@ -1,0 +1,8 @@
+framework module Promissory {
+    umbrella header "Promissory.h"
+}
+
+explicit module Promissory.Private {
+    header "PMSPromiseBox.h"
+    export *
+}
