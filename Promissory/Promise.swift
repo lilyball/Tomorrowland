@@ -705,6 +705,8 @@ extension PromiseResult where Value: Hashable, Error: Hashable {
 public struct PromiseInvalidationToken {
     private let _box = PMSPromiseInvalidationTokenBox()
     
+    public init() {}
+    
     /// After invoking this method, all `Promise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
     /// `then(on:token:_:)` will result in a cancelled promise instead if the callback would otherwise

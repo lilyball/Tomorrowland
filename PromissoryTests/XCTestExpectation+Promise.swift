@@ -100,7 +100,7 @@ extension XCTestExpectation {
     }
 }
 
-func XCTAssertEqual<T,E>(_ lhs: PromiseResult<T,E>?, _ rhs: PromiseResult<T,E>?, message: String? = nil, file: StaticString = #file, line: UInt = #line)
+func XCTAssertEqual<T,E>(_ lhs: PromiseResult<T,E>?, _ rhs: PromiseResult<T,E>?, _ message: String? = nil, file: StaticString = #file, line: UInt = #line)
     where T: Equatable, E: Equatable
 {
     XCTAssert(lhs == rhs, "\(lhs.map(String.init(describing:)) ?? "nil") and \(rhs.map(String.init(describing:)) ?? "nil") are not equal\(message.map({ "; \($0)" }) ?? "")", file: file, line: line)
