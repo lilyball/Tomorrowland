@@ -322,8 +322,8 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
-    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,Error>) -> Promise<Value,Error> {
-        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+    public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
+        let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
