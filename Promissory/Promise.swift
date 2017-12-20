@@ -741,7 +741,8 @@ private class PromiseBox<T,E>: PMSPromiseBox {
         if let nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
             CallbackNode.destroyPointer(nodePtr)
         }
-        if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+        if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            nodePtr = RequestCancelNode.reverseList(nodePtr)
             defer { RequestCancelNode.destroyPointer(nodePtr) }
             for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
                 nodePtr.pointee.invoke()
@@ -775,7 +776,8 @@ private class PromiseBox<T,E>: PMSPromiseBox {
     /// does nothing.
     func requestCancel() {
         if transitionState(to: .cancelling) {
-            if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+                nodePtr = RequestCancelNode.reverseList(nodePtr)
                 defer { RequestCancelNode.destroyPointer(nodePtr) }
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
                     nodePtr.pointee.invoke()
@@ -792,7 +794,8 @@ private class PromiseBox<T,E>: PMSPromiseBox {
             if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
                 RequestCancelNode.destroyPointer(nodePtr)
             }
-            if let nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+                nodePtr = CallbackNode.reverseList(nodePtr)
                 defer { CallbackNode.destroyPointer(nodePtr) }
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
                     nodePtr.pointee.callback(result)
@@ -885,9 +888,25 @@ extension NodeProtocol {
             next.deinitialize()
         }
     }
+    
+    static func reverseList(_ pointer: UnsafeMutablePointer<Self>) -> UnsafeMutablePointer<Self> {
+        var nextPointer = replace(&pointer.pointee.next, with: nil)
+        var previous = pointer
+        while let next = nextPointer {
+            nextPointer = replace(&next.pointee.next, with: previous)
+            previous = next
+        }
+        return previous
+    }
 }
 
 private enum PromiseBoxValue<T,E> {
     case value(T)
     case error(E)
+}
+
+private func replace<T>(_ slot: inout T, with value: T) -> T {
+    var value = value
+    swap(&slot, &value)
+    return value
 }

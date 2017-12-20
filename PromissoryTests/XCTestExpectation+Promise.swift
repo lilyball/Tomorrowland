@@ -10,38 +10,38 @@ import XCTest
 import Promissory
 
 extension XCTestExpectation {
-    convenience init<T,E>(description: String? = nil, onSuccess promise: Promise<T,E>, handler: @escaping (T) -> Void) {
+    convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, handler: @escaping (T) -> Void) {
         self.init(description: description ?? "Expectation for \(type(of: promise)) success")
         assertForOverFulfill = true
-        fulfill(onSuccess: promise, handler: handler)
+        fulfill(on: context, onSuccess: promise, handler: handler)
     }
     
-    convenience init<T,E>(description: String? = nil, onSuccess promise: Promise<T,E>, expectedValue: T) where T: Equatable {
-        self.init(description: description, onSuccess: promise) { (value) in
+    convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, expectedValue: T) where T: Equatable {
+        self.init(description: description, on: context, onSuccess: promise) { (value) in
             XCTAssertEqual(expectedValue, value, "Promise value")
         }
     }
     
-    convenience init<T,E>(description: String? = nil, onError promise: Promise<T,E>, handler: @escaping (E) -> Void) {
+    convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onError promise: Promise<T,E>, handler: @escaping (E) -> Void) {
         self.init(description: description ?? "Expectation for \(type(of: promise)) error")
         assertForOverFulfill = true
-        fulfill(onError: promise, handler: handler)
+        fulfill(on: context, onError: promise, handler: handler)
     }
     
-    convenience init<T,E>(description: String? = nil, onError promise: Promise<T,E>, expectedError: E) where E: Equatable {
-        self.init(description: description, onError: promise) { (error) in
+    convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onError promise: Promise<T,E>, expectedError: E) where E: Equatable {
+        self.init(description: description, on: context, onError: promise) { (error) in
             XCTAssertEqual(expectedError, error, "Promise error")
         }
     }
     
-    convenience init<T,E>(description: String? = nil, onCancel promise: Promise<T,E>) {
+    convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onCancel promise: Promise<T,E>) {
         self.init(description: description ?? "Expectation for \(type(of: promise)) cancel")
         assertForOverFulfill = true
-        fulfill(onCancel: promise)
+        fulfill(on: context, onCancel: promise)
     }
     
-    func fulfill<T,E>(onSuccess promise: Promise<T,E>, handler: @escaping (T) -> Void) {
-        promise.always(on: .default) { (result) in
+    func fulfill<T,E>(on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, handler: @escaping (T) -> Void) {
+        promise.always(on: context) { (result) in
             switch result {
             case .value(let value):
                 handler(value)
@@ -56,14 +56,14 @@ extension XCTestExpectation {
         }
     }
     
-    func fulfill<T,E>(onSuccess promise: Promise<T,E>, expectedValue: T) where T: Equatable {
-        fulfill(onSuccess: promise) { (value) in
+    func fulfill<T,E>(on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, expectedValue: T) where T: Equatable {
+        fulfill(on: context, onSuccess: promise) { (value) in
             XCTAssertEqual(expectedValue, value, "Promise value")
         }
     }
     
-    func fulfill<T,E>(onError promise: Promise<T,E>, handler: @escaping (E) -> Void) {
-        promise.always(on: .default) { (result) in
+    func fulfill<T,E>(on context: PromiseContext = .default, onError promise: Promise<T,E>, handler: @escaping (E) -> Void) {
+        promise.always(on: context) { (result) in
             switch result {
             case .value(let value):
                 XCTFail("Expected Promise failure, got value \(value)")
@@ -78,14 +78,14 @@ extension XCTestExpectation {
         }
     }
     
-    func fulfill<T,E>(onError promise: Promise<T,E>, expectedError: E) where E: Equatable {
-        fulfill(onError: promise) { (error) in
+    func fulfill<T,E>(on context: PromiseContext = .default, onError promise: Promise<T,E>, expectedError: E) where E: Equatable {
+        fulfill(on: context, onError: promise) { (error) in
             XCTAssertEqual(expectedError, error, "Promise error")
         }
     }
     
-    func fulfill<T,E>(onCancel promise: Promise<T,E>) {
-        promise.always(on: .default) { (result) in
+    func fulfill<T,E>(on context: PromiseContext = .default, onCancel promise: Promise<T,E>) {
+        promise.always(on: context) { (result) in
             switch result {
             case .value(let value):
                 XCTFail("Expected Promise cancellation, got value: \(value)")

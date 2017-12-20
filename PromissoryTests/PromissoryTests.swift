@@ -111,5 +111,18 @@ final class PromissoryTests: XCTestCase {
         let outerExpectation = XCTestExpectation(onCancel: promise)
         wait(for: [innerExpectation, outerExpectation], timeout: 1)
     }
+    
+    func testPromiseCallbackOrder() {
+        let queue = DispatchQueue(label: "test queue")
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(42)
+        })
+        let expectations = (0..<10).map({ _ in
+            return XCTestExpectation(on: .queue(queue), onSuccess: promise, expectedValue: 42)
+        })
+        sema.signal()
+        wait(for: expectations, timeout: 1, enforceOrder: true)
     }
 }
