@@ -721,54 +721,18 @@ public struct PromiseInvalidationToken {
 // MARK: -
 
 private class PromiseBox<T,E>: PMSPromiseBox {
-    struct CallbackNode {
+    struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
-        
-        static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<CallbackNode>? {
-            guard let pointer = pointer, pointer != PMSLinkedListSwapFailed else { return nil }
-            return pointer.assumingMemoryBound(to: CallbackNode.self)
-        }
-        
-        /// Destroys the linked list.
-        ///
-        /// - Precondition: The pointer must be initialized.
-        /// - Postcondition: The pointer points to deinitialized memory.
-        static func destroyPointer(_ pointer: UnsafeMutablePointer<CallbackNode>) {
-            var nextPointer = pointer.pointee.next
-            pointer.deinitialize()
-            while let next = nextPointer {
-                nextPointer = next.pointee.next
-                next.deinitialize()
-            }
-        }
     }
     
-    struct RequestCancelNode {
+    struct RequestCancelNode: NodeProtocol {
         var next: UnsafeMutablePointer<RequestCancelNode>?
         var context: PromiseContext
         var callback: () -> Void
         
         func invoke() {
             context.execute(callback)
-        }
-        
-        static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<RequestCancelNode>? {
-            guard let pointer = pointer, pointer != PMSLinkedListSwapFailed else { return nil }
-            return pointer.assumingMemoryBound(to: RequestCancelNode.self)
-        }
-        
-        /// Destroys the linked list.
-        ///
-        /// - Precondition: The pointer must be initialized.
-        /// - Postcondition: The pointer points to deinitialized memory.
-        static func destroyPointer(_ pointer: UnsafeMutablePointer<RequestCancelNode>) {
-            var nextPointer = pointer.pointee.next
-            pointer.deinitialize()
-            while let next = nextPointer {
-                nextPointer = next.pointee.next
-                next.deinitialize()
-            }
         }
     }
     
@@ -895,6 +859,30 @@ private class PromiseBox<T,E>: PMSPromiseBox {
         case .cancelled:
             _value = nil
             super.init(state: .cancelled)
+        }
+    }
+}
+
+private protocol NodeProtocol {
+    var next: UnsafeMutablePointer<Self>? { get set }
+}
+
+extension NodeProtocol {
+    static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<Self>? {
+        guard let pointer = pointer, pointer != PMSLinkedListSwapFailed else { return nil }
+        return pointer.assumingMemoryBound(to: self)
+    }
+    
+    /// Destroys the linked list.
+    ///
+    /// - Precondition: The pointer must be initialized.
+    /// - Postcondition: The pointer points to deinitialized memory.
+    static func destroyPointer(_ pointer: UnsafeMutablePointer<Self>) {
+        var nextPointer = pointer.pointee.next
+        pointer.deinitialize()
+        while let next = nextPointer {
+            nextPointer = next.pointee.next
+            next.deinitialize()
         }
     }
 }
