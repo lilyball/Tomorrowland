@@ -177,6 +177,11 @@ public struct Promise<Value,Error> {
         }
     }
     
+    @available(*, unavailable, message: "Use Promise(on:_:) instead")
+    public init(_ handler: @escaping (_ resolver: Resolver) -> Void) {
+        fatalError()
+    }
+    
     private init() {
         _box = PromiseBox()
     }
