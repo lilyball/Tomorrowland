@@ -43,6 +43,24 @@ public enum PromiseContext {
         }
     }
     
+    /// Returns the `PromiseContext` that corresponds to a given Dispatch QoS class.
+    ///
+    /// If the given QoS is `.unspecified` then `.default` is assumed.
+    public init(qos: DispatchQoS.QoSClass) {
+        switch qos {
+        case .background:
+            self = .background
+        case .utility:
+            self = .utility
+        case .unspecified, .default:
+            self = .default
+        case .userInitiated:
+            self = .userInitiated
+        case .userInteractive:
+            self = .userInteractive
+        }
+    }
+    
     internal func execute(_ f: @escaping @convention(block) () -> Void) {
         switch self {
         case .main:

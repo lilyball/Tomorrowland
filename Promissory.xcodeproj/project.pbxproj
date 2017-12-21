@@ -11,11 +11,15 @@
 		0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */; };
 		0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */; };
 		0AFF275F1FE0E3F40006D95A /* Promissory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Promissory.framework */; };
-		0AFF27641FE0E3F40006D95A /* PromissoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */; };
+		0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromiseTests.swift */; };
 		0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Promissory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF276F1FE0E4D10006D95A /* Promise.swift */; };
 		0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */; };
+		ABDC7F781FEB840200036FCD /* PromiseUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F771FEB840200036FCD /* PromiseUtilities.swift */; };
+		ABDC7F7F1FEB909800036FCD /* PMSOneshotBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		ABDC7F801FEB909800036FCD /* PMSOneshotBlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */; };
+		ABDC7F821FEB980500036FCD /* PromiseUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F811FEB980500036FCD /* PromiseUtilitiesTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,12 +40,16 @@
 		0AFF27581FE0E3F40006D95A /* Promissory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Promissory.h; sourceTree = "<group>"; };
 		0AFF27591FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0AFF275E1FE0E3F40006D95A /* PromissoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromissoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromissoryTests.swift; sourceTree = "<group>"; };
+		0AFF27631FE0E3F40006D95A /* PromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseTests.swift; sourceTree = "<group>"; };
 		0AFF27651FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0AFF276F1FE0E4D10006D95A /* Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
 		0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseBox.h; sourceTree = "<group>"; };
 		0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseBox.m; sourceTree = "<group>"; };
 		0AFF27761FE0E50C0006D95A /* promissory.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = promissory.modulemap; sourceTree = "<group>"; };
+		ABDC7F771FEB840200036FCD /* PromiseUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseUtilities.swift; sourceTree = "<group>"; };
+		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
+		ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PMSOneshotBlock.mm; sourceTree = "<group>"; };
+		ABDC7F811FEB980500036FCD /* PromiseUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseUtilitiesTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +94,7 @@
 			children = (
 				0AFF27581FE0E3F40006D95A /* Promissory.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
+				ABDC7F771FEB840200036FCD /* PromiseUtilities.swift */,
 				0AFF27711FE0E4D70006D95A /* Private */,
 				0AFF27761FE0E50C0006D95A /* promissory.modulemap */,
 				0AFF27591FE0E3F40006D95A /* Info.plist */,
@@ -97,7 +106,8 @@
 			isa = PBXGroup;
 			children = (
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
-				0AFF27631FE0E3F40006D95A /* PromissoryTests.swift */,
+				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
+				ABDC7F811FEB980500036FCD /* PromiseUtilitiesTests.swift */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
 			path = PromissoryTests;
@@ -110,6 +120,8 @@
 				0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */,
 				0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */,
 				0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */,
+				ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */,
+				ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -123,6 +135,7 @@
 			files = (
 				0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */,
 				0A9482161FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h in Headers */,
+				ABDC7F7F1FEB909800036FCD /* PMSOneshotBlock.h in Headers */,
 				0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,9 +238,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABDC7F781FEB840200036FCD /* PromiseUtilities.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
 				0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */,
 				0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */,
+				ABDC7F801FEB909800036FCD /* PMSOneshotBlock.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,7 +250,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AFF27641FE0E3F40006D95A /* PromissoryTests.swift in Sources */,
+				ABDC7F821FEB980500036FCD /* PromiseUtilitiesTests.swift in Sources */,
+				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

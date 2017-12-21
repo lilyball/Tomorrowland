@@ -1,5 +1,5 @@
 //
-//  PromissoryTests.swift
+//  PromiseTests.swift
 //  PromissoryTests
 //
 //  Created by Kevin Ballard on 12/12/17.
@@ -9,7 +9,7 @@
 import XCTest
 import Promissory
 
-final class PromissoryTests: XCTestCase {
+final class PromiseTests: XCTestCase {
     func testBasicFulfill() {
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.fulfill(42)
