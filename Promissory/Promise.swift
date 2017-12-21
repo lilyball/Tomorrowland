@@ -375,6 +375,18 @@ public struct Promise<Value,Error> {
         return self
     }
     
+    /// Requests that the `Promise` should be cancelled.
+    ///
+    /// If the promise is already resolved, this does nothing. Otherwise, if the `Promise` registers
+    /// any `onRequestCancel` handlers, those handlers will be called.
+    ///
+    /// - Note: Requesting that a `Promise` should be cancelled doesn't guarantee it will be. If you
+    ///   need to ensure your `then` block isn't invoked, also use a `PromiseInvalidationToken` and
+    ///   call `.invalidate()` on it.
+    public func requestCancel() {
+        _box.requestCancel()
+    }
+    
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
         _box.enqueue { (result) in
             switch result {
