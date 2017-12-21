@@ -698,6 +698,15 @@ extension Promise where Error == Swift.Error {
     }
 }
 
+extension Promise: Equatable {
+    /// Two `Promsie`s compare as equal if they represent the same promise.
+    ///
+    /// Two distinct `Promise`s that are resolved to the same value compare as unequal.
+    public static func ==(lhs: Promise, rhs: Promise) -> Bool {
+        return lhs._box === rhs._box
+    }
+}
+
 /// The result of a resolved promise.
 public enum PromiseResult<Value,Error> {
     /// The value the promise was fulfilled with.
