@@ -123,6 +123,10 @@ public struct Promise<Value,Error> {
         /// If the promise has already had cancellation requested (and is not resolved), the
         /// callback is invoked on the context at once.
         ///
+        /// - Note: If you register the callback for a serial queue and resolve the promise on that
+        ///   same serial queue, the callback is guaranteed to not execute after the promise is
+        ///   resolved.
+        ///
         /// - Parameter context: The context that the callback is invoked on.
         /// - Parameter callback: The callback to invoke.
         public func onRequestCancel(on context: PromiseContext, _ callback: @escaping () -> Void) {
@@ -733,8 +737,23 @@ private class PromiseBox<T,E>: PMSPromiseBox {
         var context: PromiseContext
         var callback: () -> Void
         
-        func invoke() {
-            context.execute(callback)
+        func invoke(with box: PromiseBox<T,E>?) {
+            if case .immediate = context {
+                // skip the state check
+                callback()
+            } else {
+                context.execute { [callback] in
+                    switch box?.unfencedState {
+                    case .empty?:
+                        assertionFailure("We shouldn't be invoking an onRequestCancel callback on an empty promise")
+                    case nil, .cancelling?, .cancelled?:
+                        callback()
+                    case .resolving?, .resolved?:
+                        // if the promise has been resolved, skip the cancel callback
+                        break
+                    }
+                }
+            }
         }
     }
     
@@ -747,7 +766,7 @@ private class PromiseBox<T,E>: PMSPromiseBox {
             nodePtr = RequestCancelNode.reverseList(nodePtr)
             defer { RequestCancelNode.destroyPointer(nodePtr) }
             for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                nodePtr.pointee.invoke()
+                nodePtr.pointee.invoke(with: nil)
             }
         }
         _value = nil // make sure this is destroyed after the fence
@@ -782,7 +801,7 @@ private class PromiseBox<T,E>: PMSPromiseBox {
                 nodePtr = RequestCancelNode.reverseList(nodePtr)
                 defer { RequestCancelNode.destroyPointer(nodePtr) }
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                    nodePtr.pointee.invoke()
+                    nodePtr.pointee.invoke(with: self)
                 }
             }
         }
