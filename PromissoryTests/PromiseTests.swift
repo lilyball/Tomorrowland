@@ -160,6 +160,17 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testOnCancel() {
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.cancel()
+        })
+        let expectation = XCTestExpectation(description: "promise cancel")
+        promise.onCancel(on: .utility, {
+            expectation.fulfill()
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: - Specializations for Error
     
     struct TestError: Error {}

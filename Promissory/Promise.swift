@@ -378,8 +378,7 @@ public struct Promise<Value,Error> {
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
-    ///   `invalidate()` on the token will prevent `onComplete` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked.
     /// - Parameter onComplete: The callback that is invoked with the promise's value.
     /// - Returns: The same promise this method was invoked on.
     @discardableResult
@@ -391,6 +390,25 @@ public struct Promise<Value,Error> {
             }
         }
         return self
+    }
+    
+    /// Registers a callback that will be invoked when the promise is cancelled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onCancel` from being invoked.
+    /// - Parameter onCancel: The callback that is invoked when the promise is cancelled.
+    /// - Returns: The same promise this method was invoked on.
+    public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) {
+        _box.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value, .error: break
+            case .cancelled:
+                guard generation == token?.generation else { return }
+                context.execute(onCancel)
+            }
+        }
     }
     
     /// Requests that the `Promise` should be cancelled.
