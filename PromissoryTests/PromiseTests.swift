@@ -502,6 +502,20 @@ final class PromiseTests: XCTestCase {
         }
         wait(for: [expectation], timeout: 1)
     }
+    
+    func testLeavingPromiseUnresolvedTriggersCancel() {
+        let queue = DispatchQueue(label: "test queue")
+        let expectations = (1...3).map({ XCTestExpectation(description: "promise \($0) cancel") })
+        do {
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                // don't resolve
+            })
+            for expectation in expectations {
+                expectation.fulfill(on: .queue(queue), onCancel: promise)
+            }
+        }
+        wait(for: expectations, timeout: 1, enforceOrder: true)
+    }
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()

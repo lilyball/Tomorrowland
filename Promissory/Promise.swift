@@ -814,8 +814,15 @@ private class PromiseBox<T,E>: PMSPromiseBox {
     
     deinit {
         issueDeinitFence()
-        if let nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
-            CallbackNode.destroyPointer(nodePtr)
+        if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            // If we actually have a callback list, we must not have been resolved, so attempt to cancel.
+            // NB: No need to actually transition to the cancelled state first, if anyone still had
+            // a reference to us to look at that, we wouldn't be in deinit.
+            nodePtr = CallbackNode.reverseList(nodePtr)
+            defer { CallbackNode.destroyPointer(nodePtr) }
+            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
+                nodePtr.pointee.callback(.cancelled)
+            }
         }
         if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
             RequestCancelNode.destroyPointer(nodePtr)
