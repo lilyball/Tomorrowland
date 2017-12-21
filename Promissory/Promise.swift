@@ -90,7 +90,7 @@ public enum PromiseContext {
 /// need to ensure your registered callbacks aren't invoked past a certain point.
 public struct Promise<Value,Error> {
     public struct Resolver {
-        private let _box: PromiseBox<Value,Error>
+        fileprivate let _box: PromiseBox<Value,Error>
         
         fileprivate init(box: PromiseBox<Value,Error>) {
             _box = box
@@ -129,7 +129,7 @@ public struct Promise<Value,Error> {
         ///
         /// - Parameter context: The context that the callback is invoked on.
         /// - Parameter callback: The callback to invoke.
-        public func onRequestCancel(on context: PromiseContext, _ callback: @escaping () -> Void) {
+        public func onRequestCancel(on context: PromiseContext, _ callback: @escaping (Resolver) -> Void) {
             let nodePtr = UnsafeMutablePointer<PromiseBox<Value,Error>.RequestCancelNode>.allocate(capacity: 1)
             nodePtr.initialize(to: .init(next: nil, context: context, callback: callback))
             if _box.swapRequestCancelLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
@@ -139,7 +139,9 @@ public struct Promise<Value,Error> {
                 nodePtr.deallocate(capacity: 1)
                 switch _box.unfencedState {
                 case .cancelling, .cancelled:
-                    context.execute(callback)
+                    context.execute {
+                        callback(self)
+                    }
                 case .empty, .resolving, .resolved:
                     break
                 }
@@ -740,20 +742,20 @@ private class PromiseBox<T,E>: PMSPromiseBox {
     struct RequestCancelNode: NodeProtocol {
         var next: UnsafeMutablePointer<RequestCancelNode>?
         var context: PromiseContext
-        var callback: () -> Void
+        var callback: (Promise<T,E>.Resolver) -> Void
         
-        func invoke(with box: PromiseBox<T,E>?) {
+        func invoke(with resolver: Promise<T,E>.Resolver) {
             if case .immediate = context {
                 // skip the state check
-                callback()
+                callback(resolver)
             } else {
                 context.execute { [callback] in
-                    switch box?.unfencedState {
-                    case .empty?:
+                    switch resolver._box.unfencedState {
+                    case .empty:
                         assertionFailure("We shouldn't be invoking an onRequestCancel callback on an empty promise")
-                    case nil, .cancelling?, .cancelled?:
-                        callback()
-                    case .resolving?, .resolved?:
+                    case .cancelling, .cancelled:
+                        callback(resolver)
+                    case .resolving, .resolved:
                         // if the promise has been resolved, skip the cancel callback
                         break
                     }
@@ -767,12 +769,8 @@ private class PromiseBox<T,E>: PMSPromiseBox {
         if let nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
             CallbackNode.destroyPointer(nodePtr)
         }
-        if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
-            nodePtr = RequestCancelNode.reverseList(nodePtr)
-            defer { RequestCancelNode.destroyPointer(nodePtr) }
-            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                nodePtr.pointee.invoke(with: nil)
-            }
+        if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            RequestCancelNode.destroyPointer(nodePtr)
         }
         _value = nil // make sure this is destroyed after the fence
     }
@@ -805,8 +803,9 @@ private class PromiseBox<T,E>: PMSPromiseBox {
             if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
                 nodePtr = RequestCancelNode.reverseList(nodePtr)
                 defer { RequestCancelNode.destroyPointer(nodePtr) }
+                let resolver = Promise<T,E>.Resolver(box: self)
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                    nodePtr.pointee.invoke(with: self)
+                    nodePtr.pointee.invoke(with: resolver)
                 }
             }
         }
