@@ -439,6 +439,58 @@ final class PromissoryTests: XCTestCase {
         // now that the promise is resolved, check again to make sure the value is the same
         XCTAssertEqual(promise.result, .cancelled)
     }
+    
+    func testRequestCancel() {
+        let expectation = XCTestExpectation(description: "onRequestCancel")
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.onRequestCancel(on: .utility, { (resolver) in
+                expectation.fulfill()
+                resolver.cancel()
+            })
+        })
+        let expectation2 = XCTestExpectation(onCancel: promise)
+        DispatchQueue.global().async {
+            promise.requestCancel()
+        }
+        wait(for: [expectation, expectation2], timeout: 1)
+    }
+    
+    func testMultipleRequestCancel() {
+        let queue = DispatchQueue(label: "test queue")
+        let expectations = (1...3).map({ XCTestExpectation(description: "onRequestCancel \($0)")} )
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            for expectation in expectations {
+                resolver.onRequestCancel(on: .queue(queue), { (resolver) in
+                    expectation.fulfill()
+                    resolver.cancel()
+                })
+            }
+        })
+        DispatchQueue.global().async {
+            promise.requestCancel()
+        }
+        wait(for: expectations, timeout: 1, enforceOrder: true)
+    }
+    
+    func testOnRequestCancelAfterCancelled() {
+        let sema = DispatchSemaphore(value: 0)
+        let expectation = XCTestExpectation(description: "promise")
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            var invoked = false
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                resolver.cancel()
+                invoked = true
+            })
+            XCTAssertTrue(invoked)
+            expectation.fulfill()
+        })
+        DispatchQueue.global().async {
+            promise.requestCancel()
+            sema.signal()
+        }
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()
