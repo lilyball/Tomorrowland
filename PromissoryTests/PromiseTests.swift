@@ -171,6 +171,15 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testUpcast() {
+        struct DummyError: Error {}
+        let promise = Promise<Int,DummyError>(rejected: DummyError())
+        let expectation = XCTestExpectation(onError: promise.upcast) { (error) in
+            XCTAssert(error is DummyError)
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: - Specializations for Error
     
     struct TestError: Error {}

@@ -438,6 +438,16 @@ public struct Promise<Value,Error> {
 }
 
 extension Promise where Error: Swift.Error {
+    /// Returns a new promise with an error type of `Swift.Error`.
+    ///
+    /// The new promise adopts the exact same result as the receiver, but if the promise resolves to
+    /// an error, it's upcast to `Swift.Error`.
+    public var upcast: Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        pipe(to: resolver)
+        return promise
+    }
+    
     private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver) {
         _box.enqueue { (result) in
             switch result {
