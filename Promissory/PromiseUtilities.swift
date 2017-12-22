@@ -23,12 +23,12 @@ import Promissory.Private
 ///   returned `Promise`.
 /// - Parameter qos: The QoS to use for the dispatch queues that coordinate the work. The default
 ///   value is `.default`.
-/// - Parameter cancelOnFailure: The default value of `true` means all input `Promise`s will be
-///   cancelled if any of them are rejected or cancelled. If `false`, rejecting or cancelling an
-///   input `Promise` does not cancel the rest.
+/// - Parameter cancelOnFailure: If `true`, all input `Promise`s will be cancelled if any of them
+///   are rejected or cancelled. The default value of `false` means rejecting or cancelling an input
+///   `Promise` does not cancel the rest.
 /// - Returns: A `Promise` that will be fulfilled with an array of the fulfilled values from each
 ///   input `Promise`.
-public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: DispatchQoS.QoSClass = .default, cancelOnFailure: Bool = true) -> Promise<[Value],Error> {
+public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: DispatchQoS.QoSClass = .default, cancelOnFailure: Bool = false) -> Promise<[Value],Error> {
     guard !promises.isEmpty else {
         return Promise(fulfilled: [])
     }

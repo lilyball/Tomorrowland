@@ -53,7 +53,7 @@ final class PromiseUtilitiesTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testWhenRejectedCancelsInput() {
+    func testWhenRejectedWithCancelOnFailureCancelsInput() {
         let sema = DispatchSemaphore(value: 1)
         sema.wait()
         let promisesAndExpectations = (1...5).map({ x -> (Promise<Int,String>, XCTestExpectation) in
@@ -65,23 +65,27 @@ final class PromiseUtilitiesTests: XCTestCase {
                 } else {
                     resolver.onRequestCancel(on: .immediate) { (resolver) in
                         resolver.cancel()
-                        expectation.fulfill()
                     }
                     sema.wait()
                     sema.signal()
                     resolver.fulfill(x * 2)
                 }
             })
+            if x != 3 {
+                expectation.fulfill(onCancel: promise)
+            }
             return (promise, expectation)
         })
         let promises = promisesAndExpectations.map({ $0.0 })
         let expectations = promisesAndExpectations.map({ $0.1 })
-        let promise = when(fulfilled: promises)
+        let promise = when(fulfilled: promises, cancelOnFailure: true)
         let expectation = XCTestExpectation(onError: promise, expectedError: "error")
-        wait(for: [expectation] + expectations, timeout: 1)
+        wait(for: [expectation], timeout: 1)
+        sema.signal() // let the promises empty out
+        wait(for: expectations, timeout: 1)
     }
     
-    func testWhenCancelledCancelsInput() {
+    func testWhenCancelledWithCancelOnFailureCancelsInput() {
         let sema = DispatchSemaphore(value: 1)
         sema.wait()
         let promisesAndExpectations = (1...5).map({ x -> (Promise<Int,String>, XCTestExpectation) in
@@ -93,20 +97,56 @@ final class PromiseUtilitiesTests: XCTestCase {
                 } else {
                     resolver.onRequestCancel(on: .immediate) { (resolver) in
                         resolver.cancel()
-                        expectation.fulfill()
                     }
                     sema.wait()
                     sema.signal()
                     resolver.fulfill(x * 2)
                 }
             })
+            if x != 3 {
+                expectation.fulfill(onCancel: promise)
+            }
+            return (promise, expectation)
+        })
+        let promises = promisesAndExpectations.map({ $0.0 })
+        let expectations = promisesAndExpectations.map({ $0.1 })
+        let promise = when(fulfilled: promises, cancelOnFailure: true)
+        let expectation = XCTestExpectation(onCancel: promise)
+        wait(for: [expectation], timeout: 1)
+        sema.signal() // let the promises empty out
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testWhenCancelledByDefaultDoesntCancelInput() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promisesAndExpectations = (1...5).map({ x -> (Promise<Int,String>, XCTestExpectation) in
+            let expectation = XCTestExpectation(description: "promise \(x)")
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                if x == 3 {
+                    resolver.cancel()
+                    expectation.fulfill()
+                } else {
+                    resolver.onRequestCancel(on: .immediate) { (resolver) in
+                        resolver.cancel()
+                    }
+                    sema.wait()
+                    sema.signal()
+                    resolver.fulfill(x * 2)
+                }
+            })
+            if x != 3 {
+                expectation.fulfill(onSuccess: promise, expectedValue: x * 2)
+            }
             return (promise, expectation)
         })
         let promises = promisesAndExpectations.map({ $0.0 })
         let expectations = promisesAndExpectations.map({ $0.1 })
         let promise = when(fulfilled: promises)
         let expectation = XCTestExpectation(onCancel: promise)
-        wait(for: [expectation] + expectations, timeout: 1)
+        wait(for: [expectation], timeout: 1)
+        sema.signal() // let the promises empty out
+        wait(for: expectations, timeout: 1)
     }
     
     func testWhenEmptyInput() {
