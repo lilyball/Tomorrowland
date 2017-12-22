@@ -308,7 +308,10 @@ public struct Promise<Value,Error> {
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter onError: The callback that is invoked with the rejected error.
-    public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) {
+    /// - Returns: The same promise this method was invoked on. In most cases you should ignore the
+    ///   return value, it's mainly provided so you can call `.always` on it.
+    @discardableResult
+    public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) -> Promise {
         _box.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value, .cancelled: break
@@ -319,6 +322,7 @@ public struct Promise<Value,Error> {
                 }
             }
         }
+        return self
     }
     
     /// Registers a callback that is invoked when the promise is rejected.

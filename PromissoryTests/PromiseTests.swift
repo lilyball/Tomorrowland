@@ -137,11 +137,17 @@ final class PromiseTests: XCTestCase {
     
     func testCatch() {
         let expectation = XCTestExpectation(description: "catch")
-        _ = Promise<Int,String>(rejected: "foo").catch { (x) in
+        _ = Promise<Int,String>(rejected: "foo").catch(on: .utility) { (x) in
             XCTAssertEqual(x, "foo")
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 1)
+    }
+    
+    func testCatchReturnsSamePromise() {
+        let promiseA = Promise<Int,String>(rejected: "foo")
+        let promiseB = promiseA.catch(on: .utility) { _ in }
+        XCTAssertEqual(promiseA, promiseB)
     }
     
     func testRecover() {
