@@ -50,6 +50,8 @@
 		0AFF27761FE0E50C0006D95A /* promissory.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = promissory.modulemap; sourceTree = "<group>"; };
 		AB1FF3DC1FECCD680029A283 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTests.swift; sourceTree = "<group>"; };
+		AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-APACHE.txt"; sourceTree = "<group>"; };
+		AB1FF3E11FECD7A90029A283 /* LICENSE-MIT.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-MIT.txt"; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
 		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
 		ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PMSOneshotBlock.mm; sourceTree = "<group>"; };
@@ -78,6 +80,8 @@
 		0AFF274B1FE0E3F40006D95A = {
 			isa = PBXGroup;
 			children = (
+				AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE.txt */,
+				AB1FF3E11FECD7A90029A283 /* LICENSE-MIT.txt */,
 				0AFF27571FE0E3F40006D95A /* Promissory */,
 				0AFF27621FE0E3F40006D95A /* PromissoryTests */,
 				0AFF27561FE0E3F40006D95A /* Products */,
