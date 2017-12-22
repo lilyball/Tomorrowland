@@ -194,11 +194,44 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
                                                            cancelOnFailure: Bool = false)
     -> Promise<(Value1,Value2,Value3,Value4,Value5),Error>
 {
-    // TODO: reimplement without the dummy promise
-    return when(fulfilled: a, b, c, d, e, Promise<(),Error>(fulfilled: ()), qos: qos, cancelOnFailure: cancelOnFailure)
-        .then(on: .immediate) { (result) in
-            return (result.0, result.1, result.2, result.3, result.4)
+    // NB: copy&paste of 6-element version
+    let cancelAllInput: PMSOneshotBlock?
+    if cancelOnFailure {
+        cancelAllInput = PMSOneshotBlock(block: {
+            a.requestCancel()
+            b.requestCancel()
+            c.requestCancel()
+            d.requestCancel()
+            e.requestCancel()
+        })
+    } else {
+        cancelAllInput = nil
     }
+    
+    let (resultPromise, resolver) = Promise<(Value1,Value2,Value3,Value4,Value5),Error>.makeWithResolver()
+    var (aResult, bResult, cResult, dResult, eResult): (Value1?, Value2?, Value3?, Value4?, Value5?)
+    let group = DispatchGroup()
+    
+    let context = PromiseContext(qos: qos)
+    group.enter()
+    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    d.always(on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    e.always(on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
+    
+    group.notify(queue: .global(qos: qos)) {
+        guard let a = aResult, let b = bResult, let c = cResult, let d = dResult, let e = eResult else {
+            // Must have had a rejected or cancelled promise
+            return
+        }
+        resolver.fulfill((a,b,c,d,e))
+    }
+    return resultPromise
 }
 
 /// Waits on a tuple of `Promise`s and returns a `Promise` that is fulfilled with a tuple of the
@@ -231,12 +264,41 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
                                                     cancelOnFailure: Bool = false)
     -> Promise<(Value1,Value2,Value3,Value4),Error>
 {
-    // TODO: reimplement without the dummy promise
-    let dummy = Promise<(),Error>(fulfilled: ())
-    return when(fulfilled: a, b, c, d, dummy, dummy, qos: qos, cancelOnFailure: cancelOnFailure)
-        .then(on: .immediate) { (result) in
-            return (result.0, result.1, result.2, result.3)
+    // NB: copy&paste of 6-element version
+    let cancelAllInput: PMSOneshotBlock?
+    if cancelOnFailure {
+        cancelAllInput = PMSOneshotBlock(block: {
+            a.requestCancel()
+            b.requestCancel()
+            c.requestCancel()
+            d.requestCancel()
+        })
+    } else {
+        cancelAllInput = nil
     }
+    
+    let (resultPromise, resolver) = Promise<(Value1,Value2,Value3,Value4),Error>.makeWithResolver()
+    var (aResult, bResult, cResult, dResult): (Value1?, Value2?, Value3?, Value4?)
+    let group = DispatchGroup()
+    
+    let context = PromiseContext(qos: qos)
+    group.enter()
+    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    d.always(on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
+    
+    group.notify(queue: .global(qos: qos)) {
+        guard let a = aResult, let b = bResult, let c = cResult, let d = dResult else {
+            // Must have had a rejected or cancelled promise
+            return
+        }
+        resolver.fulfill((a,b,c,d))
+    }
+    return resultPromise
 }
 
 /// Waits on a tuple of `Promise`s and returns a `Promise` that is fulfilled with a tuple of the
@@ -267,12 +329,38 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
                                              cancelOnFailure: Bool = false)
     -> Promise<(Value1,Value2,Value3),Error>
 {
-    // TODO: reimplement without the dummy promise
-    let dummy = Promise<(),Error>(fulfilled: ())
-    return when(fulfilled: a, b, c, dummy, dummy, dummy, qos: qos, cancelOnFailure: cancelOnFailure)
-        .then(on: .immediate) { (result) in
-            return (result.0, result.1, result.2)
+    // NB: copy&paste of 6-element version
+    let cancelAllInput: PMSOneshotBlock?
+    if cancelOnFailure {
+        cancelAllInput = PMSOneshotBlock(block: {
+            a.requestCancel()
+            b.requestCancel()
+            c.requestCancel()
+        })
+    } else {
+        cancelAllInput = nil
     }
+    
+    let (resultPromise, resolver) = Promise<(Value1,Value2,Value3),Error>.makeWithResolver()
+    var (aResult, bResult, cResult): (Value1?, Value2?, Value3?)
+    let group = DispatchGroup()
+    
+    let context = PromiseContext(qos: qos)
+    group.enter()
+    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    
+    group.notify(queue: .global(qos: qos)) {
+        guard let a = aResult, let b = bResult, let c = cResult else {
+            // Must have had a rejected or cancelled promise
+            return
+        }
+        resolver.fulfill((a,b,c))
+    }
+    return resultPromise
 }
 
 /// Waits on a tuple of `Promise`s and returns a `Promise` that is fulfilled with a tuple of the
@@ -301,12 +389,35 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
                                       cancelOnFailure: Bool = false)
     -> Promise<(Value1,Value2),Error>
 {
-    // TODO: reimplement without the dummy promise
-    let dummy = Promise<(),Error>(fulfilled: ())
-    return when(fulfilled: a, b, dummy, dummy, dummy, dummy, qos: qos, cancelOnFailure: cancelOnFailure)
-        .then(on: .immediate) { (result) in
-            return (result.0, result.1)
+    // NB: copy&paste of 6-element version
+    let cancelAllInput: PMSOneshotBlock?
+    if cancelOnFailure {
+        cancelAllInput = PMSOneshotBlock(block: {
+            a.requestCancel()
+            b.requestCancel()
+        })
+    } else {
+        cancelAllInput = nil
     }
+    
+    let (resultPromise, resolver) = Promise<(Value1,Value2),Error>.makeWithResolver()
+    var (aResult, bResult): (Value1?, Value2?)
+    let group = DispatchGroup()
+    
+    let context = PromiseContext(qos: qos)
+    group.enter()
+    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    group.enter()
+    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    
+    group.notify(queue: .global(qos: qos)) {
+        guard let a = aResult, let b = bResult else {
+            // Must have had a rejected or cancelled promise
+            return
+        }
+        resolver.fulfill((a,b))
+    }
+    return resultPromise
 }
 
 private extension Promise.Resolver {
