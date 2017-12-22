@@ -171,6 +171,52 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testAlwaysReturningThrowingPromise() {
+        struct DummyError: Error {}
+        let promise = Promise<Int,Int>(on: .utility, { (resolver) in
+            resolver.reject(42)
+        }).always(on: .utility, { (result) -> Promise<String,DummyError> in
+            throw DummyError()
+        })
+        let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+            XCTAssert(error is DummyError)
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testAlwaysReturningSwiftErrorThrowingPromise() {
+        struct DummyError: Error {}
+        let promise = Promise<Int,Int>(on: .utility, { (resolver) in
+            resolver.reject(42)
+        }).always(on: .utility, { (result) -> Promise<String,Swift.Error> in
+            throw DummyError()
+        })
+        let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+            XCTAssert(error is DummyError)
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testAlwaysReturningPromise() {
+        let innerExpectation = XCTestExpectation(description: "Inner promise success")
+        let promise = Promise<Int,Int>(on: .utility, { (resolver) in
+            resolver.reject(42)
+        }).always(on: .utility, { (result) -> Promise<String,String> in
+            let newPromise = Promise<String,String>(on: .utility) { resolver in
+                switch result {
+                case .value(let x), .error(let x):
+                    resolver.fulfill("\(x+1)")
+                case .cancelled:
+                    resolver.fulfill("")
+                }
+            }
+            innerExpectation.fulfill(onSuccess: newPromise, expectedValue: "43")
+            return newPromise
+        })
+        let outerExpectation = XCTestExpectation(onSuccess: promise, expectedValue: "43")
+        wait(for: [innerExpectation, outerExpectation], timeout: 1)
+    }
+    
     func testUpcast() {
         struct DummyError: Error {}
         let promise = Promise<Int,DummyError>(rejected: DummyError())
