@@ -324,3 +324,56 @@ private extension Promise.Resolver {
         }
     }
 }
+
+// MARK: -
+
+/// Returns a `Promise` that is resolved with the result of the first resolved input `Promise`.
+///
+/// The first input `Promise` that is either fulfilled or rejected causes the resulting `Promise` to
+/// be fulfilled or rejected. An input `Promise` that is cancelled is ignored. If all input
+/// `Promise`s are cancelled, the resulting `Promise` is cancelled.
+///
+/// - Parameter promises: An array of `Promise`s.
+/// - Parameter cancelRemaining: If `true`, all remaining input `Promise`s will be cancelled as soon
+///   as the first one is resolved. The default value of `false` means resolving an input `Promise`
+///   does not cancel the rest.
+/// - Returns: A `Promise` that will be resolved with the value or error from the first fulfilled or
+///   rejected input `Promise`.
+public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRemaining: Bool = false) -> Promise<Value,Error> {
+    guard !promises.isEmpty else {
+        return Promise(on: .immediate, { $0.cancel() })
+    }
+    let cancelAllInput: PMSOneshotBlock?
+    if cancelRemaining {
+        cancelAllInput = PMSOneshotBlock(block: {
+            for promise in promises {
+                promise.requestCancel()
+            }
+        })
+    } else {
+        cancelAllInput = nil
+    }
+
+    let (newPromise, resolver) = Promise<Value,Error>.makeWithResolver()
+    let group = DispatchGroup()
+    for promise in promises {
+        group.enter()
+        promise.always(on: .immediate, { (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(value)
+                cancelAllInput?.invoke()
+            case .error(let error):
+                resolver.reject(error)
+                cancelAllInput?.invoke()
+            case .cancelled:
+                break
+            }
+            group.leave()
+        })
+    }
+    group.notify(queue: .global(qos: .utility)) {
+        resolver.cancel()
+    }
+    return newPromise
+}

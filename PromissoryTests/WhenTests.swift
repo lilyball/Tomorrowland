@@ -372,6 +372,90 @@ final class WhenTupleTests: XCTestCase {
     }
 }
 
+final class WhenFirstTests: XCTestCase {
+    func testWhen() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promises = (1...5).map({ x -> Promise<Int,String> in
+            Promise(on: .utility, { (resolver) in
+                if x != 3 {
+                    sema.wait()
+                    sema.signal()
+                }
+                resolver.fulfill(x * 2)
+            })
+        })
+        let promise = when(first: promises)
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 6)
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenRejected() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promises = (1...5).map({ x -> Promise<Int,String> in
+            Promise(on: .utility, { (resolver) in
+                if x == 3 {
+                    resolver.reject("foo")
+                } else {
+                    sema.wait()
+                    sema.signal()
+                    resolver.fulfill(x * 2)
+                }
+            })
+        })
+        let promise = when(first: promises)
+        let expectation = XCTestExpectation(onError: promise, expectedError: "foo")
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenCancelled() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promises = (1...5).map({ x -> Promise<Int,String> in
+            Promise(on: .utility, { (resolver) in
+                if x == 3 {
+                    resolver.cancel()
+                } else {
+                    sema.wait()
+                    sema.signal()
+                    resolver.fulfill(x * 2)
+                }
+            })
+        })
+        let promise = when(first: promises)
+        let expectation = XCTestExpectation(onSuccess: promise, handler: { _ in })
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenAllCancelled() {
+        let promises = (1...5).map({ x -> Promise<Int,String> in
+            Promise(on: .utility, { (resolver) in
+                resolver.cancel()
+            })
+        })
+        let promise = when(first: promises)
+        let expectation = XCTestExpectation(onCancel: promise)
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenEmptyInput() {
+        let promise: Promise<Int,String> = when(first: [])
+        let expectation = XCTestExpectation(onCancel: promise)
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenDuplicateInput() {
+        let dummy = Promise<Int,String>(fulfilled: 42)
+        let promise = when(first: [dummy, dummy, dummy])
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        wait(for: [expectation], timeout: 1)
+    }
+}
+
 private func splat<T>(_ a: T, _ b: T, _ c: T, _ d: T, _ e: T, _ f: T) -> [T] {
     return [a,b,c,d,e,f]
 }
