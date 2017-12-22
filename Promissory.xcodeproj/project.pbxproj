@@ -16,6 +16,8 @@
 		0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF276F1FE0E4D10006D95A /* Promise.swift */; };
 		0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */; };
+		AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DC1FECCD680029A283 /* Utilities.swift */; };
+		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
 		ABDC7F781FEB840200036FCD /* When.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F771FEB840200036FCD /* When.swift */; };
 		ABDC7F7F1FEB909800036FCD /* PMSOneshotBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		ABDC7F801FEB909800036FCD /* PMSOneshotBlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */; };
@@ -46,6 +48,8 @@
 		0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseBox.h; sourceTree = "<group>"; };
 		0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseBox.m; sourceTree = "<group>"; };
 		0AFF27761FE0E50C0006D95A /* promissory.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = promissory.modulemap; sourceTree = "<group>"; };
+		AB1FF3DC1FECCD680029A283 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTests.swift; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
 		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
 		ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PMSOneshotBlock.mm; sourceTree = "<group>"; };
@@ -95,6 +99,7 @@
 				0AFF27581FE0E3F40006D95A /* Promissory.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
+				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
 				0AFF27711FE0E4D70006D95A /* Private */,
 				0AFF27761FE0E50C0006D95A /* promissory.modulemap */,
 				0AFF27591FE0E3F40006D95A /* Info.plist */,
@@ -108,6 +113,7 @@
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
+				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
 			path = PromissoryTests;
@@ -238,6 +244,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				ABDC7F781FEB840200036FCD /* When.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
 				0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */,
@@ -250,6 +257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */,
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,

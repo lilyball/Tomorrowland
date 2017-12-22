@@ -83,6 +83,23 @@ public enum PromiseContext {
             f()
         }
     }
+    
+    /// Returns the `DispatchQueue` corresponding to the context. If the context is `.immediate`, it
+    /// behaves like `.auto`. If the context is `.operationQueue` it uses the underlying queue, or
+    /// `.default` if there is no underlying queue.
+    internal func getQueue() -> DispatchQueue {
+        switch self {
+        case .main: return .main
+        case .background: return .global(qos: .background)
+        case .utility: return .global(qos: .utility)
+        case .default: return .global(qos: .default)
+        case .userInitiated: return .global(qos: .userInitiated)
+        case .userInteractive: return .global(qos: .userInteractive)
+        case .queue(let queue): return queue
+        case .operationQueue(let queue): return queue.underlyingQueue ?? .global(qos: .default)
+        case .immediate: return PromiseContext.auto.getQueue()
+        }
+    }
 }
 
 /// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
@@ -174,7 +191,7 @@ public struct Promise<Value,Error> {
         return _box.result
     }
     
-    private let _box: PromiseBox<Value,Error>
+    internal let _box: PromiseBox<Value,Error>
     
     /// Returns a `Promise` and a `Promise.Resolver` that can be used to fulfill that promise.
     ///
@@ -883,7 +900,7 @@ public struct PromiseInvalidationToken {
 
 // MARK: -
 
-private class PromiseBox<T,E>: PMSPromiseBox {
+internal class PromiseBox<T,E>: PMSPromiseBox {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
