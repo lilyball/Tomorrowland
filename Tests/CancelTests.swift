@@ -1,6 +1,6 @@
 //
 //  CancelTests.swift
-//  PromissoryTests
+//  TomorrowlandTests
 //
 //  Created by Ballard, Kevin on 12/22/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -13,7 +13,7 @@
 //
 
 import XCTest
-import Promissory
+import Tomorrowland
 
 final class CancelTests: XCTestCase {
     func testRequestCancelOnInvalidate() {

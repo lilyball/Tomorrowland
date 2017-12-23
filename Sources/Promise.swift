@@ -1,6 +1,6 @@
 //
 //  Promise.swift
-//  Promissory
+//  Tomorrowland
 //
 //  Created by Kevin Ballard on 12/12/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -12,7 +12,7 @@
 //  except according to those terms.
 //
 
-import Promissory.Private
+import Tomorrowland.Private
 import Dispatch
 
 /// The context in which a Promise body or callback is evaluated.
@@ -222,7 +222,7 @@ public struct Promise<Value,Error> {
             nodePtr.initialize(to: .init(next: nil, context: context, callback: callback))
             if _box.swapRequestCancelLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
                 nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<Value,Error>.RequestCancelNode.self)
-            }) == PMSLinkedListSwapFailed {
+            }) == TWLLinkedListSwapFailed {
                 nodePtr.deinitialize()
                 nodePtr.deallocate(capacity: 1)
                 switch _box.unfencedState {
@@ -1111,7 +1111,7 @@ public struct PromiseInvalidationToken {
 
 // MARK: - Private
 
-private class PromiseInvalidationTokenBox: PMSPromiseInvalidationTokenBox {
+private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
     private struct CallbackNode {
         var next: UnsafeMutablePointer<CallbackNode>?
         var generation: UInt
@@ -1216,7 +1216,7 @@ private class PromiseInvalidationTokenBox: PMSPromiseInvalidationTokenBox {
     }
 }
 
-internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
+internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
@@ -1249,7 +1249,7 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
     
     deinit {
         issueDeinitFence()
-        if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+        if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
             // If we actually have a callback list, we must not have been resolved, so attempt to cancel.
             // NB: No need to actually transition to the cancelled state first, if anyone still had
             // a reference to us to look at that, we wouldn't be in deinit.
@@ -1259,7 +1259,7 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
                 nodePtr.pointee.callback(.cancelled)
             }
         }
-        if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+        if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
             RequestCancelNode.destroyPointer(nodePtr)
         }
         _value = nil // make sure this is destroyed after the fence
@@ -1290,7 +1290,7 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
     /// does nothing.
     func requestCancel() {
         if transitionState(to: .cancelling) {
-            if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            if var nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
                 nodePtr = RequestCancelNode.reverseList(nodePtr)
                 defer { RequestCancelNode.destroyPointer(nodePtr) }
                 let resolver = Promise<T,E>.Resolver(box: self)
@@ -1306,10 +1306,10 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
     /// If the promise has already been resolved or cancelled, this does nothing.
     func resolveOrCancel(with result: PromiseResult<T,E>) {
         func handleCallbacks() {
-            if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
                 RequestCancelNode.destroyPointer(nodePtr)
             }
-            if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: PMSLinkedListSwapFailed, linkBlock: nil)) {
+            if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
                 nodePtr = CallbackNode.reverseList(nodePtr)
                 defer { CallbackNode.destroyPointer(nodePtr) }
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
@@ -1344,7 +1344,7 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
         nodePtr.initialize(to: .init(next: nil, callback: callback))
         if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
             nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
-        }) == PMSLinkedListSwapFailed {
+        }) == TWLLinkedListSwapFailed {
             nodePtr.deinitialize()
             nodePtr.deallocate(capacity: 1)
             guard let result = result else {
@@ -1403,7 +1403,7 @@ private protocol NodeProtocol {
 
 extension NodeProtocol {
     static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<Self>? {
-        guard let pointer = pointer, pointer != PMSLinkedListSwapFailed else { return nil }
+        guard let pointer = pointer, pointer != TWLLinkedListSwapFailed else { return nil }
         return pointer.assumingMemoryBound(to: self)
     }
     
@@ -1436,7 +1436,7 @@ private enum PromiseBoxValue<T,E> {
     case error(E)
 }
 
-extension PMSPromiseBoxState: CustomStringConvertible {
+extension TWLPromiseBoxState: CustomStringConvertible {
     public var description: String {
         switch self {
         case .empty: return "empty"

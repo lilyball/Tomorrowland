@@ -1,6 +1,6 @@
 //
 //  When.swift
-//  Promissory
+//  Tomorrowland
 //
 //  Created by Ballard, Kevin on 12/20/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -12,7 +12,7 @@
 //  except according to those terms.
 //
 
-import Promissory.Private
+import Tomorrowland.Private
 
 /// Waits on an array of `Promise`s and returns a `Promise` that is fulfilled with an array of the
 /// resulting values.
@@ -38,9 +38,9 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     guard !promises.isEmpty else {
         return Promise(fulfilled: [])
     }
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             for promise in promises {
                 promise.requestCancel()
             }
@@ -126,9 +126,9 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
                                                                   cancelOnFailure: Bool = false)
     -> Promise<(Value1,Value2,Value3,Value4,Value5,Value6),Error>
 {
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -201,9 +201,9 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
     -> Promise<(Value1,Value2,Value3,Value4,Value5),Error>
 {
     // NB: copy&paste of 6-element version
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -271,9 +271,9 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
     -> Promise<(Value1,Value2,Value3,Value4),Error>
 {
     // NB: copy&paste of 6-element version
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -336,9 +336,9 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
     -> Promise<(Value1,Value2,Value3),Error>
 {
     // NB: copy&paste of 6-element version
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -396,9 +396,9 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
     -> Promise<(Value1,Value2),Error>
 {
     // NB: copy&paste of 6-element version
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             a.requestCancel()
             b.requestCancel()
         })
@@ -428,7 +428,7 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
 
 private extension Promise.Resolver {
     @inline(__always)
-    func handleResult<Value>(_ result: PromiseResult<Value,Error>, output: inout Value?, cancelAllInput: PMSOneshotBlock?) {
+    func handleResult<Value>(_ result: PromiseResult<Value,Error>, output: inout Value?, cancelAllInput: TWLOneshotBlock?) {
         switch result {
         case .value(let value):
             output = value
@@ -460,9 +460,9 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
     guard !promises.isEmpty else {
         return Promise(on: .immediate, { $0.cancel() })
     }
-    let cancelAllInput: PMSOneshotBlock?
+    let cancelAllInput: TWLOneshotBlock?
     if cancelRemaining {
-        cancelAllInput = PMSOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: {
             for promise in promises {
                 promise.requestCancel()
             }

@@ -1,6 +1,6 @@
 //
-//  PMSPromiseInvalidationTokenBox.h
-//  Promissory
+//  TWLPromiseInvalidationTokenBox.h
+//  Tomorrowland
 //
 //  Created by Kevin Ballard on 12/18/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -14,7 +14,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PMSPromiseInvalidationTokenBox : NSObject
+@interface TWLPromiseInvalidationTokenBox : NSObject
 /// Returns the callback linked list pointer.
 ///
 /// \note The callback linked list pointer initially holds a tagged integer. The tag is the low bit

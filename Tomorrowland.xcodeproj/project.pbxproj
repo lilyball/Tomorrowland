@@ -7,21 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A9482161FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */; };
+		0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */; };
 		0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */; };
-		0AFF275F1FE0E3F40006D95A /* Promissory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Promissory.framework */; };
+		0AFF275F1FE0E3F40006D95A /* Tomorrowland.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */; };
 		0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromiseTests.swift */; };
-		0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Promissory.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0AFF27661FE0E3F40006D95A /* Tomorrowland.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Tomorrowland.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF276F1FE0E4D10006D95A /* Promise.swift */; };
-		0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */; };
+		0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */; };
 		AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DC1FECCD680029A283 /* Utilities.swift */; };
 		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
 		AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3E31FEDF9450029A283 /* CancelTests.swift */; };
 		ABDC7F781FEB840200036FCD /* When.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F771FEB840200036FCD /* When.swift */; };
-		ABDC7F7F1FEB909800036FCD /* PMSOneshotBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		ABDC7F801FEB909800036FCD /* PMSOneshotBlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */; };
+		ABDC7F7F1FEB909800036FCD /* TWLOneshotBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		ABDC7F801FEB909800036FCD /* TWLOneshotBlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */; };
 		ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F811FEB980500036FCD /* WhenTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -31,34 +31,34 @@
 			containerPortal = 0AFF274C1FE0E3F40006D95A /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 0AFF27541FE0E3F40006D95A;
-			remoteInfo = Promissory;
+			remoteInfo = Tomorrowland;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
-		0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
+		0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
+		0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
 		0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestExpectation+Promise.swift"; sourceTree = "<group>"; };
-		0AFF27551FE0E3F40006D95A /* Promissory.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Promissory.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0AFF27581FE0E3F40006D95A /* Promissory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Promissory.h; sourceTree = "<group>"; };
+		0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tomorrowland.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AFF27581FE0E3F40006D95A /* Tomorrowland.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tomorrowland.h; sourceTree = "<group>"; };
 		0AFF27591FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0AFF275E1FE0E3F40006D95A /* PromissoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromissoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0AFF275E1FE0E3F40006D95A /* TomorrowlandTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TomorrowlandTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AFF27631FE0E3F40006D95A /* PromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseTests.swift; sourceTree = "<group>"; };
 		0AFF27651FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0AFF276F1FE0E4D10006D95A /* Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promise.swift; sourceTree = "<group>"; };
-		0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSPromiseBox.h; sourceTree = "<group>"; };
-		0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PMSPromiseBox.m; sourceTree = "<group>"; };
-		0AFF27761FE0E50C0006D95A /* promissory.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = promissory.modulemap; sourceTree = "<group>"; };
+		0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseBox.h; sourceTree = "<group>"; };
+		0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseBox.m; sourceTree = "<group>"; };
+		0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = tomorrowland.modulemap; sourceTree = "<group>"; };
 		AB1FF3DC1FECCD680029A283 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTests.swift; sourceTree = "<group>"; };
 		AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-APACHE"; sourceTree = "<group>"; };
 		AB1FF3E11FECD7A90029A283 /* LICENSE-MIT */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-MIT"; sourceTree = "<group>"; };
 		AB1FF3E21FECD7EA0029A283 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AB1FF3E31FEDF9450029A283 /* CancelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelTests.swift; sourceTree = "<group>"; };
-		AB1FF3E61FEE36F80029A283 /* Promissory.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; path = Promissory.podspec; sourceTree = "<group>"; };
+		AB1FF3E61FEE36F80029A283 /* Tomorrowland.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; path = Tomorrowland.podspec; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
-		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
-		ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PMSOneshotBlock.mm; sourceTree = "<group>"; };
+		ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLOneshotBlock.h; sourceTree = "<group>"; };
+		ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TWLOneshotBlock.mm; sourceTree = "<group>"; };
 		ABDC7F811FEB980500036FCD /* WhenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhenTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,7 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AFF275F1FE0E3F40006D95A /* Promissory.framework in Frameworks */,
+				0AFF275F1FE0E3F40006D95A /* Tomorrowland.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,9 +87,9 @@
 				AB1FF3E21FECD7EA0029A283 /* README.md */,
 				AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE */,
 				AB1FF3E11FECD7A90029A283 /* LICENSE-MIT */,
-				AB1FF3E61FEE36F80029A283 /* Promissory.podspec */,
-				0AFF27571FE0E3F40006D95A /* Promissory */,
-				0AFF27621FE0E3F40006D95A /* PromissoryTests */,
+				AB1FF3E61FEE36F80029A283 /* Tomorrowland.podspec */,
+				0AFF27571FE0E3F40006D95A /* Sources */,
+				0AFF27621FE0E3F40006D95A /* Tests */,
 				0AFF27561FE0E3F40006D95A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -97,27 +97,27 @@
 		0AFF27561FE0E3F40006D95A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0AFF27551FE0E3F40006D95A /* Promissory.framework */,
-				0AFF275E1FE0E3F40006D95A /* PromissoryTests.xctest */,
+				0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */,
+				0AFF275E1FE0E3F40006D95A /* TomorrowlandTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0AFF27571FE0E3F40006D95A /* Promissory */ = {
+		0AFF27571FE0E3F40006D95A /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				0AFF27581FE0E3F40006D95A /* Promissory.h */,
+				0AFF27581FE0E3F40006D95A /* Tomorrowland.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
 				0AFF27711FE0E4D70006D95A /* Private */,
-				0AFF27761FE0E50C0006D95A /* promissory.modulemap */,
+				0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */,
 				0AFF27591FE0E3F40006D95A /* Info.plist */,
 			);
-			path = Promissory;
+			path = Sources;
 			sourceTree = "<group>";
 		};
-		0AFF27621FE0E3F40006D95A /* PromissoryTests */ = {
+		0AFF27621FE0E3F40006D95A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
@@ -127,18 +127,18 @@
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
-			path = PromissoryTests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		0AFF27711FE0E4D70006D95A /* Private */ = {
 			isa = PBXGroup;
 			children = (
-				0AFF27721FE0E4FC0006D95A /* PMSPromiseBox.h */,
-				0AFF27731FE0E4FC0006D95A /* PMSPromiseBox.m */,
-				0A9482141FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h */,
-				0A9482151FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m */,
-				ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */,
-				ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */,
+				0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */,
+				0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */,
+				0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */,
+				0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */,
+				ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */,
+				ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */,
 			);
 			name = Private;
 			sourceTree = "<group>";
@@ -150,19 +150,19 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0AFF27741FE0E4FC0006D95A /* PMSPromiseBox.h in Headers */,
-				0A9482161FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.h in Headers */,
-				ABDC7F7F1FEB909800036FCD /* PMSOneshotBlock.h in Headers */,
-				0AFF27661FE0E3F40006D95A /* Promissory.h in Headers */,
+				0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */,
+				0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */,
+				ABDC7F7F1FEB909800036FCD /* TWLOneshotBlock.h in Headers */,
+				0AFF27661FE0E3F40006D95A /* Tomorrowland.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		0AFF27541FE0E3F40006D95A /* Promissory */ = {
+		0AFF27541FE0E3F40006D95A /* Tomorrowland */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0AFF27691FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "Promissory" */;
+			buildConfigurationList = 0AFF27691FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "Tomorrowland" */;
 			buildPhases = (
 				0AFF27501FE0E3F40006D95A /* Sources */,
 				0AFF27511FE0E3F40006D95A /* Frameworks */,
@@ -173,14 +173,14 @@
 			);
 			dependencies = (
 			);
-			name = Promissory;
-			productName = Promissory;
-			productReference = 0AFF27551FE0E3F40006D95A /* Promissory.framework */;
+			name = Tomorrowland;
+			productName = Tomorrowland;
+			productReference = 0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		0AFF275D1FE0E3F40006D95A /* PromissoryTests */ = {
+		0AFF275D1FE0E3F40006D95A /* TomorrowlandTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0AFF276C1FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "PromissoryTests" */;
+			buildConfigurationList = 0AFF276C1FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "TomorrowlandTests" */;
 			buildPhases = (
 				0AFF275A1FE0E3F40006D95A /* Sources */,
 				0AFF275B1FE0E3F40006D95A /* Frameworks */,
@@ -191,9 +191,9 @@
 			dependencies = (
 				0AFF27611FE0E3F40006D95A /* PBXTargetDependency */,
 			);
-			name = PromissoryTests;
-			productName = PromissoryTests;
-			productReference = 0AFF275E1FE0E3F40006D95A /* PromissoryTests.xctest */;
+			name = TomorrowlandTests;
+			productName = TomorrowlandTests;
+			productReference = 0AFF275E1FE0E3F40006D95A /* TomorrowlandTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -215,7 +215,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 0AFF274F1FE0E3F40006D95A /* Build configuration list for PBXProject "Promissory" */;
+			buildConfigurationList = 0AFF274F1FE0E3F40006D95A /* Build configuration list for PBXProject "Tomorrowland" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -227,8 +227,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0AFF27541FE0E3F40006D95A /* Promissory */,
-				0AFF275D1FE0E3F40006D95A /* PromissoryTests */,
+				0AFF27541FE0E3F40006D95A /* Tomorrowland */,
+				0AFF275D1FE0E3F40006D95A /* TomorrowlandTests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,9 +258,9 @@
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				ABDC7F781FEB840200036FCD /* When.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
-				0A9482171FE8EC7C00EF7EFE /* PMSPromiseInvalidationTokenBox.m in Sources */,
-				0AFF27751FE0E4FC0006D95A /* PMSPromiseBox.m in Sources */,
-				ABDC7F801FEB909800036FCD /* PMSOneshotBlock.mm in Sources */,
+				0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */,
+				0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */,
+				ABDC7F801FEB909800036FCD /* TWLOneshotBlock.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,7 +281,7 @@
 /* Begin PBXTargetDependency section */
 		0AFF27611FE0E3F40006D95A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 0AFF27541FE0E3F40006D95A /* Promissory */;
+			target = 0AFF27541FE0E3F40006D95A /* Tomorrowland */;
 			targetProxy = 0AFF27601FE0E3F40006D95A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -416,11 +416,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Promissory/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = Promissory/promissory.modulemap;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Promissory;
+				MODULEMAP_FILE = Sources/tomorrowland.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Tomorrowland;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -436,11 +436,11 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = Promissory/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MODULEMAP_FILE = Promissory/promissory.modulemap;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Promissory;
+				MODULEMAP_FILE = Sources/tomorrowland.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Tomorrowland;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.0;
@@ -450,10 +450,10 @@
 		0AFF276D1FE0E3F40006D95A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = PromissoryTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.PromissoryTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 			};
@@ -462,10 +462,10 @@
 		0AFF276E1FE0E3F40006D95A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INFOPLIST_FILE = PromissoryTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.PromissoryTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 			};
@@ -474,7 +474,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0AFF274F1FE0E3F40006D95A /* Build configuration list for PBXProject "Promissory" */ = {
+		0AFF274F1FE0E3F40006D95A /* Build configuration list for PBXProject "Tomorrowland" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0AFF27671FE0E3F40006D95A /* Debug */,
@@ -483,7 +483,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0AFF27691FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "Promissory" */ = {
+		0AFF27691FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "Tomorrowland" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0AFF276A1FE0E3F40006D95A /* Debug */,
@@ -492,7 +492,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0AFF276C1FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "PromissoryTests" */ = {
+		0AFF276C1FE0E3F40006D95A /* Build configuration list for PBXNativeTarget "TomorrowlandTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0AFF276D1FE0E3F40006D95A /* Debug */,

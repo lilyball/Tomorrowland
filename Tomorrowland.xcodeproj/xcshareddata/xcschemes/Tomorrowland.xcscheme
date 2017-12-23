@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0AFF27541FE0E3F40006D95A"
-               BuildableName = "Promissory.framework"
-               BlueprintName = "Promissory"
-               ReferencedContainer = "container:Promissory.xcodeproj">
+               BuildableName = "Tomorrowland.framework"
+               BlueprintName = "Tomorrowland"
+               ReferencedContainer = "container:Tomorrowland.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -34,9 +34,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0AFF275D1FE0E3F40006D95A"
-               BuildableName = "PromissoryTests.xctest"
-               BlueprintName = "PromissoryTests"
-               ReferencedContainer = "container:Promissory.xcodeproj">
+               BuildableName = "TomorrowlandTests.xctest"
+               BlueprintName = "TomorrowlandTests"
+               ReferencedContainer = "container:Tomorrowland.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AFF27541FE0E3F40006D95A"
-            BuildableName = "Promissory.framework"
-            BlueprintName = "Promissory"
-            ReferencedContainer = "container:Promissory.xcodeproj">
+            BuildableName = "Tomorrowland.framework"
+            BlueprintName = "Tomorrowland"
+            ReferencedContainer = "container:Tomorrowland.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -67,9 +67,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AFF27541FE0E3F40006D95A"
-            BuildableName = "Promissory.framework"
-            BlueprintName = "Promissory"
-            ReferencedContainer = "container:Promissory.xcodeproj">
+            BuildableName = "Tomorrowland.framework"
+            BlueprintName = "Tomorrowland"
+            ReferencedContainer = "container:Tomorrowland.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -85,9 +85,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0AFF27541FE0E3F40006D95A"
-            BuildableName = "Promissory.framework"
-            BlueprintName = "Promissory"
-            ReferencedContainer = "container:Promissory.xcodeproj">
+            BuildableName = "Tomorrowland.framework"
+            BlueprintName = "Tomorrowland"
+            ReferencedContainer = "container:Tomorrowland.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

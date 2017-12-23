@@ -1,6 +1,6 @@
 //
-//  Promissory.h
-//  Promissory
+//  Tomorrowland.h
+//  Tomorrowland
 //
 //  Created by Kevin Ballard on 12/12/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -14,12 +14,10 @@
 
 #import <Foundation/Foundation.h>
 
-//! Project version number for Promissory.
-FOUNDATION_EXPORT double PromissoryVersionNumber;
+//! Project version number for Tomorrowland.
+FOUNDATION_EXPORT double TomorrowlandVersionNumber;
 
-//! Project version string for Promissory.
-FOUNDATION_EXPORT const unsigned char PromissoryVersionString[];
+//! Project version string for Tomorrowland.
+FOUNDATION_EXPORT const unsigned char TomorrowlandVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <Promissory/PublicHeader.h>
-
-
+// In this header, you should import all the public headers of your framework using statements like #import <Tomorrowland/PublicHeader.h>

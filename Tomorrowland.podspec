@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
-  s.name         = "Promissory"
+  s.name         = "Tomorrowland"
   s.version      = "0.9"
   s.summary      = "Lightweight implementation of cancellable Promises for Swift"
 
   s.description  = <<-DESC
-                   Promissory is a lightweight Promise implementation for Swift that supports cancellation and strongly-typed errors.
+                   Tomorrowland is a lightweight Promise implementation for Swift that supports cancellation and strongly-typed errors.
                    DESC
 
-  s.homepage     = "https://github.com/kballard/Promissory"
+  s.homepage     = "https://github.com/kballard/Tomorrowland"
   s.license      = { :type => "MIT", :file => "LICENSE-MIT" }
 
   s.author             = "Kevin Ballard"
@@ -18,9 +18,9 @@ Pod::Spec.new do |s|
   s.watchos.deployment_target = "2.0"
   s.tvos.deployment_target = "9.0"
 
-  s.source       = { :git => "https://github.com/kballard/Promissory.git", :tag => "v#{s.version}" }
-  s.source_files  = "Promissory"
-  s.private_header_files = "Promissory/PMS*.h"
+  s.source       = { :git => "https://github.com/kballard/Tomorrowland.git", :tag => "v#{s.version}" }
+  s.source_files  = "Sources"
+  s.private_header_files = "Sources/TWL*.h"
 
-  s.module_map = "Promissory/promissory.modulemap"
+  s.module_map = "Sources/tomorrowland.modulemap"
 end

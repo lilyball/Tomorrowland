@@ -1,0 +1,10 @@
+framework module Tomorrowland {
+    umbrella header "Tomorrowland.h"
+}
+
+explicit module Tomorrowland.Private {
+    header "TWLPromiseBox.h"
+    header "TWLPromiseInvalidationTokenBox.h"
+    header "TWLOneshotBlock.h"
+    export *
+}

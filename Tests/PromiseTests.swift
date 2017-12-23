@@ -1,6 +1,6 @@
 //
 //  PromiseTests.swift
-//  PromissoryTests
+//  TomorrowlandTests
 //
 //  Created by Kevin Ballard on 12/12/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -13,7 +13,7 @@
 //
 
 import XCTest
-import Promissory
+import Tomorrowland
 
 final class PromiseTests: XCTestCase {
     func testBasicFulfill() {

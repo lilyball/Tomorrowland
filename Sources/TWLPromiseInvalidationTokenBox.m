@@ -1,6 +1,6 @@
 //
-//  PMSPromiseInvalidationTokenBox.m
-//  Promissory
+//  TWLPromiseInvalidationTokenBox.m
+//  Tomorrowland
 //
 //  Created by Kevin Ballard on 12/18/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -12,10 +12,10 @@
 //  except according to those terms.
 //
 
-#import "PMSPromiseInvalidationTokenBox.h"
+#import "TWLPromiseInvalidationTokenBox.h"
 #import <stdatomic.h>
 
-@implementation PMSPromiseInvalidationTokenBox {
+@implementation TWLPromiseInvalidationTokenBox {
     atomic_uintptr_t _callbackLinkedList;
 }
 

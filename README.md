@@ -1,6 +1,6 @@
-# Promissory
+# Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.9-blue.svg)](https://github.com/kballard/Promissory/releases/latest)
+[![Version](https://img.shields.io/badge/version-v0.9-blue.svg)](https://github.com/kballard/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20osx%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -8,8 +8,8 @@
 
 [Carthage]: https://github.com/carthage/carthage
 
-Promissory is an implementation of [Promises](https://en.wikipedia.org/wiki/Futures_and_promises) for Swift. A Promise is a wrapper around an asynchronous task
-that provides a standard way of subscribing to task resolution as well as chaining promises together.
+Tomorrowland is an implementation of [Promises](https://en.wikipedia.org/wiki/Futures_and_promises) for Swift. A Promise is a wrapper around an asynchronous
+task that provides a standard way of subscribing to task resolution as well as chaining promises together.
 
 ```swift
 UIApplication.shared.isNetworkActivityIndicatorVisible = true
@@ -30,39 +30,40 @@ It is loosely based on both [PromiseKit][] and [Hydra][], with a few key distinc
 * It uses atomics internally instead of creating a separate `DispatchQueue` for each promise. This means it's faster and uses fewer resources.
 * It provides full support for cancellable promises. PromiseKit supports detection of "cancelled" errors but has no way to request cancellation of a promise. Hydra
   supports cancelling a promise, but it can't actually stop any work being done by the promise unless the promise body itself polls for the cancellation status (so e.g.
-  a promise wrapping a network task can't reasonably cancel the network task). Promissory improves on this by allowing the promise body to observe the cancelled
-  state, and allows linking cancellation of a child promise to its parent.
+  a promise wrapping a network task can't reasonably cancel the network task). Tomorrowland improves on this by allowing the promise body to observe the
+  cancelled state, and allows linking cancellation of a child promise to its parent.
 * Like Hydra but unlike PromiseKit, it provides a way to suppress a registered callback (e.g. because you don't care about the result anymore and don't want stale
   data affecting your UI). This is distinct from promise cancellation.
-* Promissory promises are fully generic over the error type, whereas both PromiseKit and Hydra only support using `Error` as the error type. This may result in more
-  typing to construct a promise but it allows for much more powerful error handling. Promissory also has some affordances for working with promises that use
-  `Error` as the error type.
-* Promissory is fully thread-safe. I have no reason to believe PromiseKit isn't, but (at the time of this writing) there are parts of Hydra that are incorrectly implemented
-  in a non-thread-safe manner.
+* Tomorrowland promises are fully generic over the error type, whereas both PromiseKit and Hydra only support using `Error` as the error type. This may result in
+  more typing to construct a promise but it allows for much more powerful error handling. Tomorrowland also has some affordances for working with promises that
+  use `Error` as the error type.
+* Tomorrowland is fully thread-safe. I have no reason to believe PromiseKit isn't, but (at the time of this writing) there are parts of Hydra that are incorrectly
+  implemented in a non-thread-safe manner.
 
 ## Installation
 
 ### Manually
 
-You can add Promissory to your workspace manually like any other project and add the resulting `Promissory.framework` to your application's frameworks.
+You can add Tomorrowland to your workspace manually like any other project and add the resulting `Tomorrowland.framework` to your application's frameworks.
 
 ### Carthage
 
 ```
-github "kballard/Promissory" master
+github "kballard/Tomorrowland" master
 ```
 
 ### CocoaPods
 
-Promissory has not yet been submitted to CocoaPods. This will happen when it hits v1.0. In the meantime, you can pull it directly from our repository.
+Tomorrowland has not yet been submitted to CocoaPods. This will happen when it hits v1.0. In the meantime, you can pull it directly from our repository.
 
 ```ruby
-pod 'Promissory', :git => 'https://github.com/kballard/Promissory.git'
+pod 'Tomorrowland', :git => 'https://github.com/kballard/Tomorrowland.git'
 ```
 
 ### SwiftPM
 
-Promissory currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding compatibility would necessitate publicly exposing the private Obj-C module).
+Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding
+compatibility would necessitate publicly exposing the private Obj-C module).
 
 ## Quick Start
 
@@ -143,8 +144,8 @@ promise's error type is `Error` and the callback's returned `Promise` has an err
 `Error`-compatible errors don't cover all cases; if you find yourself hitting one of these cases, any `Promise` whose error type conforms to `Error` has a property
 `.upcast` that will convert that error into an `Error` to allow for easier composition of promises.
 
-Promissory also offers a typealias `StdPromise<Value>` as shorthand for `Promise<T,Error>`. This is frequently useful to avoid having to repeat the types, such
-as with `StdPromise(fulfilled: someValue)` instead of `Promise<SomeValue,Error>(fulfilled: someValue)`.
+Tomorrowland also offers a typealias `StdPromise<Value>` as shorthand for `Promise<T,Error>`. This is frequently useful to avoid having to repeat the types,
+such as with `StdPromise(fulfilled: someValue)` instead of `Promise<SomeValue,Error>(fulfilled: someValue)`.
 
 ### Cancelling and Invalidation
 

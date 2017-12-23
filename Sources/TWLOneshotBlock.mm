@@ -1,6 +1,6 @@
 //
-//  PMSOneshotBlock.m
-//  Promissory
+//  TWLOneshotBlock.m
+//  Tomorrowland
 //
 //  Created by Ballard, Kevin on 12/20/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -12,14 +12,14 @@
 //  except according to those terms.
 //
 
-#import "PMSOneshotBlock.h"
+#import "TWLOneshotBlock.h"
 #include <atomic>
 
 // NB: Using C++ here because the C++ atomic_flag type has a trivial default constructor that leaves
 // the value in an unspecified state, which we can then clear. In C, an uninitialized atomic_flag
 // has an undefined value (rather than unspecified), and we can't initialize it as an ivar.
 
-@implementation PMSOneshotBlock {
+@implementation TWLOneshotBlock {
     void (^ _Nullable _block)(void);
     std::atomic_flag _flag;
 }

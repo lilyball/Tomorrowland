@@ -1,6 +1,6 @@
 //
 //  XCTestExpectation+Promise.swift
-//  PromissoryTests
+//  TomorrowlandTests
 //
 //  Created by Kevin Ballard on 12/18/17.
 //  Copyright © 2017 Kevin Ballard. All rights reserved.
@@ -13,7 +13,7 @@
 //
 
 import XCTest
-import Promissory
+import Tomorrowland
 
 extension XCTestExpectation {
     convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, file: StaticString = #file, line: UInt = #line, handler: @escaping (T) -> Void) {
