@@ -53,6 +53,7 @@
 		AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTests.swift; sourceTree = "<group>"; };
 		AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-APACHE.txt"; sourceTree = "<group>"; };
 		AB1FF3E11FECD7A90029A283 /* LICENSE-MIT.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-MIT.txt"; sourceTree = "<group>"; };
+        AB1FF3E21FECD7EA0029A283 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
         AB1FF3E31FEDF9450029A283 /* CancelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelTests.swift; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
 		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
@@ -82,6 +83,7 @@
 		0AFF274B1FE0E3F40006D95A = {
 			isa = PBXGroup;
 			children = (
+				AB1FF3E21FECD7EA0029A283 /* README.md */,
 				AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE.txt */,
 				AB1FF3E11FECD7A90029A283 /* LICENSE-MIT.txt */,
 				0AFF27571FE0E3F40006D95A /* Promissory */,
