@@ -549,6 +549,9 @@ public struct Promise<Value,Error> {
                 resolver.cancel()
             }
         }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
+            cancellable.requestCancel()
+        }
     }
 }
 
@@ -573,6 +576,9 @@ extension Promise where Error: Swift.Error {
             case .cancelled:
                 resolver.cancel()
             }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
+            cancellable.requestCancel()
         }
     }
 }
