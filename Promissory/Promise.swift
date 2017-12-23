@@ -325,8 +325,8 @@ public struct Promise<Value,Error> {
             switch result {
             case .value, .cancelled: break
             case .error(let error):
-                guard generation == token?.generation else { return }
                 context.execute {
+                    guard generation == token?.generation else { return }
                     onError(error)
                 }
             }
@@ -414,8 +414,8 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
         _box.enqueue { [generation=token?.generation] (result) in
-            guard generation == token?.generation else { return }
             context.execute {
+                guard generation == token?.generation else { return }
                 onComplete(result)
             }
         }
@@ -437,12 +437,14 @@ public struct Promise<Value,Error> {
     public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            guard generation == token?.generation else {
-                resolver.cancel()
-                return
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                let nextPromise = onComplete(result)
+                nextPromise.pipe(to: resolver)
             }
-            let nextPromise = onComplete(result)
-            nextPromise.pipe(to: resolver)
         }
         return promise
     }
@@ -462,15 +464,17 @@ public struct Promise<Value,Error> {
     public func always<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            guard generation == token?.generation else {
-                resolver.cancel()
-                return
-            }
-            do {
-                let nextPromise = try onComplete(result)
-                nextPromise.pipe(to: resolver)
-            } catch {
-                resolver.reject(error)
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    let nextPromise = try onComplete(result)
+                    nextPromise.pipe(to: resolver)
+                } catch {
+                    resolver.reject(error)
+                }
             }
         }
         return promise
@@ -491,15 +495,17 @@ public struct Promise<Value,Error> {
     public func always<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            guard generation == token?.generation else {
-                resolver.cancel()
-                return
-            }
-            do {
-                let nextPromise = try onComplete(result)
-                nextPromise.pipe(to: resolver)
-            } catch {
-                resolver.reject(error)
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    let nextPromise = try onComplete(result)
+                    nextPromise.pipe(to: resolver)
+                } catch {
+                    resolver.reject(error)
+                }
             }
         }
         return promise
@@ -519,8 +525,10 @@ public struct Promise<Value,Error> {
             switch result {
             case .value, .error: break
             case .cancelled:
-                guard generation == token?.generation else { return }
-                context.execute(onCancel)
+                context.execute {
+                    guard generation == token?.generation else { return }
+                    onCancel()
+                }
             }
         }
         return self
