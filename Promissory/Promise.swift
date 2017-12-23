@@ -513,7 +513,8 @@ public struct Promise<Value,Error> {
     ///   `invalidate()` on the token will prevent `onCancel` from being invoked.
     /// - Parameter onCancel: The callback that is invoked when the promise is cancelled.
     /// - Returns: The same promise this method was invoked on.
-    public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) {
+    @discardableResult
+    public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise {
         _box.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value, .error: break
