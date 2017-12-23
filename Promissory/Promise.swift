@@ -523,6 +523,7 @@ public struct Promise<Value,Error> {
                 context.execute(onCancel)
             }
         }
+        return self
     }
     
     /// Requests that the `Promise` should be cancelled.
@@ -875,6 +876,43 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
     }
 #endif
 
+extension Promise {
+    /// Returns a value that can be used to cancel this promise without holding onto the full promise.
+    ///
+    /// In particular, this acts like a weak reference, allowing for cancelling the promise without
+    /// creating a retain cycle. Promise retain cycles normally break themselves anyway when the promise
+    /// is resolved, but a misbehaving promise body may drop the resolver without ever resolving the
+    /// promise. If the `Promise` has no more references to it this automatically cancels the
+    /// promise, but a retain cycle prevents this.
+    ///
+    /// If you trust the promise provider to always resolve the promise, you can safely ignore this.
+    public var cancellable: PromiseCancellable {
+        return PromiseCancellable(_box)
+    }
+}
+
+/// A type that can be used to cancel a promise without holding onto the full promise.
+///
+/// In particular, this acts like a weak reference, allowing for cancelling the promise without
+/// creating a retain cycle. Promise retain cycles normally break themselves anyway when the promise
+/// is resolved, but a misbehaving promise body may drop the resolver without ever resolving the
+/// promise. If the `Promise` has no more references to it this automatically cancels the
+/// promise, but a retain cycle prevents this.
+///
+/// This is returned from `Promise.cancellable`.
+public struct PromiseCancellable {
+    private weak var cancellable: RequestCancellable?
+    
+    fileprivate init(_ cancellable: RequestCancellable) {
+        self.cancellable = cancellable
+    }
+    
+    /// Requests cancellation of the promise this `PromiseCancellable` was created from.
+    func requestCancel() {
+        cancellable?.requestCancel()
+    }
+}
+
 extension PromiseResult where Value: Hashable, Error: Hashable {
     public var hashValue: Int {
         switch self {
@@ -914,7 +952,7 @@ public struct PromiseInvalidationToken {
 
 // MARK: -
 
-internal class PromiseBox<T,E>: PMSPromiseBox {
+internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
@@ -1077,6 +1115,10 @@ internal class PromiseBox<T,E>: PMSPromiseBox {
             super.init(state: .cancelled)
         }
     }
+}
+
+private protocol RequestCancellable: class {
+    func requestCancel()
 }
 
 private protocol NodeProtocol {
