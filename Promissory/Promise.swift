@@ -111,6 +111,50 @@ public enum PromiseContext {
 /// `StdPromise` is an alias for a `Promise` whose error type is `Swift.Error`.
 public typealias StdPromise<Value> = Promise<Value,Swift.Error>
 
+/// Options that can be passed to registered callbacks to affect the behavior of the returned
+/// `Promise`.
+public struct PromiseOptions: OptionSet {
+    public let rawValue: Int
+    
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+    
+    /// This option links cancellation of the returned `Promise` to the parent promise. When the new
+    /// `Promise` is requested to cancel, the `Promise` it was created from is also requested to
+    /// cancel.
+    ///
+    /// This should be used in cases where you create a cancellable `Promise` chain and can
+    /// guarantee the parent promise isn't observable by anyone else.
+    ///
+    /// This option also works well with `PromiseInvalidationToken.requestCancelOnInvalidate`.
+    ///
+    /// Example:
+    ///
+    ///     return StdPromise<Data>(on: .immediate, { (resolver) in
+    ///         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, _, error) in
+    ///             if let data = data {
+    ///                 resolver.fulfill(data)
+    ///             } else if case URLError.cancelled? = error {
+    ///                 resolver.cancel()
+    ///             } else {
+    ///                 resolver.reject(error!)
+    ///             }
+    ///         })
+    ///         resolver.onRequestCancel(on: .immediate, { _ in
+    ///             task.cancel()
+    ///         })
+    ///         task.resume()
+    ///     }).then(on: .utility, options: [.linkCancel], { (data) in
+    ///         if let image = UIImage(data: data) {
+    ///             return image
+    ///         } else {
+    ///             throw LoadError.dataIsNotImage
+    ///         }
+    ///     })
+    public static let linkCancel = PromiseOptions(rawValue: 1 << 0)
+}
+
 /// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
 /// when that happens.
 ///
@@ -193,6 +237,8 @@ public struct Promise<Value,Error> {
         }
     }
     
+    public typealias Options = PromiseOptions
+    
     /// Returns the result of the promise.
     ///
     /// Once this value becomes non-`nil` it will never change.
@@ -249,11 +295,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
+    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -271,6 +319,11 @@ public struct Promise<Value,Error> {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -281,11 +334,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
+    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -303,6 +358,11 @@ public struct Promise<Value,Error> {
                     resolver.cancel()
                 }
             }
+        }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
         }
         return promise
     }
@@ -343,11 +403,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
-    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
+    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -365,6 +427,11 @@ public struct Promise<Value,Error> {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -377,11 +444,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
-    public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
+    public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -399,6 +468,11 @@ public struct Promise<Value,Error> {
                     resolver.cancel()
                 }
             }
+        }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
         }
         return promise
     }
@@ -430,11 +504,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
     ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does.
-    public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
+    public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -446,6 +522,11 @@ public struct Promise<Value,Error> {
                 nextPromise.pipe(to: resolver)
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -457,11 +538,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
     ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
-    public func always<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
+    public func always<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -477,6 +560,11 @@ public struct Promise<Value,Error> {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -488,11 +576,13 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
     ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
-    public func always<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
+    public func always<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -507,6 +597,11 @@ public struct Promise<Value,Error> {
                     resolver.reject(error)
                 }
             }
+        }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
         }
         return promise
     }
@@ -617,11 +712,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`, or
     ///   rejected if `onSuccess` throws an error. If the receiver is rejected or cancelled, the
     ///   returned promise will also be rejected or cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
+    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -643,6 +740,11 @@ extension Promise where Error == Swift.Error {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -653,11 +755,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
+    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -680,6 +784,11 @@ extension Promise where Error == Swift.Error {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -690,11 +799,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func then<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
+    public func then<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -716,6 +827,11 @@ extension Promise where Error == Swift.Error {
                     resolver.cancel()
                 }
             }
+        }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
         }
         return promise
     }
@@ -729,11 +845,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`, or
     ///   rejected if `onError` throws an error. If the receiver is rejected or cancelled, the
     ///   returned promise will also be rejected or cancelled.
-    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
+    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -755,6 +873,11 @@ extension Promise where Error == Swift.Error {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -767,11 +890,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
+    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -794,6 +919,11 @@ extension Promise where Error == Swift.Error {
                 }
             }
         }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
         return promise
     }
     
@@ -806,11 +936,13 @@ extension Promise where Error == Swift.Error {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func recover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
+    public func recover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -832,6 +964,11 @@ extension Promise where Error == Swift.Error {
                     resolver.cancel()
                 }
             }
+        }
+        if options.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
+                cancellable.requestCancel()
+            })
         }
         return promise
     }
