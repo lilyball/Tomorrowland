@@ -63,6 +63,22 @@
     return (PMSPromiseBoxState)atomic_load_explicit(&_state, memory_order_relaxed);
 }
 
+- (void *)callbackList {
+    void *list = (void *)atomic_load_explicit(&_callbackList, memory_order_relaxed);
+    if (list != PMSLinkedListSwapFailed) {
+        atomic_thread_fence(memory_order_acquire);
+    }
+    return list;
+}
+
+- (void *)requestCancelLinkedList {
+    void *list = (void *)atomic_load_explicit(&_requestCancelLinkedList, memory_order_relaxed);
+    if (list != PMSLinkedListSwapFailed) {
+        atomic_thread_fence(memory_order_acquire);
+    }
+    return list;
+}
+
 - (BOOL)transitionStateTo:(PMSPromiseBoxState)state {
     memory_order successOrder = memory_order_relaxed;
     if (state == PMSPromiseBoxStateResolved) {

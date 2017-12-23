@@ -1059,6 +1059,24 @@ private class PromiseInvalidationTokenBox: PMSPromiseInvalidationTokenBox {
     internal var generation: UInt {
         return CallbackNode.generation(from: callbackLinkedList)
     }
+    
+    override var description: String {
+        let address = "0x\(String(UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()), radix: 16))"
+        let generation: UInt
+        let callbackCount: String
+        do {
+            let rawPtr = callbackLinkedList
+            if let nodePtr = CallbackNode.castPointer(rawPtr) {
+                generation = nodePtr.pointee.generation
+                let count = sequence(first: nodePtr, next: { $0.pointee.next }).reduce(0, { (x, _) in x + 1 })
+                callbackCount = "\(count) node\(count == 1 ? "" : "s")"
+            } else {
+                generation = CallbackNode.interpretTaggedPointer(rawPtr)
+                callbackCount = "0 nodes"
+            }
+        }
+        return "<\(type(of: self)): \(address); generation=\(generation) callbackLinkedList=(\(callbackCount))>"
+    }
 }
 
 internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
@@ -1224,6 +1242,18 @@ internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
             super.init(state: .cancelled)
         }
     }
+    
+    override var description: String {
+        let address = "0x\(String(UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()), radix: 16))"
+        func countNodes<Node: NodeProtocol>(_ ptr: UnsafeMutableRawPointer?, as _: Node.Type) -> String {
+            guard let nodePtr = Node.castPointer(ptr) else { return "0 nodes" }
+            let count = sequence(first: nodePtr, next: { $0.pointee.next }).reduce(0, { (x, _) in x + 1 })
+            return "\(count) node\(count == 1 ? "" : "s")"
+        }
+        let callbackCount = countNodes(callbackList, as: CallbackNode.self)
+        let requestCancelCount = countNodes(requestCancelLinkedList, as: RequestCancelNode.self)
+        return "<\(type(of: self)): \(address); state=\(unfencedState) callbackList=(\(callbackCount)) requestCancelList=(\(requestCancelCount))>"
+    }
 }
 
 private protocol RequestCancellable: class {
@@ -1267,6 +1297,18 @@ extension NodeProtocol {
 private enum PromiseBoxValue<T,E> {
     case value(T)
     case error(E)
+}
+
+extension PMSPromiseBoxState: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .empty: return "empty"
+        case .resolving: return "resolving"
+        case .resolved: return "resolved"
+        case .cancelling: return "cancelling"
+        case .cancelled: return "cancelled"
+        }
+    }
 }
 
 private func replace<T>(_ slot: inout T, with value: T) -> T {

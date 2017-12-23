@@ -30,6 +30,9 @@ static void * const _Nonnull PMSLinkedListSwapFailed = (void *)0x1;
 /// Return the state without issuing a fence.
 @property (atomic, readonly) PMSPromiseBoxState unfencedState;
 
+@property (atomic, readonly, nullable) void *callbackList;
+@property (atomic, readonly, nullable) void *requestCancelLinkedList;
+
 - (nonnull instancetype)init NS_DESIGNATED_INITIALIZER;
 - (nonnull instancetype)initWithState:(PMSPromiseBoxState)state NS_DESIGNATED_INITIALIZER;
 
