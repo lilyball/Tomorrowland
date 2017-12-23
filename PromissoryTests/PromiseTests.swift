@@ -422,20 +422,40 @@ final class PromiseTests: XCTestCase {
     
     func testInvalidationTokenInvalidate() {
         let sema = DispatchSemaphore(value: 0)
+        let queue = DispatchQueue(label: "test queue")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
             resolver.fulfill(42)
         })
         let token = PromiseInvalidationToken()
-        let expectation = XCTestExpectation(description: "promise success")
-        _ = promise.then(on: .utility, token: token, { (x) in
-            XCTFail("invalidated callback invoked")
-        }).always({ (_) in
-            expectation.fulfill()
+        do {
+            let expectation = XCTestExpectation(description: "promise success")
+            _ = promise.then(on: .queue(queue), token: token, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            token.invalidate()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Test reuse
+        let promise2 = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(44)
         })
-        token.invalidate()
-        sema.signal()
-        wait(for: [expectation], timeout: 1)
+        do {
+            let expectation = XCTestExpectation(description: "promise success")
+            _ = promise2.then(on: .queue(queue), token: token, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            token.invalidate()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
     }
     
     func testInvalidationTokenInvalidateChainSuccess() {
@@ -468,6 +488,33 @@ final class PromiseTests: XCTestCase {
         token.invalidate()
         sema.signal()
         wait(for: [expectation], timeout: 1)
+    }
+    
+    func testInvalidationTokenMultiplePromises() {
+        let sema = DispatchSemaphore(value: 0)
+        let queue = DispatchQueue(label: "test queue")
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(42)
+        })
+        let token = PromiseInvalidationToken()
+        let expectations = (1...3).map({ x -> XCTestExpectation in
+            let expectation = XCTestExpectation(description: "chain promise \(x)")
+            promise.then(on: .queue(queue), token: token, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { _ in
+                expectation.fulfill()
+            })
+            return expectation
+        })
+        let expectation = XCTestExpectation(description: "non-invalidated chain promise")
+        _ = promise.then(on: .queue(queue), { (x) in
+            XCTAssertEqual(x, 42)
+            expectation.fulfill()
+        })
+        token.invalidate()
+        sema.signal()
+        wait(for: expectations + [expectation], timeout: 1)
     }
     
     func testResolvingFulfilledPromise() {
