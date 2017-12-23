@@ -108,6 +108,9 @@ public enum PromiseContext {
     }
 }
 
+/// `StdPromise` is an alias for a `Promise` whose error type is `Swift.Error`.
+public typealias StdPromise<Value> = Promise<Value,Swift.Error>
+
 /// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
 /// when that happens.
 ///
