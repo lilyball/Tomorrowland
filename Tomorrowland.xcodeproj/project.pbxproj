@@ -140,7 +140,7 @@
 				ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */,
 				ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */,
 			);
-			name = Private;
+			path = Private;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
