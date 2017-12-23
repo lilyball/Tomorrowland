@@ -939,7 +939,7 @@ extension PromiseResult where Value: Hashable, Error: Hashable {
 
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
 public struct PromiseInvalidationToken {
-    private let _box = PMSPromiseInvalidationTokenBox()
+    private let _box = PromiseInvalidationTokenBox()
     
     public init() {}
     
@@ -947,16 +947,111 @@ public struct PromiseInvalidationToken {
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
     /// `then(on:token:_:)` will result in a cancelled promise instead if the callback would otherwise
     /// have been executed.
+    ///
+    /// In addition, any promises that have been registered with `requestCancelOnInvalidate(_:)`
+    /// will be requested to cancel.
     public func invalidate() {
-        _box.incrementGeneration()
+        _box.invalidate()
     }
     
-    internal var generation: UInt64 {
+    /// Registers a `Promise` to be requested to cancel automatically when the token is invalidated.
+    public func requestCancelOnInvalidate<V,E>(_ promise: Promise<V,E>) {
+        _box.requestCancelOnInvalidate(promise.cancellable)
+    }
+    
+    internal var generation: UInt {
         return _box.generation
     }
 }
 
-// MARK: -
+// MARK: - Private
+
+private class PromiseInvalidationTokenBox: PMSPromiseInvalidationTokenBox {
+    private struct CallbackNode {
+        var next: UnsafeMutablePointer<CallbackNode>?
+        var generation: UInt
+        let cancellable: PromiseCancellable
+        
+        static func castPointer(_ pointer: UnsafeMutableRawPointer) -> UnsafeMutablePointer<CallbackNode>? {
+            guard UInt(bitPattern: pointer) & 1 == 0 else { return nil }
+            return pointer.assumingMemoryBound(to: self)
+        }
+        
+        /// Destroys the linked list.
+        ///
+        /// - Precondition: The pointer must be initialized.
+        /// - Postcondition: The pointer points to deinitialized memory.
+        static func destroyPointer(_ pointer: UnsafeMutablePointer<CallbackNode>) {
+            var nextPointer = pointer.pointee.next
+            pointer.deinitialize()
+            while let next = nextPointer {
+                nextPointer = next.pointee.next
+                next.deinitialize()
+            }
+        }
+        
+        static func reverseList(_ pointer: UnsafeMutablePointer<CallbackNode>) -> UnsafeMutablePointer<CallbackNode> {
+            var nextPointer = replace(&pointer.pointee.next, with: nil)
+            var previous = pointer
+            while let next = nextPointer {
+                nextPointer = replace(&next.pointee.next, with: previous)
+                previous = next
+            }
+            return previous
+        }
+        
+        static func generation(from pointer: UnsafeMutableRawPointer) -> UInt {
+            if let nodePtr = castPointer(pointer) {
+                return nodePtr.pointee.generation
+            } else {
+                return interpretTaggedPointer(pointer)
+            }
+        }
+        
+        static func interpretTaggedPointer(_ pointer: UnsafeMutableRawPointer) -> UInt {
+            return UInt(bitPattern: pointer) >> 1
+        }
+    }
+    
+    deinit {
+        if let nodePtr = CallbackNode.castPointer(callbackLinkedList) {
+            CallbackNode.destroyPointer(nodePtr)
+        }
+    }
+    
+    func invalidate() {
+        let rawPtr = resetCallbackLinkedList { (ptr) -> UInt in
+            return CallbackNode.generation(from: ptr) &+ 1
+        }
+        if var nodePtr = CallbackNode.castPointer(rawPtr) {
+            nodePtr = CallbackNode.reverseList(nodePtr)
+            defer {
+                CallbackNode.destroyPointer(nodePtr)
+            }
+            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
+                nodePtr.pointee.cancellable.requestCancel()
+            }
+        }
+    }
+    
+    func requestCancelOnInvalidate(_ cancellable: PromiseCancellable) {
+        let nodePtr = UnsafeMutablePointer<CallbackNode>.allocate(capacity: 1)
+        nodePtr.initialize(to: .init(next: nil, generation: 0, cancellable: cancellable))
+        pushNodeOntoCallbackLinkedList(nodePtr) { (rawPtr) in
+            if let nextPtr = CallbackNode.castPointer(rawPtr) {
+                nodePtr.pointee.generation = nextPtr.pointee.generation
+                nodePtr.pointee.next = nextPtr
+            } else {
+                nodePtr.pointee.generation = CallbackNode.interpretTaggedPointer(rawPtr)
+                nodePtr.pointee.next = nil
+            }
+        }
+    }
+    
+    internal var generation: UInt {
+        return CallbackNode.generation(from: callbackLinkedList)
+    }
+}
 
 internal class PromiseBox<T,E>: PMSPromiseBox, RequestCancellable {
     struct CallbackNode: NodeProtocol {

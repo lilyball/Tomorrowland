@@ -56,7 +56,7 @@ static void * const _Nonnull PMSLinkedListSwapFailed = (void *)0x1;
 /// on. This block should modify the new node to link to the previous head. If multiple threads are
 /// swapping the list at the same time, this block may be invoked multiple times.
 /// \returns The old value of the linked list, or \c PMSLinkedListSwapFailed if the swap failed.
-- (nullable void *)swapCallbackLinkedListWith:(nullable void *)node linkBlock:(nullable void (^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
+- (nullable void *)swapCallbackLinkedListWith:(nullable void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
 /// Atomically swaps the request cancel linked list pointer.
 ///
 /// If the existing linked list pointer is \c PMSLinkedListSwapFailed no swap is performed.
@@ -66,7 +66,7 @@ static void * const _Nonnull PMSLinkedListSwapFailed = (void *)0x1;
 /// on. This block should modify the new node to link to the previous head. If multiple threads are
 /// swapping the list at the same time, this block may be invoked multiple times.
 /// \returns The old value of the linked list, or \c PMSLinkedListSwapFailed if the swap failed.
-- (nullable void *)swapRequestCancelLinkedListWith:(nullable void *)node linkBlock:(nullable void (^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
+- (nullable void *)swapRequestCancelLinkedListWith:(nullable void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
 
 - (void)issueDeinitFence;
 @end

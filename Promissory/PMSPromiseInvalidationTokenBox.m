@@ -16,22 +16,52 @@
 #import <stdatomic.h>
 
 @implementation PMSPromiseInvalidationTokenBox {
-    atomic_uint_fast64_t _generation;
+    atomic_uintptr_t _callbackLinkedList;
 }
 
 - (instancetype)init {
     if ((self = [super init])) {
-        atomic_init(&_generation, 0);
+        atomic_init(&_callbackLinkedList, 1);
     }
     return self;
 }
 
-- (uint64_t)generation {
-    return (uint64_t)atomic_load_explicit(&_generation, memory_order_relaxed);
+- (void *)callbackLinkedList {
+    uintptr_t list = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
+    if ((list & 1) == 0) {
+        // it's an actual node
+        atomic_thread_fence(memory_order_acquire);
+    }
+    return (void *)list;
 }
 
-- (uint64_t)incrementGeneration {
-    return (uint64_t)atomic_fetch_add_explicit(&_generation, 1, memory_order_relaxed) + 1;
+- (void)pushNodeOntoCallbackLinkedList:(void *)node linkBlock:(void (^)(void * _Nonnull))linkBlock {
+    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
+    while (1) {
+        linkBlock((void *)oldValue);
+        if (atomic_compare_exchange_weak_explicit(&_callbackLinkedList, &oldValue, (uintptr_t)node, memory_order_release, memory_order_relaxed)) {
+            if ((oldValue & 1) == 0) {
+                // it's an actual node
+                atomic_thread_fence(memory_order_acquire);
+            }
+            return;
+        }
+    }
+}
+
+- (nonnull void *)resetCallbackLinkedListUsing:(nonnull NSUInteger (^)(void * _Nonnull))block {
+    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
+    while (1) {
+        NSUInteger newValue = block((void *)oldValue);
+        uintptr_t taggedValue = ((uintptr_t)newValue << 1) | 1;
+        if (atomic_compare_exchange_weak_explicit(&_callbackLinkedList, &oldValue, taggedValue, memory_order_relaxed, memory_order_relaxed)) {
+            if ((oldValue & 1) == 0) {
+                // it's an actual node
+                atomic_thread_fence(memory_order_acquire);
+            }
+            return (void *)oldValue;
+        }
+    }
 }
 
 @end
