@@ -55,6 +55,7 @@
 		AB1FF3E11FECD7A90029A283 /* LICENSE-MIT */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-MIT"; sourceTree = "<group>"; };
 		AB1FF3E21FECD7EA0029A283 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AB1FF3E31FEDF9450029A283 /* CancelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelTests.swift; sourceTree = "<group>"; };
+		AB1FF3E61FEE36F80029A283 /* Promissory.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; path = Promissory.podspec; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
 		ABDC7F7D1FEB909800036FCD /* PMSOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PMSOneshotBlock.h; sourceTree = "<group>"; };
 		ABDC7F7E1FEB909800036FCD /* PMSOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PMSOneshotBlock.mm; sourceTree = "<group>"; };
@@ -86,6 +87,7 @@
 				AB1FF3E21FECD7EA0029A283 /* README.md */,
 				AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE */,
 				AB1FF3E11FECD7A90029A283 /* LICENSE-MIT */,
+				AB1FF3E61FEE36F80029A283 /* Promissory.podspec */,
 				0AFF27571FE0E3F40006D95A /* Promissory */,
 				0AFF27621FE0E3F40006D95A /* PromissoryTests */,
 				0AFF27561FE0E3F40006D95A /* Products */,

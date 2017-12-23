@@ -54,7 +54,11 @@ github "kballard/Promissory" master
 
 ### CocoaPods
 
-Promissory has not yet been submitted to CocoaPods. This will happen when it hits v1.0.
+Promissory has not yet been submitted to CocoaPods. This will happen when it hits v1.0. In the meantime, you can pull it directly from our repository.
+
+```ruby
+pod 'Promissory', :git => 'https://github.com/kballard/Promissory.git'
+```
 
 ### SwiftPM
 
