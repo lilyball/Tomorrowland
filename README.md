@@ -74,7 +74,7 @@ Promises can be created using code like the following:
 ```swift
 let promise = Promise<String,Error>(on: .utility, { (resolver) in
     let value = try expensiveCalculation()
-    resolver.resolve(value)
+    resolver.fulfill(value)
 })
 ```
 
