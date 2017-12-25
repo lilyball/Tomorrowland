@@ -651,6 +651,28 @@ final class PromiseTests: XCTestCase {
         sema.signal()
         wait(for: [outerExpectation, innerExpectation], timeout: 1)
     }
+    
+    func testIgnoringCancel() {
+        let innerExpectation = XCTestExpectation(description: "inner promise")
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(fulfilled: 42)
+            .then(on: .immediate, { (x) -> Promise<String,String> in
+                let innerPromise = Promise<String,String>(on: .utility, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate, { (resolver) in
+                        XCTFail("inner promise was cancelled")
+                        resolver.cancel()
+                    })
+                    sema.wait()
+                    resolver.fulfill("\(x + 1)")
+                }).ignoringCancel()
+                innerExpectation.fulfill(onSuccess: innerPromise, expectedValue: "43")
+                return innerPromise
+            })
+        let outerExpectation = XCTestExpectation(onSuccess: promise, expectedValue: "43")
+        promise.requestCancel()
+        sema.signal()
+        wait(for: [outerExpectation, innerExpectation], timeout: 1)
+    }
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()

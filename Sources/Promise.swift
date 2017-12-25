@@ -641,6 +641,27 @@ public struct Promise<Value,Error> {
         _box.requestCancel()
     }
     
+    /// Returns a new `Promise` that adopts the value of the receiver but ignores cancel requests.
+    ///
+    /// This is primarily useful when returning a nested promise in a callback handler in order to
+    /// unlink cancellation of the outer promise with the inner one.
+    ///
+    /// - Note: The returned `Promise` will still be cancelled if its parent promise is cancelled.
+    public func ignoringCancel() -> Promise<Value,Error> {
+        let (promise, resolver) = Promise.makeWithResolver()
+        _box.enqueue { (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(value)
+            case .error(let error):
+                resolver.reject(error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        return promise
+    }
+    
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
         _box.enqueue { (result) in
             switch result {
