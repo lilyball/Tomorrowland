@@ -15,6 +15,7 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(int, TWLPromiseBoxState) {
+    TWLPromiseBoxStateDelayed,
     TWLPromiseBoxStateEmpty,
     TWLPromiseBoxStateResolving,
     TWLPromiseBoxStateResolved,
@@ -40,6 +41,7 @@ static void * const _Nonnull TWLLinkedListSwapFailed = (void *)0x1;
 ///
 /// Valid state transitions:
 ///
+/// \li Delayed -> Empty
 /// \li Empty -> Resolving
 /// \li Empty -> Cancelling
 /// \li Empty -> Cancelled

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
+		0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */; };
 		0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */; };
 		0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */; };
@@ -36,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
+		0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromiseTests.swift; sourceTree = "<group>"; };
 		0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
 		0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
 		0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestExpectation+Promise.swift"; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 			children = (
 				0AFF27581FE0E3F40006D95A /* Tomorrowland.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
+				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
 				0AFF27711FE0E4D70006D95A /* Private */,
@@ -122,6 +127,7 @@
 			children = (
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
+				0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */,
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
@@ -261,6 +267,7 @@
 				0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */,
 				0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */,
 				ABDC7F801FEB909800036FCD /* TWLOneshotBlock.mm in Sources */,
+				0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,6 +277,7 @@
 			files = (
 				AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */,
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
+				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 				AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */,

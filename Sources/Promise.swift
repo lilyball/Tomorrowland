@@ -180,7 +180,7 @@ public struct Promise<Value,Error> {
     public struct Resolver {
         fileprivate let _box: PromiseBox<Value,Error>
         
-        fileprivate init(box: PromiseBox<Value,Error>) {
+        internal init(box: PromiseBox<Value,Error>) {
             _box = box
         }
         
@@ -230,7 +230,7 @@ public struct Promise<Value,Error> {
                     context.execute {
                         callback(self)
                     }
-                case .empty, .resolving, .resolved:
+                case .delayed, .empty, .resolving, .resolved:
                     break
                 }
             }
@@ -276,6 +276,10 @@ public struct Promise<Value,Error> {
     
     private init() {
         _box = PromiseBox()
+    }
+    
+    internal init(box: PromiseBox<Value,Error>) {
+        _box = box
     }
     
     /// Returns a `Promise` that is already fulfilled with the given value.
@@ -1255,7 +1259,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
             } else {
                 context.execute { [callback] in
                     switch resolver._box.unfencedState {
-                    case .empty:
+                    case .delayed, .empty:
                         assertionFailure("We shouldn't be invoking an onRequestCancel callback on an empty promise")
                     case .cancelling, .cancelled:
                         callback(resolver)
@@ -1291,7 +1295,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     /// Once this value becomes non-`nil` it will never change.
     var result: PromiseResult<T,E>? {
         switch state {
-        case .empty, .resolving, .cancelling: return nil
+        case .delayed, .empty, .resolving, .cancelling: return nil
         case .resolved:
             switch _value {
             case nil:
@@ -1387,6 +1391,12 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
         super.init(state: .empty)
     }
     
+    /// Only for use by `DelayedPromiseBox`.
+    init(delayed: ()) {
+        _value = nil
+        super.init(state: .delayed)
+    }
+    
     init(result: PromiseResult<T,E>) {
         switch result {
         case .value(let value):
@@ -1414,7 +1424,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     }
 }
 
-private protocol RequestCancellable: class {
+internal protocol RequestCancellable: class {
     func requestCancel()
 }
 
@@ -1460,6 +1470,7 @@ private enum PromiseBoxValue<T,E> {
 extension TWLPromiseBoxState: CustomStringConvertible {
     public var description: String {
         switch self {
+        case .delayed: return "delayed"
         case .empty: return "empty"
         case .resolving: return "resolving"
         case .resolved: return "resolved"

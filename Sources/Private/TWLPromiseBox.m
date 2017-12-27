@@ -34,6 +34,7 @@
     if ((self = [super init])) {
         atomic_init(&_state, state);
         switch (state) {
+            case TWLPromiseBoxStateDelayed:
             case TWLPromiseBoxStateEmpty:
             case TWLPromiseBoxStateCancelling:
             case TWLPromiseBoxStateResolving:
@@ -87,6 +88,9 @@
     TWLPromiseBoxState oldState = (TWLPromiseBoxState)atomic_load_explicit(&_state, memory_order_relaxed);
     while (1) {
         switch (oldState) {
+            case TWLPromiseBoxStateDelayed:
+                if (state != TWLPromiseBoxStateEmpty) return NO;
+                break;
             case TWLPromiseBoxStateEmpty:
                 if (state != TWLPromiseBoxStateResolving &&
                     state != TWLPromiseBoxStateCancelling &&
