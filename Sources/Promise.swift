@@ -153,6 +153,13 @@ public struct PromiseOptions: OptionSet {
     ///         }
     ///     })
     public static let linkCancel = PromiseOptions(rawValue: 1 << 0)
+    
+    /// This option guarantees the returned `Promise` will be resolved on the specified context even
+    /// when its value is taken from a nested `Promise` that resolves on a different context.
+    ///
+    /// This option only applies to callback handlers that return a nested `Promise`. All other
+    /// callback handlers already resolve on the specified context.
+    public static let enforceContext = PromiseOptions(rawValue: 1 << 1)
 }
 
 /// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
@@ -333,6 +340,11 @@ public struct Promise<Value,Error> {
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
+    /// - Important: If the `onSuccess` handler is invoked, by default the returned `Promise` will
+    ///   be resolved immediately on the same context that the nested `Promise` is resolved on. If
+    ///   you want to ensure the returned `Promise` resolves on `context` then you must pass the
+    ///   `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -346,6 +358,7 @@ public struct Promise<Value,Error> {
     ///   rejected or cancelled.
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -355,7 +368,7 @@ public struct Promise<Value,Error> {
                         break
                     }
                     let nextPromise = onSuccess(value)
-                    nextPromise.pipe(to: resolver)
+                    nextPromise.pipe(to: resolver, on: pipeContext)
                 case .error(let error):
                     resolver.reject(error)
                 case .cancelled:
@@ -443,6 +456,11 @@ public struct Promise<Value,Error> {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
+    /// - Important: If the `onError` handler is invoked, by default the returned `Promise` will be
+    ///   resolved immediately on the same context that the nested `Promise` is resolved on. If you
+    ///   want to ensure the returned `Promise` resolves on `context` then you must pass the
+    ///   `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -456,6 +474,7 @@ public struct Promise<Value,Error> {
     ///   rejected or cancelled.
     public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -467,7 +486,7 @@ public struct Promise<Value,Error> {
                         break
                     }
                     let nextPromise = onError(error)
-                    nextPromise.pipe(to: resolver)
+                    nextPromise.pipe(to: resolver, on: pipeContext)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -503,6 +522,11 @@ public struct Promise<Value,Error> {
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
+    /// - Important: If the `onComplete` handler is invoked, by default the returned `Promise` will
+    ///   be resolved immediately on the same context that the nested `Promise` is resolved on. If
+    ///   you want to ensure the returned `Promise` resolves on `context` then you must pass the
+    ///   `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -516,6 +540,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does.
     public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
@@ -523,7 +548,7 @@ public struct Promise<Value,Error> {
                     return
                 }
                 let nextPromise = onComplete(result)
-                nextPromise.pipe(to: resolver)
+                nextPromise.pipe(to: resolver, on: pipeContext)
             }
         }
         if options.contains(.linkCancel) {
@@ -536,6 +561,11 @@ public struct Promise<Value,Error> {
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
+    ///
+    /// - Important: If the `onComplete` handler is invoked and does not throw an error, by default
+    ///   the returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
@@ -550,6 +580,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func always<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
@@ -558,7 +589,7 @@ public struct Promise<Value,Error> {
                 }
                 do {
                     let nextPromise = try onComplete(result)
-                    nextPromise.pipe(to: resolver)
+                    nextPromise.pipe(to: resolver, on: pipeContext)
                 } catch {
                     resolver.reject(error)
                 }
@@ -575,6 +606,11 @@ public struct Promise<Value,Error> {
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
+    /// - Important: If the `onComplete` handler is invoked and does not throw an error, by default
+    ///   the returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -588,6 +624,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func always<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
@@ -596,7 +633,7 @@ public struct Promise<Value,Error> {
                 }
                 do {
                     let nextPromise = try onComplete(result)
-                    nextPromise.pipe(to: resolver)
+                    nextPromise.pipe(to: resolver, on: pipeContext)
                 } catch {
                     resolver.reject(error)
                 }
@@ -666,15 +703,17 @@ public struct Promise<Value,Error> {
         return promise
     }
     
-    private func pipe(to resolver: Promise<Value,Error>.Resolver) {
+    private func pipe(to resolver: Promise<Value,Error>.Resolver, on context: PromiseContext) {
         _box.enqueue { (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(value)
-            case .error(let error):
-                resolver.reject(error)
-            case .cancelled:
-                resolver.cancel()
+            context.execute {
+                switch result {
+                case .value(let value):
+                    resolver.fulfill(value)
+                case .error(let error):
+                    resolver.reject(error)
+                case .cancelled:
+                    resolver.cancel()
+                }
             }
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -690,19 +729,21 @@ extension Promise where Error: Swift.Error {
     /// an error, it's upcast to `Swift.Error`.
     public var upcast: Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        pipe(to: resolver)
+        pipe(to: resolver, on: .immediate)
         return promise
     }
     
-    private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver) {
+    private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver, on context: PromiseContext) {
         _box.enqueue { (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(value)
-            case .error(let error):
-                resolver.reject(error)
-            case .cancelled:
-                resolver.cancel()
+            context.execute {
+                switch result {
+                case .value(let value):
+                    resolver.fulfill(value)
+                case .error(let error):
+                    resolver.reject(error)
+                case .cancelled:
+                    resolver.cancel()
+                }
             }
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -775,6 +816,11 @@ extension Promise where Error == Swift.Error {
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
+    /// - Important: If the `onSuccess` handler is invoked and does not throw an error, by default
+    ///   the returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -788,6 +834,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -798,7 +845,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onSuccess(value)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
                         resolver.reject(error)
                     }
@@ -819,6 +866,11 @@ extension Promise where Error == Swift.Error {
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
+    /// - Important: If the `onSuccess` handler is invoked and does not throw an error, by default
+    ///   the returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -832,6 +884,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func then<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -842,7 +895,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onSuccess(value)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
                         resolver.reject(error)
                     }
@@ -910,6 +963,11 @@ extension Promise where Error == Swift.Error {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
+    /// - Important: If the `onError` handler is invoked and does not throw an error, by default the
+    ///   returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -923,6 +981,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -935,7 +994,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onError(error)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
                         resolver.reject(error)
                     }
@@ -956,6 +1015,11 @@ extension Promise where Error == Swift.Error {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
+    /// - Important: If the `onError` handler is invoked and does not throw an error, by default the
+    ///   returned `Promise` will be resolved immediately on the same context that the nested
+    ///   `Promise` is resolved on. If you want to ensure the returned `Promise` resolves on
+    ///   `context` then you must pass the `.enforceContext` option.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -969,6 +1033,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func recover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        let pipeContext = options.contains(.enforceContext) ? context : .immediate
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 switch result {
@@ -981,7 +1046,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onError(error)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
                         resolver.reject(error)
                     }
