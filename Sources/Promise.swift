@@ -212,6 +212,17 @@ public struct Promise<Value,Error> {
             _box.resolveOrCancel(with: .cancelled)
         }
         
+        /// Resolves the promise with the given result.
+        ///
+        /// If the promise has already been resolved or cancelled, this does nothing.
+        public func resolve(with result: PromiseResult<Value,Error>) {
+            switch result {
+            case .value(let value): fulfill(value)
+            case .error(let error): reject(error)
+            case .cancelled: cancel()
+            }
+        }
+        
         /// Registers a block that will be invoked if `requestCancel()` is invoked on the promise
         /// before the promise is resolved.
         ///
@@ -691,14 +702,7 @@ public struct Promise<Value,Error> {
     public func ignoringCancel() -> Promise<Value,Error> {
         let (promise, resolver) = Promise.makeWithResolver()
         _box.enqueue { (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(value)
-            case .error(let error):
-                resolver.reject(error)
-            case .cancelled:
-                resolver.cancel()
-            }
+            resolver.resolve(with: result)
         }
         return promise
     }
@@ -706,14 +710,7 @@ public struct Promise<Value,Error> {
     private func pipe(to resolver: Promise<Value,Error>.Resolver, on context: PromiseContext) {
         _box.enqueue { (result) in
             context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(value)
-                case .error(let error):
-                    resolver.reject(error)
-                case .cancelled:
-                    resolver.cancel()
-                }
+                resolver.resolve(with: result)
             }
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -736,14 +733,7 @@ extension Promise where Error: Swift.Error {
     private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver, on context: PromiseContext) {
         _box.enqueue { (result) in
             context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(value)
-                case .error(let error):
-                    resolver.reject(error)
-                case .cancelled:
-                    resolver.cancel()
-                }
+                resolver.resolve(with: result)
             }
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -1070,6 +1060,19 @@ extension Promise: Equatable {
     /// Two distinct `Promise`s that are resolved to the same value compare as unequal.
     public static func ==(lhs: Promise, rhs: Promise) -> Bool {
         return lhs._box === rhs._box
+    }
+}
+
+extension Promise.Resolver where Error == Swift.Error {
+    /// Resolves the promise with the given result.
+    ///
+    /// If the promise has already been resolved or cancelled, this does nothing.
+    public func resolve<E: Swift.Error>(with result: PromiseResult<Value,E>) {
+        switch result {
+        case .value(let value): fulfill(value)
+        case .error(let error): reject(error)
+        case .cancelled: cancel()
+        }
     }
 }
 
