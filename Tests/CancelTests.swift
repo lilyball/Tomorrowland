@@ -214,7 +214,7 @@ private extension Promise {
                 resolver.cancel()
             })
             sema.wait()
-            resolver.fulfill(value)
+            resolver.fulfill(with: value)
         })
         return (promise, sema)
     }
@@ -226,7 +226,7 @@ private extension Promise {
                 resolver.cancel()
             })
             sema.wait()
-            resolver.reject(error)
+            resolver.reject(with: error)
         })
         return (promise, sema)
     }

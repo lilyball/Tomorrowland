@@ -21,7 +21,7 @@ final class UtilityTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         }).delay(on: .utility, 0.05)
         let expectation = XCTestExpectation(description: "promise")
         var invoked: DispatchTime?
@@ -45,7 +45,7 @@ final class UtilityTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.reject("foo")
+            resolver.reject(with: "foo")
         }).delay(on: .utility, 0.05)
         let expectation = XCTestExpectation(description: "promise")
         var invoked: DispatchTime?

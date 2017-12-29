@@ -31,8 +31,8 @@ extension Promise {
         _box.enqueue { (result) in
             context.getQueue().asyncAfter(deadline: .now() + delay) {
                 switch result {
-                case .value(let value): resolver.fulfill(value)
-                case .error(let error): resolver.reject(error)
+                case .value(let value): resolver.fulfill(with: value)
+                case .error(let error): resolver.reject(with: error)
                 case .cancelled: resolver.cancel()
                 }
             }

@@ -18,7 +18,7 @@ import Tomorrowland
 final class PromiseTests: XCTestCase {
     func testBasicFulfill() {
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
         wait(for: [expectation], timeout: 1)
@@ -27,7 +27,7 @@ final class PromiseTests: XCTestCase {
     
     func testBasicReject() {
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.reject("error")
+            resolver.reject(with: "error")
         })
         let expectation = XCTestExpectation(onError: promise, expectedError: "error")
         wait(for: [expectation], timeout: 1)
@@ -73,10 +73,10 @@ final class PromiseTests: XCTestCase {
     func testThenReturningFulfilledPromise() {
         let innerExpectation = XCTestExpectation(description: "Inner promise success")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         }).then(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
-                resolver.fulfill("\(x+1)")
+                resolver.fulfill(with: "\(x+1)")
             }
             innerExpectation.fulfill(onSuccess: newPromise, expectedValue: "43")
             return newPromise
@@ -88,10 +88,10 @@ final class PromiseTests: XCTestCase {
     func testThenReturningRejectedPromise() {
         let innerExpectation = XCTestExpectation(description: "Inner promise error")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         }).then(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
-                resolver.reject("foo")
+                resolver.reject(with: "foo")
             }
             innerExpectation.fulfill(onError: newPromise, expectedError: "foo")
             return newPromise
@@ -103,7 +103,7 @@ final class PromiseTests: XCTestCase {
     func testThenReturningCancelledPromise() {
         let innerExpectation = XCTestExpectation(description: "Inner promise cancelled")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         }).then(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 resolver.cancel()
@@ -120,7 +120,7 @@ final class PromiseTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let expectations = (0..<10).map({ _ in
             return XCTestExpectation(on: .queue(queue), onSuccess: promise, expectedValue: 42)
@@ -186,7 +186,7 @@ final class PromiseTests: XCTestCase {
     func testAlwaysReturningThrowingPromise() {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
-            resolver.reject(42)
+            resolver.reject(with: 42)
         }).always(on: .utility, { (result) -> Promise<String,DummyError> in
             throw DummyError()
         })
@@ -199,7 +199,7 @@ final class PromiseTests: XCTestCase {
     func testAlwaysReturningSwiftErrorThrowingPromise() {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
-            resolver.reject(42)
+            resolver.reject(with: 42)
         }).always(on: .utility, { (result) -> Promise<String,Swift.Error> in
             throw DummyError()
         })
@@ -212,14 +212,14 @@ final class PromiseTests: XCTestCase {
     func testAlwaysReturningPromise() {
         let innerExpectation = XCTestExpectation(description: "Inner promise success")
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
-            resolver.reject(42)
+            resolver.reject(with: 42)
         }).always(on: .utility, { (result) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 switch result {
                 case .value(let x), .error(let x):
-                    resolver.fulfill("\(x+1)")
+                    resolver.fulfill(with: "\(x+1)")
                 case .cancelled:
-                    resolver.fulfill("")
+                    resolver.fulfill(with: "")
                 }
             }
             innerExpectation.fulfill(onSuccess: newPromise, expectedValue: "43")
@@ -343,7 +343,7 @@ final class PromiseTests: XCTestCase {
         _ = Promise<Int,String>(on: .main, { (resolver) in
             XCTAssertTrue(Thread.isMainThread)
             mainExpectation.fulfill()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         expectations.append(mainExpectation)
         let bgContexts: [PromiseContext] = [.background, .utility, .default, .userInitiated, .userInteractive]
@@ -352,7 +352,7 @@ final class PromiseTests: XCTestCase {
             _ = Promise<Int,String>(on: context, { (resolver) in
                 XCTAssertFalse(Thread.isMainThread)
                 expectation.fulfill()
-                resolver.fulfill(42)
+                resolver.fulfill(with: 42)
             })
             return expectation
         }))
@@ -363,7 +363,7 @@ final class PromiseTests: XCTestCase {
             _ = Promise<Int,String>(on: .queue(queue), { (resolver) in
                 XCTAssertEqual(DispatchQueue.getSpecific(key: testQueueKey), "foo", "test queue key")
                 expectation.fulfill()
-                resolver.fulfill(42)
+                resolver.fulfill(with: 42)
             })
             expectations.append(expectation)
         }
@@ -374,14 +374,14 @@ final class PromiseTests: XCTestCase {
             _ = Promise<Int,String>(on: .operationQueue(queue), { (resolver) in
                 XCTAssertEqual(OperationQueue.current, queue, "operation queue")
                 expectation.fulfill()
-                resolver.fulfill(42)
+                resolver.fulfill(with: 42)
             })
             expectations.append(expectation)
         }
         var invoked = false
         _ = Promise<Int,String>(on: .immediate, { (resolver) in
             invoked = true
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         XCTAssertTrue(invoked)
         wait(for: expectations, timeout: 3)
@@ -408,7 +408,7 @@ final class PromiseTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
         let expectation = XCTestExpectation(description: "promise success")
@@ -425,7 +425,7 @@ final class PromiseTests: XCTestCase {
         let queue = DispatchQueue(label: "test queue")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
         do {
@@ -443,7 +443,7 @@ final class PromiseTests: XCTestCase {
         // Test reuse
         let promise2 = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(44)
+            resolver.fulfill(with: 44)
         })
         do {
             let expectation = XCTestExpectation(description: "promise success")
@@ -462,7 +462,7 @@ final class PromiseTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
         let chainPromise = promise.then(on: .utility, token: token, { (x) in
@@ -478,7 +478,7 @@ final class PromiseTests: XCTestCase {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.reject("foo")
+            resolver.reject(with: "foo")
         })
         let token = PromiseInvalidationToken()
         let chainPromise = promise.then(on: .utility, token: token, { (x) in
@@ -495,7 +495,7 @@ final class PromiseTests: XCTestCase {
         let queue = DispatchQueue(label: "test queue")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
         let expectations = (1...3).map({ x -> XCTestExpectation in
@@ -521,9 +521,9 @@ final class PromiseTests: XCTestCase {
         // Resolving a promise that has already been fulfliled does nothing
         let expectation = XCTestExpectation(description: "promise")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
-            resolver.fulfill(43)
-            resolver.reject("error")
+            resolver.fulfill(with: 42)
+            resolver.fulfill(with: 43)
+            resolver.reject(with: "error")
             resolver.cancel()
             expectation.fulfill()
         })
@@ -537,9 +537,9 @@ final class PromiseTests: XCTestCase {
         // Resolving a promise that has already been rejected does nothing
         let expectation = XCTestExpectation(description: "promise")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            resolver.reject("error")
-            resolver.reject("foobar")
-            resolver.fulfill(43)
+            resolver.reject(with: "error")
+            resolver.reject(with: "foobar")
+            resolver.fulfill(with: 43)
             resolver.cancel()
             expectation.fulfill()
         })
@@ -555,8 +555,8 @@ final class PromiseTests: XCTestCase {
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.cancel()
             resolver.cancel()
-            resolver.reject("foobar")
-            resolver.fulfill(43)
+            resolver.reject(with: "foobar")
+            resolver.fulfill(with: 43)
             expectation.fulfill()
         })
         let expectation2 = XCTestExpectation(onCancel: promise)
@@ -641,7 +641,7 @@ final class PromiseTests: XCTestCase {
                         resolver.cancel()
                     })
                     sema.wait()
-                    resolver.fulfill("\(x + 1)")
+                    resolver.fulfill(with: "\(x + 1)")
                 })
                 innerExpectation.fulfill(onCancel: innerPromise)
                 return innerPromise
@@ -663,7 +663,7 @@ final class PromiseTests: XCTestCase {
                         resolver.cancel()
                     })
                     sema.wait()
-                    resolver.fulfill("\(x + 1)")
+                    resolver.fulfill(with: "\(x + 1)")
                 }).ignoringCancel()
                 innerExpectation.fulfill(onSuccess: innerPromise, expectedValue: "43")
                 return innerPromise

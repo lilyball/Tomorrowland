@@ -74,7 +74,7 @@ Promises can be created using code like the following:
 ```swift
 let promise = Promise<String,Error>(on: .utility, { (resolver) in
     let value = try expensiveCalculation()
-    resolver.fulfill(value)
+    resolver.fulfill(with: value)
 })
 ```
 
@@ -92,11 +92,11 @@ promise. This resolver can also be used to observe cancellation requests using `
 let promise = Promise<Data,Error>(on: .immediate, { (resolver) in
     let task = urlSession.dataTask(with: url, completionHandler: { (data, response, error) in
         if let data = data {
-            resolver.fulfill(data)
+            resolver.fulfill(with: data)
         } else if case URLError.cancelled? = error {
             resolver.cancel()
         } else {
-            resolver.reject(error!)
+            resolver.reject(with: error!)
         }
     })
     resolver.onRequestCancel(on: .immediate, { _ in

@@ -18,7 +18,7 @@ import Tomorrowland
 final class DelayedPromiseTests: XCTestCase {
     func testDelayedPromiseResolves() {
         let dp = DelayedPromise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let promise = dp.promise
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
@@ -29,7 +29,7 @@ final class DelayedPromiseTests: XCTestCase {
         var invoked = false
         let dp = DelayedPromise<Int,String>(on: .immediate, { (resolver) in
             invoked = true
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         XCTAssertFalse(invoked)
         _ = dp.promise
@@ -38,7 +38,7 @@ final class DelayedPromiseTests: XCTestCase {
     
     func testDelayedPromiseReturnsSamePromise() {
         let dp = DelayedPromise<Int,String>(on: .utility, { (resolver) in
-            resolver.fulfill(42)
+            resolver.fulfill(with: 42)
         })
         let promiseA = dp.promise
         let promiseB = dp.promise
@@ -67,7 +67,7 @@ final class DelayedPromiseTests: XCTestCase {
         })
         let dp = DelayedPromise<Int,String>(on: .utility, { [dropSpy] (resolver) in
             withExtendedLifetime(dropSpy, {
-                resolver.fulfill(42)
+                resolver.fulfill(with: 42)
             })
         })
         dropSpy = nil

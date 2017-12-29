@@ -19,7 +19,7 @@ final class WhenArrayTests: XCTestCase {
     func testWhen() {
         let promises = (1...5).map({ x -> Promise<Int,String> in
             Promise(on: .utility, { (resolver) in
-                resolver.fulfill(x * 2)
+                resolver.fulfill(with: x * 2)
             })
         })
         let promise = when(fulfilled: promises)
@@ -33,9 +33,9 @@ final class WhenArrayTests: XCTestCase {
         let promises = (1...5).map({ x -> Promise<Int,String> in
             Promise(on: .utility, { (resolver) in
                 if x == 3 {
-                    resolver.reject("error")
+                    resolver.reject(with: "error")
                 } else {
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
         })
@@ -50,7 +50,7 @@ final class WhenArrayTests: XCTestCase {
                 if x == 3 {
                     resolver.cancel()
                 } else {
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
         })
@@ -66,7 +66,7 @@ final class WhenArrayTests: XCTestCase {
             let expectation = XCTestExpectation(description: "promise \(x)")
             let promise = Promise<Int,String>(on: .utility, { (resolver) in
                 if x == 3 {
-                    resolver.reject("error")
+                    resolver.reject(with: "error")
                     expectation.fulfill()
                 } else {
                     resolver.onRequestCancel(on: .immediate) { (resolver) in
@@ -74,7 +74,7 @@ final class WhenArrayTests: XCTestCase {
                     }
                     sema.wait()
                     sema.signal()
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
             if x != 3 {
@@ -106,7 +106,7 @@ final class WhenArrayTests: XCTestCase {
                     }
                     sema.wait()
                     sema.signal()
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
             if x != 3 {
@@ -138,7 +138,7 @@ final class WhenArrayTests: XCTestCase {
                     }
                     sema.wait()
                     sema.signal()
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
             if x != 3 {
@@ -178,7 +178,7 @@ final class WhenTupleTests: XCTestCase {
         func helper<Value>(n: Int, when: ([Promise<Int,String>]) -> Promise<Value,String>, splat: @escaping (Value) -> [Int]) {
             let promises = (1...n).map({ x -> Promise<Int,String> in
                 Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 })
             })
             let promise = when(promises)
@@ -200,9 +200,9 @@ final class WhenTupleTests: XCTestCase {
             let promises = (1...n).map({ x -> Promise<Int,String> in
                 Promise(on: .utility, { (resolver) in
                     if x == 2 {
-                        resolver.reject("error")
+                        resolver.reject(with: "error")
                     } else {
-                        resolver.fulfill(x * 2)
+                        resolver.fulfill(with: x * 2)
                     }
                 })
             })
@@ -224,7 +224,7 @@ final class WhenTupleTests: XCTestCase {
                     if x == 2 {
                         resolver.cancel()
                     } else {
-                        resolver.fulfill(x * 2)
+                        resolver.fulfill(with: x * 2)
                     }
                 })
             })
@@ -247,7 +247,7 @@ final class WhenTupleTests: XCTestCase {
                 let expectation = XCTestExpectation(description: "promise \(x)")
                 let promise = Promise<Int,String>(on: .utility, { (resolver) in
                     if x == 2 {
-                        resolver.reject("error")
+                        resolver.reject(with: "error")
                         expectation.fulfill()
                     } else {
                         resolver.onRequestCancel(on: .immediate) { (resolver) in
@@ -255,7 +255,7 @@ final class WhenTupleTests: XCTestCase {
                         }
                         sema.wait()
                         sema.signal()
-                        resolver.fulfill(x * 2)
+                        resolver.fulfill(with: x * 2)
                     }
                 })
                 if x != 2 {
@@ -295,7 +295,7 @@ final class WhenTupleTests: XCTestCase {
                         }
                         sema.wait()
                         sema.signal()
-                        resolver.fulfill(x * 2)
+                        resolver.fulfill(with: x * 2)
                     }
                 })
                 if x != 2 {
@@ -335,7 +335,7 @@ final class WhenTupleTests: XCTestCase {
                         }
                         sema.wait()
                         sema.signal()
-                        resolver.fulfill(x * 2)
+                        resolver.fulfill(with: x * 2)
                     }
                 })
                 if x != 2 {
@@ -388,7 +388,7 @@ final class WhenFirstTests: XCTestCase {
                     sema.wait()
                     sema.signal()
                 }
-                resolver.fulfill(x * 2)
+                resolver.fulfill(with: x * 2)
             })
         })
         let promise = when(first: promises)
@@ -403,11 +403,11 @@ final class WhenFirstTests: XCTestCase {
         let promises = (1...5).map({ x -> Promise<Int,String> in
             Promise(on: .utility, { (resolver) in
                 if x == 3 {
-                    resolver.reject("foo")
+                    resolver.reject(with: "foo")
                 } else {
                     sema.wait()
                     sema.signal()
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
         })
@@ -427,7 +427,7 @@ final class WhenFirstTests: XCTestCase {
                 } else {
                     sema.wait()
                     sema.signal()
-                    resolver.fulfill(x * 2)
+                    resolver.fulfill(with: x * 2)
                 }
             })
         })

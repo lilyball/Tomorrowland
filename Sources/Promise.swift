@@ -194,14 +194,14 @@ public struct Promise<Value,Error> {
         /// Fulfills the promise with the given value.
         ///
         /// If the promise has already been resolved or cancelled, this does nothing.
-        public func fulfill(_ value: Value) {
+        public func fulfill(with value: Value) {
             _box.resolveOrCancel(with: .value(value))
         }
         
         /// Rejects the promise with the given error.
         ///
         /// If the promise has already been resolved or cancelled, this does nothing.
-        public func reject(_ error: Error) {
+        public func reject(with error: Error) {
             _box.resolveOrCancel(with: .error(error))
         }
         
@@ -217,8 +217,8 @@ public struct Promise<Value,Error> {
         /// If the promise has already been resolved or cancelled, this does nothing.
         public func resolve(with result: PromiseResult<Value,Error>) {
             switch result {
-            case .value(let value): fulfill(value)
-            case .error(let error): reject(error)
+            case .value(let value): fulfill(with: value)
+            case .error(let error): reject(with: error)
             case .cancelled: cancel()
             }
         }
@@ -333,9 +333,9 @@ public struct Promise<Value,Error> {
                         resolver.cancel()
                         break
                     }
-                    resolver.fulfill(onSuccess(value))
+                    resolver.fulfill(with: onSuccess(value))
                 case .error(let error):
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -381,7 +381,7 @@ public struct Promise<Value,Error> {
                     let nextPromise = onSuccess(value)
                     nextPromise.pipe(to: resolver, on: pipeContext)
                 case .error(let error):
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -443,13 +443,13 @@ public struct Promise<Value,Error> {
             context.execute {
                 switch result {
                 case .value(let value):
-                    resolver.fulfill(value)
+                    resolver.fulfill(with: value)
                 case .error(let error):
                     guard generation == token?.generation else {
                         resolver.cancel()
                         break
                     }
-                    resolver.fulfill(onError(error))
+                    resolver.fulfill(with: onError(error))
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -490,7 +490,7 @@ public struct Promise<Value,Error> {
             context.execute {
                 switch result {
                 case .value(let value):
-                    resolver.fulfill(value)
+                    resolver.fulfill(with: value)
                 case .error(let error):
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -602,7 +602,7 @@ public struct Promise<Value,Error> {
                     let nextPromise = try onComplete(result)
                     nextPromise.pipe(to: resolver, on: pipeContext)
                 } catch {
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 }
             }
         }
@@ -646,7 +646,7 @@ public struct Promise<Value,Error> {
                     let nextPromise = try onComplete(result)
                     nextPromise.pipe(to: resolver, on: pipeContext)
                 } catch {
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 }
             }
         }
@@ -756,7 +756,7 @@ extension Promise where Error == Swift.Error {
             do {
                 try handler(resolver)
             } catch {
-                resolver.reject(error)
+                resolver.reject(with: error)
             }
         }
     }
@@ -785,12 +785,12 @@ extension Promise where Error == Swift.Error {
                         break
                     }
                     do {
-                        resolver.fulfill(try onSuccess(value))
+                        resolver.fulfill(with: try onSuccess(value))
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .error(let error):
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -837,10 +837,10 @@ extension Promise where Error == Swift.Error {
                         let nextPromise = try onSuccess(value)
                         nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .error(let error):
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -887,10 +887,10 @@ extension Promise where Error == Swift.Error {
                         let nextPromise = try onSuccess(value)
                         nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .error(let error):
-                    resolver.reject(error)
+                    resolver.reject(with: error)
                 case .cancelled:
                     resolver.cancel()
                 }
@@ -925,16 +925,16 @@ extension Promise where Error == Swift.Error {
             context.execute {
                 switch result {
                 case .value(let value):
-                    resolver.fulfill(value)
+                    resolver.fulfill(with: value)
                 case .error(let error):
                     guard generation == token?.generation else {
                         resolver.cancel()
                         break
                     }
                     do {
-                        resolver.fulfill(try onError(error))
+                        resolver.fulfill(with: try onError(error))
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .cancelled:
                     resolver.cancel()
@@ -976,7 +976,7 @@ extension Promise where Error == Swift.Error {
             context.execute {
                 switch result {
                 case .value(let value):
-                    resolver.fulfill(value)
+                    resolver.fulfill(with: value)
                 case .error(let error):
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -986,7 +986,7 @@ extension Promise where Error == Swift.Error {
                         let nextPromise = try onError(error)
                         nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .cancelled:
                     resolver.cancel()
@@ -1028,7 +1028,7 @@ extension Promise where Error == Swift.Error {
             context.execute {
                 switch result {
                 case .value(let value):
-                    resolver.fulfill(value)
+                    resolver.fulfill(with: value)
                 case .error(let error):
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -1038,7 +1038,7 @@ extension Promise where Error == Swift.Error {
                         let nextPromise = try onError(error)
                         nextPromise.pipe(to: resolver, on: pipeContext)
                     } catch {
-                        resolver.reject(error)
+                        resolver.reject(with: error)
                     }
                 case .cancelled:
                     resolver.cancel()
@@ -1069,8 +1069,8 @@ extension Promise.Resolver where Error == Swift.Error {
     /// If the promise has already been resolved or cancelled, this does nothing.
     public func resolve<E: Swift.Error>(with result: PromiseResult<Value,E>) {
         switch result {
-        case .value(let value): fulfill(value)
-        case .error(let error): reject(error)
+        case .value(let value): fulfill(with: value)
+        case .error(let error): reject(with: error)
         case .cancelled: cancel()
         }
     }

@@ -61,7 +61,7 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
             case .value(let value):
                 resultBuffer[i] = value
             case .error(let error):
-                resolver.reject(error)
+                resolver.reject(with: error)
                 cancelAllInput?.invoke()
             case .cancelled:
                 resolver.cancel()
@@ -85,7 +85,7 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
                 return
             }
         }
-        resolver.fulfill(Array(results))
+        resolver.fulfill(with: Array(results))
     }
     return resultPromise
 }
@@ -163,7 +163,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
             // Must have had a rejected or cancelled promise
             return
         }
-        resolver.fulfill((a,b,c,d,e,f))
+        resolver.fulfill(with: (a,b,c,d,e,f))
     }
     return resultPromise
 }
@@ -235,7 +235,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
             // Must have had a rejected or cancelled promise
             return
         }
-        resolver.fulfill((a,b,c,d,e))
+        resolver.fulfill(with: (a,b,c,d,e))
     }
     return resultPromise
 }
@@ -302,7 +302,7 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
             // Must have had a rejected or cancelled promise
             return
         }
-        resolver.fulfill((a,b,c,d))
+        resolver.fulfill(with: (a,b,c,d))
     }
     return resultPromise
 }
@@ -364,7 +364,7 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
             // Must have had a rejected or cancelled promise
             return
         }
-        resolver.fulfill((a,b,c))
+        resolver.fulfill(with: (a,b,c))
     }
     return resultPromise
 }
@@ -421,7 +421,7 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
             // Must have had a rejected or cancelled promise
             return
         }
-        resolver.fulfill((a,b))
+        resolver.fulfill(with: (a,b))
     }
     return resultPromise
 }
@@ -433,7 +433,7 @@ private extension Promise.Resolver {
         case .value(let value):
             output = value
         case .error(let error):
-            reject(error)
+            reject(with: error)
             cancelAllInput?.invoke()
         case .cancelled:
             cancel()
@@ -478,10 +478,10 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
         promise.always(on: .immediate, { (result) in
             switch result {
             case .value(let value):
-                resolver.fulfill(value)
+                resolver.fulfill(with: value)
                 cancelAllInput?.invoke()
             case .error(let error):
-                resolver.reject(error)
+                resolver.reject(with: error)
                 cancelAllInput?.invoke()
             case .cancelled:
                 break

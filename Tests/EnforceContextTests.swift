@@ -33,7 +33,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -50,7 +50,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -69,7 +69,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
@@ -85,7 +85,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
@@ -107,7 +107,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -128,7 +128,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -151,7 +151,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -172,7 +172,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -195,7 +195,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -216,7 +216,7 @@ final class EnforceContextTests: XCTestCase {
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(value + 1)
+                    resolver.fulfill(with: value + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -235,7 +235,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -251,7 +251,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -269,7 +269,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -285,7 +285,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.fulfill(x + 1)
+                    resolver.fulfill(with: x + 1)
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onSuccess: promise, handler: { (x) in
@@ -303,7 +303,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
@@ -319,7 +319,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
@@ -337,7 +337,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
@@ -353,7 +353,7 @@ final class EnforceContextTests: XCTestCase {
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
                 sema.wait()
                 return Promise(on: .utility, { (resolver) in
-                    resolver.reject(err + "bar")
+                    resolver.reject(with: err + "bar")
                 })
             })
             let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (x) in
