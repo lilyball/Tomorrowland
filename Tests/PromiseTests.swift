@@ -684,25 +684,49 @@ final class PromiseTests: XCTestCase {
         sema.signal()
         wait(for: [outerExpectation, innerExpectation], timeout: 1)
     }
-    
-    // MARK: PromiseResult
-    
-    func testPromiseResultValue() {
+}
+
+final class PromiseResultTests: XCTestCase {
+    func testValue() {
         XCTAssertEqual(PromiseResult<Int,String>.value(42).value, 42)
         XCTAssertNil(PromiseResult<Int,String>.error("wat").value)
         XCTAssertNil(PromiseResult<Int,String>.cancelled.value)
     }
     
-    func testPromiseResultError() {
+    func testError() {
         XCTAssertNil(PromiseResult<Int,String>.value(42).error)
         XCTAssertEqual(PromiseResult<Int,String>.error("wat").error, "wat")
         XCTAssertNil(PromiseResult<Int,String>.cancelled.error)
     }
     
-    func testPromiseResultIsCancelled() {
+    func testIsCancelled() {
         XCTAssertFalse(PromiseResult<Int,String>.value(42).isCancelled)
         XCTAssertFalse(PromiseResult<Int,String>.error("wat").isCancelled)
         XCTAssertTrue(PromiseResult<Int,String>.cancelled.isCancelled)
+    }
+    
+    func testMap() {
+        XCTAssertEqual(PromiseResult<Int,String>.value(42).map({ $0 + 1 }), .value(43))
+        XCTAssertEqual(PromiseResult<Int,String>.error("wat").map({ $0 + 1 }), .error("wat"))
+        XCTAssertEqual(PromiseResult<Int,String>.cancelled.map({ $0 + 1 }), .cancelled)
+    }
+    
+    func testMapError() {
+        XCTAssertEqual(PromiseResult<Int,String>.value(42).mapError({ $0 + "bar" }), .value(42))
+        XCTAssertEqual(PromiseResult<Int,String>.error("foo").mapError({ $0 + "bar" }), .error("foobar"))
+        XCTAssertEqual(PromiseResult<Int,String>.cancelled.mapError({ $0 + "bar" }), .cancelled)
+    }
+    
+    func testFlatMap() {
+        XCTAssertEqual(PromiseResult<Int,String>.value(42).flatMap({ PromiseResult<String,String>.value("\($0)") }), .value("42"))
+        XCTAssertEqual(PromiseResult<Int,String>.error("wat").flatMap({ PromiseResult<String,String>.value("\($0)") }), .error("wat"))
+        XCTAssertEqual(PromiseResult<Int,String>.cancelled.flatMap({ PromiseResult<String,String>.value("\($0)") }), .cancelled)
+    }
+    
+    func testFlatMapError() {
+        XCTAssertEqual(PromiseResult<Int,String>.value(42).flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .value(42))
+        XCTAssertEqual(PromiseResult<Int,String>.error("foo").flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .error(3))
+        XCTAssertEqual(PromiseResult<Int,String>.cancelled.flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .cancelled)
     }
 }
 

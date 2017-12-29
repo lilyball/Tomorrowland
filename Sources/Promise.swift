@@ -1108,6 +1108,42 @@ public enum PromiseResult<Value,Error> {
         case .cancelled: return true
         }
     }
+    
+    /// Maps a successful result through a block and returns the new result.
+    public func map<T>(_ transform: (Value) throws -> T) rethrows -> PromiseResult<T,Error> {
+        switch self {
+        case .value(let value): return .value(try transform(value))
+        case .error(let error): return .error(error)
+        case .cancelled: return .cancelled
+        }
+    }
+    
+    /// Maps a rejected result through a block and returns the new result.
+    public func mapError<E>(_ transform: (Error) throws -> E) rethrows -> PromiseResult<Value,E> {
+        switch self {
+        case .value(let value): return .value(value)
+        case .error(let error): return .error(try transform(error))
+        case .cancelled: return .cancelled
+        }
+    }
+    
+    /// Maps a successful result through a block and returns the new result.
+    public func flatMap<T>(_ transform: (Value) throws -> PromiseResult<T,Error>) rethrows -> PromiseResult<T,Error> {
+        switch self {
+        case .value(let value): return try transform(value)
+        case .error(let error): return .error(error)
+        case .cancelled: return .cancelled
+        }
+    }
+    
+    /// Maps a rejected result through a block and returns the new result.
+    public func flatMapError<E>(_ transform: (Error) throws -> PromiseResult<Value,E>) rethrows -> PromiseResult<Value,E> {
+        switch self {
+        case .value(let value): return .value(value)
+        case .error(let error): return try transform(error)
+        case .cancelled: return .cancelled
+        }
+    }
 }
 
 extension PromiseResult where Value: Equatable, Error: Equatable {
