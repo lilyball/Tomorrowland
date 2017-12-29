@@ -673,6 +673,26 @@ final class PromiseTests: XCTestCase {
         sema.signal()
         wait(for: [outerExpectation, innerExpectation], timeout: 1)
     }
+    
+    // MARK: PromiseResult
+    
+    func testPromiseResultValue() {
+        XCTAssertEqual(PromiseResult<Int,String>.value(42).value, 42)
+        XCTAssertNil(PromiseResult<Int,String>.error("wat").value)
+        XCTAssertNil(PromiseResult<Int,String>.cancelled.value)
+    }
+    
+    func testPromiseResultError() {
+        XCTAssertNil(PromiseResult<Int,String>.value(42).error)
+        XCTAssertEqual(PromiseResult<Int,String>.error("wat").error, "wat")
+        XCTAssertNil(PromiseResult<Int,String>.cancelled.error)
+    }
+    
+    func testPromiseResultIsCancelled() {
+        XCTAssertFalse(PromiseResult<Int,String>.value(42).isCancelled)
+        XCTAssertFalse(PromiseResult<Int,String>.error("wat").isCancelled)
+        XCTAssertTrue(PromiseResult<Int,String>.cancelled.isCancelled)
+    }
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()

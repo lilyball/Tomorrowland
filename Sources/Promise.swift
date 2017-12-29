@@ -1016,6 +1016,30 @@ public enum PromiseResult<Value,Error> {
     case error(Error)
     /// The promise was cancelled.
     case cancelled
+    
+    /// Returns the contained value if the result is `.value`, otherwise `nil`.
+    public var value: Value? {
+        switch self {
+        case .value(let value): return value
+        case .error, .cancelled: return nil
+        }
+    }
+    
+    /// Returns the contained error if the result is `.error`, otherwise `nil`.
+    public var error: Error? {
+        switch self {
+        case .value, .cancelled: return nil
+        case .error(let error): return error
+        }
+    }
+    
+    /// Returns `true` if the result is `.cancelled`, otherwise `false`.
+    public var isCancelled: Bool {
+        switch self {
+        case .value, .error: return false
+        case .cancelled: return true
+        }
+    }
 }
 
 extension PromiseResult where Value: Equatable, Error: Equatable {
