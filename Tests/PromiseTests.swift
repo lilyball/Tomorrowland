@@ -122,11 +122,16 @@ final class PromiseTests: XCTestCase {
             sema.wait()
             resolver.fulfill(with: 42)
         })
-        let expectations = (0..<10).map({ _ in
-            return XCTestExpectation(on: .queue(queue), onSuccess: promise, expectedValue: 42)
+        var resolved = 0
+        let expectations = (0..<10).map({ i in
+            return XCTestExpectation(on: .queue(queue), onSuccess: promise, handler: { (x) in
+                XCTAssertEqual(i, resolved, "callbacks invoked out of order")
+                resolved += 1
+                XCTAssertEqual(x, 42)
+            })
         })
         sema.signal()
-        wait(for: expectations, timeout: 1, enforceOrder: true)
+        wait(for: expectations, timeout: 1)
     }
     
     func testThenReturningPreFulfilledPromise() {
@@ -583,18 +588,24 @@ final class PromiseTests: XCTestCase {
     func testMultipleRequestCancel() {
         let queue = DispatchQueue(label: "test queue")
         let expectations = (1...3).map({ XCTestExpectation(description: "onRequestCancel \($0)")} )
+        let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            for expectation in expectations {
+            var resolved = 0
+            for (i, expectation) in expectations.enumerated() {
                 resolver.onRequestCancel(on: .queue(queue), { (resolver) in
+                    XCTAssertEqual(resolved, i)
+                    resolved += 1
                     expectation.fulfill()
                     resolver.cancel()
                 })
             }
+            sema.signal()
         })
         DispatchQueue.global().async {
+            sema.wait()
             promise.requestCancel()
         }
-        wait(for: expectations, timeout: 1, enforceOrder: true)
+        wait(for: expectations, timeout: 1)
     }
     
     func testOnRequestCancelAfterCancelled() {
