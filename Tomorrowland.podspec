@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Tomorrowland"
-  s.version      = "0.9"
+  s.version      = "0.1.0"
   s.summary      = "Lightweight implementation of cancellable Promises for Swift"
 
   s.description  = <<-DESC
