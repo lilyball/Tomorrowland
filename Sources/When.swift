@@ -52,7 +52,7 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     let (resultPromise, resolver) = Promise<[Value],Error>.makeWithResolver()
     let count = promises.count
     var resultBuffer = UnsafeMutablePointer<Value?>.allocate(capacity: count)
-    resultBuffer.initialize(to: nil, count: count)
+    resultBuffer.initialize(repeating: nil, count: count)
     let group = DispatchGroup()
     for (i, promise) in promises.enumerated() {
         group.enter()
@@ -73,7 +73,7 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     group.notify(queue: .global(qos: qos)) {
         defer {
             resultBuffer.deinitialize(count: count)
-            resultBuffer.deallocate(capacity: count)
+            resultBuffer.deallocate()
         }
         var results = ContiguousArray<Value>()
         results.reserveCapacity(count)

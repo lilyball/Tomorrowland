@@ -87,4 +87,243 @@ final class UtilityTests: XCTestCase {
             XCTFail("Didn't retrieve invoked value")
         }
     }
+    
+    // MARK: -
+    
+    func testTimeout() {
+        let queue = DispatchQueue(label: "test queue")
+        
+        do { // fulfill
+            let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.01) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .queue(queue), delay: 0.05)
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // reject
+            let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.01) {
+                    resolver.reject(with: "error")
+                }
+            }).timeout(on: .queue(queue), delay: 0.05)
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case .rejected(let error): XCTAssertEqual(error, "error")
+                default: XCTFail("Expected PromiseTimeoutError.rejected, found \(error)")
+                }
+            })
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // timeout
+            let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.05) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .queue(queue), delay: 0.01)
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case .timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testCancelOnTimeout() {
+        do { // cancel
+            let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+            
+            let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .utility, delay: 0.01, cancelOnTimeout: true)
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case .timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation, cancelExpectation], timeout: 1)
+        }
+        
+        do { // don't cancel
+            let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+            cancelExpectation.isInverted = true
+            
+            let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .utility, delay: 0.01, cancelOnTimeout: false)
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case .timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation], timeout: 1)
+            wait(for: [cancelExpectation], timeout: 0.01)
+        }
+    }
+    
+    func testLinkCancel() {
+        let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+        
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                cancelExpectation.fulfill()
+                resolver.cancel()
+            })
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .utility, delay: 0.5)
+        let expectation = XCTestExpectation(onCancel: promise)
+        promise.requestCancel()
+        wait(for: [expectation, cancelExpectation], timeout: 1)
+    }
+    
+    func testZeroDelayAlreadyResolved() {
+        let promise = Promise<Int,String>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
+        let expectation = XCTestExpectation(onSuccess: promise, handler: { (x) in
+            XCTAssertEqual(x, 42)
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    // MARK: Error variant
+    
+    func testErrorTimeout() {
+        let queue = DispatchQueue(label: "test queue")
+        
+        do { // fulfill
+            let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.01) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .queue(queue), delay: 0.05)
+            let _: Promise<Int,Error> = promise // type assertion
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // reject
+            struct DummyError: Error {}
+            let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.01) {
+                    resolver.reject(with: DummyError())
+                }
+            }).timeout(on: .queue(queue), delay: 0.05)
+            let _: Promise<Int,Error> = promise // type assertion
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                XCTAssert(error is DummyError)
+            })
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // timeout
+            let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                queue.asyncAfter(deadline: .now() + 0.05) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .queue(queue), delay: 0.01)
+            let _: Promise<Int,Error> = promise // type assertion
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case PromiseTimeoutError<Error>.timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testErrorCancelOnTimeout() {
+        do { // cancel
+            let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+            
+            let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .utility, delay: 0.01, cancelOnTimeout: true)
+            let _: Promise<Int,Error> = promise // type assertion
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case PromiseTimeoutError<Error>.timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation, cancelExpectation], timeout: 1)
+        }
+        
+        do { // don't cancel
+            let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+            cancelExpectation.isInverted = true
+            
+            let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            }).timeout(on: .utility, delay: 0.01, cancelOnTimeout: false)
+            let _: Promise<Int,Error> = promise // type assertion
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                switch error {
+                case PromiseTimeoutError<Error>.timedOut: break
+                default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+                }
+            })
+            wait(for: [expectation], timeout: 1)
+            wait(for: [cancelExpectation], timeout: 0.01)
+        }
+    }
+    
+    func testErrorLinkCancel() {
+        let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+        
+        let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                cancelExpectation.fulfill()
+                resolver.cancel()
+            })
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .utility, delay: 0.5)
+        let _: Promise<Int,Error> = promise // type assertion
+        let expectation = XCTestExpectation(onCancel: promise)
+        promise.requestCancel()
+        wait(for: [expectation, cancelExpectation], timeout: 1)
+    }
+    
+    func testErrorZeroDelayAlreadyResolved() {
+        let promise = Promise<Int,Error>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
+        let _: Promise<Int,Error> = promise // type assertion
+        let expectation = XCTestExpectation(onSuccess: promise, handler: { (x) in
+            XCTAssertEqual(x, 42)
+        })
+        wait(for: [expectation], timeout: 1)
+    }
 }

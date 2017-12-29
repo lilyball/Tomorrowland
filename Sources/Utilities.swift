@@ -39,4 +39,139 @@ extension Promise {
         }
         return promise
     }
+    
+    /// Returns a `Promise` that is rejected with an error if the receiver does not resolve within
+    /// the given interval.
+    ///
+    /// The returned `Promise` will adopt the receiver's value if it resolves within the given
+    /// interval. Otherwise it will be rejected with the error `PromiseTimeoutError.timedOut`. If
+    /// the receiver is rejected, the returned promise will be rejected with
+    /// `PromiseTimeoutError.rejected(error)`.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///
+    ///   If the promise times out, the returned promise will be rejected using the same context. In
+    ///   this event, `.immediate` is treated the same as `.auto`. If provided as `.operationQueue`
+    ///   it uses the `OperationQueue`'s underlying queue, or `.default` if there is no underlying
+    ///   queue.
+    /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
+    ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
+    ///   resolved.
+    /// - Parameter cancelOnTimeout: The default value of `true` means the receiver will be
+    ///   cancelled if the returned promise times out.
+    /// - Returns: A new `Promise`.
+    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,PromiseTimeoutError<Error>> {
+        let (promise, resolver) = Promise<Value,PromiseTimeoutError<Error>>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                resolver.resolve(with: result.mapError({ .rejected($0) }))
+            }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
+            cancellable.requestCancel()
+        }
+        context.getQueue().asyncAfter(deadline: .now() + delay) { [weak _box, weak newBox=promise._box] in
+            if let box = newBox {
+                let resolver = Promise<Value,PromiseTimeoutError<Error>>.Resolver(box: box)
+                // double-check the result just in case
+                if let result = _box?.result {
+                    resolver.resolve(with: result.mapError({ .rejected($0) }))
+                } else {
+                    resolver.reject(with: .timedOut)
+                }
+            }
+            if cancelOnTimeout {
+                _box?.requestCancel()
+            }
+        }
+        return promise
+    }
 }
+
+extension Promise where Error == Swift.Error {
+    /// Returns a `Promise` that is rejected with an error if the receiver does not resolve within
+    /// the given interval.
+    ///
+    /// The returned `Promise` will adopt the receiver's value if it resolves within the given
+    /// interval. Otherwise it will be rejected with the error
+    /// `PromiseTimeoutError<Error>.timedOut`. If the receiver is rejected, the returned promise
+    /// will be rejected with the same error.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///
+    ///   If the promise times out, the returned promise will be rejected using the same context. In
+    ///   this event, `.immediate` is treated the same as `.auto`. If provided as `.operationQueue`
+    ///   it uses the `OperationQueue`'s underlying queue, or `.default` if there is no underlying
+    ///   queue.
+    /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
+    ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
+    ///   resolved.
+    /// - Parameter cancelOnTimeout: The default value of `true` means the receiver will be
+    ///   cancelled if the returned promise times out.
+    /// - Returns: A new `Promise`.
+    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            context.execute {
+                resolver.resolve(with: result)
+            }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
+            cancellable.requestCancel()
+        }
+        context.getQueue().asyncAfter(deadline: .now() + delay) { [weak _box, weak newBox=promise._box] in
+            if let box = newBox {
+                let resolver = Promise<Value,Error>.Resolver(box: box)
+                // double-check the result just in case
+                if let result = _box?.result {
+                    resolver.resolve(with: result)
+                } else {
+                    resolver.reject(with: PromiseTimeoutError<Error>.timedOut)
+                }
+            }
+            if cancelOnTimeout {
+                _box?.requestCancel()
+            }
+        }
+        return promise
+    }
+}
+
+/// The error type returned from `Promise.timeout`.
+///
+/// - SeeAlso: `Promise.timeout`.
+public enum PromiseTimeoutError<Error>: Swift.Error {
+    /// The promise did not resolve within the given interval.
+    case timedOut
+    /// The promise was rejected with an error.
+    case rejected(Error)
+}
+
+extension PromiseTimeoutError where Error: Equatable {
+    public static func ==(lhs: PromiseTimeoutError, rhs: PromiseTimeoutError) -> Bool {
+        switch (lhs, rhs) {
+        case (.timedOut, .timedOut): return true
+        case let (.rejected(a), .rejected(b)): return a == b
+        default: return false
+        }
+    }
+    
+    public static func !=(lhs: PromiseTimeoutError, rhs: PromiseTimeoutError) -> Bool {
+        return !(lhs == rhs)
+    }
+}
+
+#if swift(>=4.1)
+    extension PromiseTimeoutError: Equatable where Error: Equatable {}
+
+    extension PromiseTimeoutError: Hashable where Error: Hashable {
+        public var hashValue: Int {
+            switch self {
+            case .timedOut: return 0
+            case .rejected(let error): return error.hashValue << 1 | 1
+            }
+        }
+    }
+#endif

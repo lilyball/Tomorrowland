@@ -241,8 +241,8 @@ public struct Promise<Value,Error> {
             if _box.swapRequestCancelLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
                 nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<Value,Error>.RequestCancelNode.self)
             }) == TWLLinkedListSwapFailed {
-                nodePtr.deinitialize()
-                nodePtr.deallocate(capacity: 1)
+                nodePtr.deinitialize(count: 1)
+                nodePtr.deallocate()
                 switch _box.unfencedState {
                 case .cancelling, .cancelled:
                     context.execute {
@@ -1281,10 +1281,10 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
         /// - Postcondition: The pointer points to deinitialized memory.
         static func destroyPointer(_ pointer: UnsafeMutablePointer<CallbackNode>) {
             var nextPointer = pointer.pointee.next
-            pointer.deinitialize()
+            pointer.deinitialize(count: 1)
             while let next = nextPointer {
                 nextPointer = next.pointee.next
-                next.deinitialize()
+                next.deinitialize(count: 1)
             }
         }
         
@@ -1498,8 +1498,8 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
         if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
             nodePtr.pointee.next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
         }) == TWLLinkedListSwapFailed {
-            nodePtr.deinitialize()
-            nodePtr.deallocate(capacity: 1)
+            nodePtr.deinitialize(count: 1)
+            nodePtr.deallocate()
             guard let result = result else {
                 fatalError("Callback list empty but state isn't actually resolved")
             }
@@ -1572,10 +1572,10 @@ extension NodeProtocol {
     /// - Postcondition: The pointer points to deinitialized memory.
     static func destroyPointer(_ pointer: UnsafeMutablePointer<Self>) {
         var nextPointer = pointer.pointee.next
-        pointer.deinitialize()
+        pointer.deinitialize(count: 1)
         while let next = nextPointer {
             nextPointer = next.pointee.next
-            next.deinitialize()
+            next.deinitialize(count: 1)
         }
     }
     

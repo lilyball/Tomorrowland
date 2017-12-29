@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1777D41FF614EA003920C7 /* Compatibility.swift */; };
 		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
 		0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */; };
 		0A2CDAC51FF5FB1300B9C652 /* EnforceContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAC41FF5FB1300B9C652 /* EnforceContextTests.swift */; };
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A1777D41FF614EA003920C7 /* Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compatibility.swift; sourceTree = "<group>"; };
 		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
 		0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromiseTests.swift; sourceTree = "<group>"; };
 		0A2CDAC41FF5FB1300B9C652 /* EnforceContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnforceContextTests.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
+				0A1777D41FF614EA003920C7 /* Compatibility.swift */,
 				0AFF27711FE0E4D70006D95A /* Private */,
 				0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */,
 				0AFF27591FE0E3F40006D95A /* Info.plist */,
@@ -264,6 +267,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				ABDC7F781FEB840200036FCD /* When.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
