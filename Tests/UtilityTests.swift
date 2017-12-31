@@ -88,6 +88,17 @@ final class UtilityTests: XCTestCase {
         }
     }
     
+    func testDelayUsingImmediate() {
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.fulfill(with: 42)
+        }).delay(on: .immediate, 0.05)
+        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (x) in
+            XCTAssertEqual(x, 42)
+            XCTAssertTrue(Thread.isMainThread)
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: -
     
     func testTimeout() {

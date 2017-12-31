@@ -28,8 +28,8 @@ extension Promise {
     /// - Returns: A `Promise` that adopts the same result as the receiver after a delay.
     public func delay(on context: PromiseContext = .auto, _ delay: TimeInterval) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { (result) in
-            context.getQueue().asyncAfter(deadline: .now() + delay) {
+        _box.enqueue { [queue=context.getQueue()] (result) in
+            queue.asyncAfter(deadline: .now() + delay) {
                 switch result {
                 case .value(let value): resolver.fulfill(with: value)
                 case .error(let error): resolver.reject(with: error)
