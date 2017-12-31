@@ -134,11 +134,11 @@ public struct PromiseOptions: OptionSet {
     ///     return StdPromise<Data>(on: .immediate, { (resolver) in
     ///         let task = URLSession.shared.dataTask(with: url, completionHandler: { (data, _, error) in
     ///             if let data = data {
-    ///                 resolver.fulfill(data)
+    ///                 resolver.fulfill(with: data)
     ///             } else if case URLError.cancelled? = error {
     ///                 resolver.cancel()
     ///             } else {
-    ///                 resolver.reject(error!)
+    ///                 resolver.reject(with: error!)
     ///             }
     ///         })
     ///         resolver.onRequestCancel(on: .immediate, { _ in
@@ -169,7 +169,7 @@ public struct PromiseOptions: OptionSet {
 ///
 ///     Promise(on: .utility) { resolver in
 ///         let value = try someLongComputation()
-///         resolver.fulfill(value)
+///         resolver.fulfill(with: value)
 ///     }.then(on: main) { value in
 ///         self.updateUI(with: value)
 ///     }.catch(on: .main) { error in
