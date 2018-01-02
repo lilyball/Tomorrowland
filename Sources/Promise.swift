@@ -1437,7 +1437,8 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     deinit {
         issueDeinitFence()
         if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
-            // If we actually have a callback list, we must not have been resolved, so attempt to cancel.
+            // If we actually have a callback list, we must not have been resolved, so inform our
+            // callbacks that we've cancelled.
             // NB: No need to actually transition to the cancelled state first, if anyone still had
             // a reference to us to look at that, we wouldn't be in deinit.
             nodePtr = CallbackNode.reverseList(nodePtr)
@@ -1447,6 +1448,11 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
             }
         }
         if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
+            // NB: We can't fire these callbacks because they take a Resolver and we can't have them
+            // resurrecting ourselves. We could work around this, but the only reason to even have
+            // these callbacks at this point is if the promise handler drops the last reference to
+            // the resolver, and since that means it's a buggy implementation, we don't need to
+            // support it.
             RequestCancelNode.destroyPointer(nodePtr)
         }
         _value = nil // make sure this is destroyed after the fence
