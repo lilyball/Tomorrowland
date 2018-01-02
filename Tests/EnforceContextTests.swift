@@ -31,8 +31,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -48,8 +48,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -67,8 +67,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
@@ -83,8 +83,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
@@ -101,12 +101,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -122,12 +122,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), options: [.enforceContext], { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -145,12 +145,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -166,12 +166,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), options: [.enforceContext], { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -189,12 +189,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -210,12 +210,12 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).always(on: .queue(queue), options: [.enforceContext], { (result) -> Promise<Int,String> in
-                sema.wait()
                 guard let value = result.value else {
                     XCTFail()
                     return Promise(rejected: "error")
                 }
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: value + 1)
                 })
             })
@@ -233,8 +233,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -249,8 +249,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -267,8 +267,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -283,8 +283,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(fulfilled: 42).then(on: .queue(queue), options: [.enforceContext], { (x) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.fulfill(with: x + 1)
                 })
             })
@@ -301,8 +301,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
@@ -317,8 +317,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
@@ -335,8 +335,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
@@ -351,8 +351,8 @@ final class EnforceContextTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(rejected: "foo").recover(on: .queue(queue), options: [.enforceContext], { (err) -> Promise<Int,String> in
-                sema.wait()
                 return Promise(on: .utility, { (resolver) in
+                    sema.wait()
                     resolver.reject(with: err + "bar")
                 })
             })
