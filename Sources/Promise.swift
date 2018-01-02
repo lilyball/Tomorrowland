@@ -1264,7 +1264,44 @@ extension PromiseResult where Value: Hashable, Error: Hashable {
     }
 }
 #if swift(>=4.1)
-    extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {}
+extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {}
+
+extension PromiseResult {
+    enum CodingKeys: CodingKey {
+        case value
+        case error
+    }
+}
+
+extension PromiseResult: Encodable where Value: Encodable, Error: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .value(let value):
+            try container.encode(value, forKey: .value)
+            try container.encodeNil(forKey: .error)
+        case .error(let error):
+            try container.encodeNil(forKey: .value)
+            try container.encode(error, forKey: .error)
+        case .cancelled:
+            try container.encodeNil(forKey: .value)
+            try container.encodeNil(forKey: .error)
+        }
+    }
+}
+
+extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let value = try container.decode(Optional<Value>.self, forKey: .value) {
+            self = .value(value)
+        } else if let error = try container.decode(Optional<Error>.self, forKey: .error) {
+            self = .error(error)
+        } else {
+            self = .cancelled
+        }
+    }
+}
 #endif
 
 // FIXME: (Swift 4.1) Implement Codable if Value and Error conform to it

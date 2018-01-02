@@ -15,6 +15,13 @@
 import XCTest
 import Tomorrowland
 
+#if swift(>=4.1)
+// For Codable test
+import class Foundation.JSONEncoder
+import class Foundation.JSONDecoder
+import struct Foundation.Data
+#endif
+
 final class PromiseTests: XCTestCase {
     func testBasicFulfill() {
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
@@ -728,6 +735,31 @@ final class PromiseResultTests: XCTestCase {
         XCTAssertEqual(PromiseResult<Int,String>.error("foo").flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .error(3))
         XCTAssertEqual(PromiseResult<Int,String>.cancelled.flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .cancelled)
     }
+    
+    #if swift(>=4.1)
+    func testCodable() throws {
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+        do {
+            let result = PromiseResult<Int,String>.value(42)
+            let data = try encoder.encode(result)
+            let decoded = try decoder.decode(PromiseResult<Int,String>.self, from: data)
+            XCTAssertEqual(decoded, result)
+        }
+        do {
+            let result = PromiseResult<Int,String>.error("wat")
+            let data = try encoder.encode(result)
+            let decoded = try decoder.decode(PromiseResult<Int,String>.self, from: data)
+            XCTAssertEqual(decoded, result)
+        }
+        do {
+            let result = PromiseResult<Int,String>.cancelled
+            let data = try encoder.encode(result)
+            let decoded = try decoder.decode(PromiseResult<Int,String>.self, from: data)
+            XCTAssertEqual(decoded, result)
+        }
+    }
+    #endif
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()
