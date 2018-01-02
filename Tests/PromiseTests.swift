@@ -148,10 +148,10 @@ final class PromiseTests: XCTestCase {
     
     func testCatch() {
         let expectation = XCTestExpectation(description: "catch")
-        _ = Promise<Int,String>(rejected: "foo").catch(on: .utility) { (x) in
+        _ = Promise<Int,String>(rejected: "foo").catch(on: .utility, { (x) in
             XCTAssertEqual(x, "foo")
             expectation.fulfill()
-        }
+        })
         wait(for: [expectation], timeout: 1)
     }
     
@@ -162,7 +162,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testRecover() {
-        let promise = Promise<Int,String>(rejected: "foo").recover({ (x) in
+        let promise = Promise<Int,String>(rejected: "foo").recover(on: .utility, { (x) in
             return 42
         })
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
@@ -170,7 +170,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testRecoverReturningPromise() {
-        let promise = Promise<Int,String>(rejected: "foo").recover({ (x) in
+        let promise = Promise<Int,String>(rejected: "foo").recover(on:. utility, { (x) in
             return Promise(rejected: true)
         })
         let expectation = XCTestExpectation(onError: promise, expectedError: true)
@@ -428,13 +428,13 @@ final class PromiseTests: XCTestCase {
     func testInvalidationTokenInvalidate() {
         let sema = DispatchSemaphore(value: 0)
         let queue = DispatchQueue(label: "test queue")
-        let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            sema.wait()
-            resolver.fulfill(with: 42)
-        })
         let token = PromiseInvalidationToken()
         do {
-            let expectation = XCTestExpectation(description: "promise success")
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            let expectation = XCTestExpectation(description: "promise resolved")
             _ = promise.then(on: .queue(queue), token: token, { (x) in
                 XCTFail("invalidated callback invoked")
             }).always(on: .queue(queue), { (_) in
@@ -446,13 +446,13 @@ final class PromiseTests: XCTestCase {
         }
         
         // Test reuse
-        let promise2 = Promise<Int,String>(on: .utility, { (resolver) in
-            sema.wait()
-            resolver.fulfill(with: 44)
-        })
         do {
-            let expectation = XCTestExpectation(description: "promise success")
-            _ = promise2.then(on: .queue(queue), token: token, { (x) in
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 44)
+            })
+            let expectation = XCTestExpectation(description: "promise resolved")
+            _ = promise.then(on: .queue(queue), token: token, { (x) in
                 XCTFail("invalidated callback invoked")
             }).always(on: .queue(queue), { (_) in
                 expectation.fulfill()
