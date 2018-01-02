@@ -20,6 +20,12 @@ import Dispatch
 /// Most of these values correspond with Dispatch QoS classes.
 public enum PromiseContext: Equatable, Hashable {
     /// Execute on the main queue.
+    ///
+    /// - Note: Chained callbacks on the `.main` context guarantee that they all execute within the
+    ///   same run loop pass. This means UI manipulations in chained callbacks on `.main` will all
+    ///   occur within the same CoreAnimation transaction. The only exception is if a callback
+    ///   returns an unresolved nested promise, as the subsequent callbacks must wait for that
+    ///   promise to resolve first.
     case main
     /// Execute on a dispatch queue with the `.background` QoS.
     case background
@@ -100,7 +106,20 @@ public enum PromiseContext: Equatable, Hashable {
     internal func execute(_ f: @escaping @convention(block) () -> Void) {
         switch self {
         case .main:
-            DispatchQueue.main.async(execute: f)
+            if TWLGetMainContextThreadLocalFlag() {
+                assert(Thread.isMainThread, "Found thread-local flag set while not executing on the main thread")
+                // We're already executing on the .main context
+                TWLEnqueueThreadLocalBlock(f)
+            } else {
+                DispatchQueue.main.async {
+                    TWLExecuteBlockWithMainContextThreadLocalFlag {
+                        f()
+                        while let block = TWLDequeueThreadLocalBlock() {
+                            block()
+                        }
+                    }
+                }
+            }
         case .background:
             DispatchQueue.global(qos: .background).async(execute: f)
         case .utility:

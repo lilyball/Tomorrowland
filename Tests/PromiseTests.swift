@@ -691,6 +691,153 @@ final class PromiseTests: XCTestCase {
         sema.signal()
         wait(for: [outerExpectation, innerExpectation], timeout: 1)
     }
+    
+    func testChainedMainContextCallbacks() {
+        class RunloopObserver {
+            var invoked = false
+            private var _observer: CFRunLoopObserver?
+            
+            init() {
+                _observer = nil
+                _observer = CFRunLoopObserverCreateWithHandler(nil, CFRunLoopActivity.beforeWaiting.rawValue, true, 0, { [weak self] (observer, activity) in
+                    self?.invoked = true
+                })
+                CFRunLoopAddObserver(RunLoop.main.getCFRunLoop(), _observer, CFRunLoopMode.commonModes)
+            }
+            
+            deinit {
+                if let observer = _observer {
+                    _observer = nil
+                    CFRunLoopObserverInvalidate(observer)
+                }
+            }
+        }
+        
+        // When chaining callbacks on the main context, they should all invoke within the same
+        // runloop pass.
+        do {
+            let expectation = XCTestExpectation(description: "done")
+            DispatchQueue.main.async { // tests should be on the main queue already, but just in case
+                let observer = RunloopObserver()
+                var initialDelayed = false
+                // Ensure order is preserved. This really only applies to the catch/recover pair
+                var order = 0
+                Promise<Int,String>(on: .main, { (resolver) in
+                    XCTAssertTrue(initialDelayed) // this block shouldn't be immediate
+                    observer.invoked = false
+                    resolver.fulfill(with: 42)
+                }).then(on: .main, { (x) -> Int in
+                    XCTAssertFalse(observer.invoked, "then callback was delayed")
+                    XCTAssertEqual(order, 0)
+                    order += 1
+                    observer.invoked = false
+                    return x+1
+                }).then(on: .main, { (x) -> Promise<Int,String> in
+                    XCTAssertFalse(observer.invoked, "second then callback was delayed")
+                    XCTAssertEqual(order, 1)
+                    order += 1
+                    observer.invoked = false
+                    return Promise(rejected: "error")
+                }).catch(on: .main, { (x) in
+                    XCTAssertFalse(observer.invoked, "catch callback was delayed")
+                    XCTAssertEqual(order, 2)
+                    order += 1
+                    // don't reset observer.invoked, recover callback is executed on the same promise
+                }).recover(on: .main, { (x) in
+                    XCTAssertFalse(observer.invoked, "recover callback was delayed")
+                    XCTAssertEqual(order, 3)
+                    order += 1
+                    observer.invoked = false
+                    return 42
+                }).always(on: .main, { (x) in
+                    XCTAssertFalse(observer.invoked, "always callback was delayed")
+                    XCTAssertEqual(order, 4)
+                    order += 1
+                    expectation.fulfill()
+                })
+                initialDelayed = true
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Chaining callbacks on .queue(.main) shouldn't have this behavior.
+        do {
+            let expectation = XCTestExpectation(description: "done")
+            DispatchQueue.main.async {
+                let observer = RunloopObserver()
+                var initialDelayed = false
+                Promise<Int,String>(on: .queue(.main), { (resolver) in
+                    XCTAssertTrue(initialDelayed) // this block shouldn't be immediate
+                    observer.invoked = false
+                    resolver.fulfill(with: 42)
+                }).then(on: .queue(.main), { (x) -> Int in
+                    XCTAssertTrue(observer.invoked, "then callback wasn't delayed")
+                    observer.invoked = false
+                    return x+1
+                }).then(on: .queue(.main), { (x) -> Promise<Int,String> in
+                    XCTAssertTrue(observer.invoked, "second then callback wasn't delayed")
+                    observer.invoked = false
+                    return Promise(rejected: "error")
+                }).catch(on: .queue(.main), { (x) in
+                    XCTAssertTrue(observer.invoked, "catch callback wasn't delayed")
+                    // don't reset observer.invoked, recover callback is executed on the same promise
+                }).recover(on: .queue(.main), { (x) in
+                    XCTAssertTrue(observer.invoked, "recover callback wasn't delayed")
+                    observer.invoked = false
+                    return 42
+                }).always(on: .queue(.main), { (x) in
+                    XCTAssertTrue(observer.invoked, "always callback wasn't delayed")
+                    expectation.fulfill()
+                })
+                initialDelayed = true
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Chaining between .main and .queue(.main) should also not have this behavior
+        do {
+            let expectation = XCTestExpectation(description: "done")
+            DispatchQueue.main.async {
+                let observer = RunloopObserver()
+                Promise<Int,String>(on: .main, { (resolver) in
+                    observer.invoked = false
+                    resolver.fulfill(with: 42)
+                }).then(on: .main, { (x) -> Int in
+                    XCTAssertFalse(observer.invoked, "then callback was delayed")
+                    observer.invoked = false
+                    return x+1
+                }).then(on: .queue(.main), { (x) -> Int in
+                    XCTAssertTrue(observer.invoked, "second then callback wasn't delayed")
+                    observer.invoked = false
+                    return x+1
+                }).then(on: .main, { (x) -> Int in
+                    XCTAssertTrue(observer.invoked, "third then callback wasn't delayed")
+                    observer.invoked = false
+                    return x+1
+                }).always(on: .queue(.main), { (x) in
+                    XCTAssertTrue(observer.invoked, "always callback wasn't delayed")
+                    expectation.fulfill()
+                })
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testChainedMainContextCallbacksArentImmediate() {
+        // Ensure that chained main context callbacks aren't treated as .immediate but instead wait
+        // until the existing work actually finished.
+        let expectation = XCTestExpectation(description: "done")
+        var finishedWork = false
+        _ = Promise<Int,String>(on: .main, { (resolver) in
+            resolver.fulfill(with: 42)
+            finishedWork = true
+        }).then(on: .main, { (x) in
+            XCTAssertTrue(finishedWork)
+        }).always(on: .main, { (result) in
+            expectation.fulfill()
+        })
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 final class PromiseResultTests: XCTestCase {

@@ -14,6 +14,9 @@
 		0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */; };
 		0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */; };
+		0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFD1B5B1FFC1E1100AB2029 /* TWLThreadLocal.m */; };
+		0AFD1B5E1FFC1E1A00AB2029 /* TWLThreadLocal.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFD1B5D1FFC1E1800AB2029 /* TWLThreadLocal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		0AFD1B601FFC1FF700AB2029 /* PrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */; };
 		0AFF275F1FE0E3F40006D95A /* Tomorrowland.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */; };
 		0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27631FE0E3F40006D95A /* PromiseTests.swift */; };
 		0AFF27661FE0E3F40006D95A /* Tomorrowland.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27581FE0E3F40006D95A /* Tomorrowland.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -47,6 +50,9 @@
 		0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
 		0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
 		0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestExpectation+Promise.swift"; sourceTree = "<group>"; };
+		0AFD1B5B1FFC1E1100AB2029 /* TWLThreadLocal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLThreadLocal.m; sourceTree = "<group>"; };
+		0AFD1B5D1FFC1E1800AB2029 /* TWLThreadLocal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLThreadLocal.h; sourceTree = "<group>"; };
+		0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateTests.swift; sourceTree = "<group>"; };
 		0AFF27551FE0E3F40006D95A /* Tomorrowland.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tomorrowland.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0AFF27581FE0E3F40006D95A /* Tomorrowland.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tomorrowland.h; sourceTree = "<group>"; };
 		0AFF27591FE0E3F40006D95A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -137,6 +143,7 @@
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
+				0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
 			path = Tests;
@@ -151,6 +158,8 @@
 				0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */,
 				ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */,
 				ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */,
+				0AFD1B5D1FFC1E1800AB2029 /* TWLThreadLocal.h */,
+				0AFD1B5B1FFC1E1100AB2029 /* TWLThreadLocal.m */,
 			);
 			path = Private;
 			sourceTree = "<group>";
@@ -162,6 +171,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AFD1B5E1FFC1E1A00AB2029 /* TWLThreadLocal.h in Headers */,
 				0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */,
 				0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */,
 				ABDC7F7F1FEB909800036FCD /* TWLOneshotBlock.h in Headers */,
@@ -268,6 +278,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */,
+				0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				ABDC7F781FEB840200036FCD /* When.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
@@ -284,6 +295,7 @@
 			files = (
 				AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */,
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
+				0AFD1B601FFC1FF700AB2029 /* PrivateTests.swift in Sources */,
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
