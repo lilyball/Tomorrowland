@@ -18,7 +18,7 @@ import Dispatch
 /// The context in which a Promise body or callback is evaluated.
 ///
 /// Most of these values correspond with Dispatch QoS classes.
-public enum PromiseContext {
+public enum PromiseContext: Equatable, Hashable {
     /// Execute on the main queue.
     case main
     /// Execute on a dispatch queue with the `.background` QoS.
@@ -64,6 +64,36 @@ public enum PromiseContext {
             self = .userInitiated
         case .userInteractive:
             self = .userInteractive
+        }
+    }
+    
+    public static func ==(lhs: PromiseContext, rhs: PromiseContext) -> Bool {
+        switch (lhs, rhs) {
+        case (.main, .main), (.background, .background), (.utility, .utility),
+             (.default, .default), (.userInitiated, .userInitiated), (.userInteractive, .userInteractive),
+             (.immediate, .immediate): return true
+        case (.main, _), (.background, _), (.utility, _), (.default, _),
+             (.userInitiated, _), (.userInteractive, _), (.immediate, _): return false
+        case let (.queue(a), .queue(b)): return a === b
+        case (.queue, _): return false
+        case let (.operationQueue(a), .operationQueue(b)): return a === b
+        case (.operationQueue, _): return false
+        }
+    }
+    
+    public var hashValue: Int {
+        switch self {
+        case .main: return 0
+        case .background: return 1
+        case .utility: return 2
+        case .default: return 3
+        case .userInitiated: return 4
+        case .userInteractive: return 5
+        case .immediate: return 6
+        case .queue(let queue):
+            return queue.hashValue << 3
+        case .operationQueue(let queue):
+            return queue.hashValue << 3 | 1
         }
     }
     
