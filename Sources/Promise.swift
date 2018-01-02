@@ -184,6 +184,7 @@ public struct PromiseOptions: OptionSet {
 /// resolving when that method is invoked. Make sure to use the invalidation token support if you
 /// need to ensure your registered callbacks aren't invoked past a certain point.
 public struct Promise<Value,Error> {
+    /// A `Resolver` is used to fulfill, reject, or cancel its associated `Promise`.
     public struct Resolver {
         fileprivate let _box: PromiseBox<Value,Error>
         
@@ -310,6 +311,8 @@ public struct Promise<Value,Error> {
         _box = PromiseBox(result: .error(error))
     }
     
+    // MARK: -
+    
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
@@ -402,8 +405,7 @@ public struct Promise<Value,Error> {
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
-    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    ///   `invalidate()` on the token will prevent `onError` from being invoked.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: The same promise this method was invoked on. In most cases you should ignore the
     ///   return value, it's mainly provided so you can call `.always` on it.
@@ -430,12 +432,12 @@ public struct Promise<Value,Error> {
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
-    ///   receiver is rejected or cancelled, the returned promise will also be rejected or
+    ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
     ///   cancelled.
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
@@ -476,13 +478,13 @@ public struct Promise<Value,Error> {
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
-    ///   `onError`. If the receiver is rejected or cancelled, the returned promise will also be
-    ///   rejected or cancelled.
+    ///   `onError`. If the receiver is fulfilled or cancelled, the returned promise will also be
+    ///   fulfilled or cancelled.
     public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         let pipeContext = options.contains(.enforceContext) ? context : .immediate
@@ -680,6 +682,8 @@ public struct Promise<Value,Error> {
         }
         return self
     }
+    
+    // MARK: -
     
     /// Requests that the `Promise` should be cancelled.
     ///
@@ -1055,7 +1059,7 @@ extension Promise where Error == Swift.Error {
 }
 
 extension Promise: Equatable {
-    /// Two `Promsie`s compare as equal if they represent the same promise.
+    /// Two `Promise`s compare as equal if they represent the same promise.
     ///
     /// Two distinct `Promise`s that are resolved to the same value compare as unequal.
     public static func ==(lhs: Promise, rhs: Promise) -> Bool {
@@ -1243,8 +1247,8 @@ public struct PromiseInvalidationToken {
     
     /// After invoking this method, all `Promise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
-    /// `then(on:token:_:)` will result in a cancelled promise instead if the callback would otherwise
-    /// have been executed.
+    /// `then(on:token:_:)`) will result in a cancelled promise instead if the callback would
+    /// otherwise have been executed.
     ///
     /// In addition, any promises that have been registered with `requestCancelOnInvalidate(_:)`
     /// will be requested to cancel.
