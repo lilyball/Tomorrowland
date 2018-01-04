@@ -19,12 +19,11 @@ import Tomorrowland
 private let specificKey = DispatchSpecificKey<Bool>()
 
 final class EnforceContextTests: XCTestCase {
-    private let queue = DispatchQueue(label: "test queue")
-    
-    override func setUp() {
-        super.setUp()
+    private let queue: DispatchQueue = {
+        let queue = DispatchQueue(label: "test queue")
         queue.setSpecific(key: specificKey, value: true)
-    }
+        return queue
+    }()
     
     func testThen() {
         // not enforcing

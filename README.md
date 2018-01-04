@@ -2,14 +2,14 @@
 
 [![Version](https://img.shields.io/badge/version-v0.1.0-blue.svg)](https://github.com/kballard/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20osx%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
-![Languages](https://img.shields.io/badge/languages-swift-orange.svg)
+![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)][Carthage]
 
 [Carthage]: https://github.com/carthage/carthage
 
-Tomorrowland is an implementation of [Promises](https://en.wikipedia.org/wiki/Futures_and_promises) for Swift. A Promise is a wrapper around an asynchronous
-task that provides a standard way of subscribing to task resolution as well as chaining promises together.
+Tomorrowland is an implementation of [Promises](https://en.wikipedia.org/wiki/Futures_and_promises) for Swift and Objective-C. A Promise is a wrapper around an
+asynchronous task that provides a standard way of subscribing to task resolution as well as chaining promises together.
 
 ```swift
 UIApplication.shared.isNetworkActivityIndicatorVisible = true
@@ -32,6 +32,7 @@ It is loosely based on both [PromiseKit][] and [Hydra][], with a few key distinc
   supports cancelling a promise, but it can't actually stop any work being done by the promise unless the promise body itself polls for the cancellation status (so e.g.
   a promise wrapping a network task can't reasonably cancel the network task). Tomorrowland improves on this by allowing the promise body to observe the
   cancelled state, and allows linking cancellation of a child promise to its parent.
+* Its Obj-C support makes use of generics for improved type safety and better documentation.
 * Like Hydra but unlike PromiseKit, it provides a way to suppress a registered callback (e.g. because you don't care about the result anymore and don't want stale
   data affecting your UI). This is distinct from promise cancellation.
 * Tomorrowland promises are fully generic over the error type, whereas both PromiseKit and Hydra only support using `Error` as the error type. This may result in
@@ -264,6 +265,12 @@ error if the receiver isn't resolved within the given interval.
 
 `Promise.delay(on:_:)` is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for
 testing purposes.
+
+### Objective-C
+
+Tomorrowland has Obj-C compatibility in the form of `TWLPromise<ValueType,ErrorType>`. This is a parallel promise implementation that can be bridged to/from
+`Promise` and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while `TWLPromise` is
+generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).
 
 ## Requirements
 

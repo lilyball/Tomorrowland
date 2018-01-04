@@ -1,0 +1,59 @@
+//
+//  TWLDefines.h
+//  Tomorrowland
+//
+//  Created by Kevin Ballard on 12/30/17.
+//  Copyright © 2017 Kevin Ballard. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+/// Options that can be passed to registered callbacks to affect the behavior of the returned
+/// <tt>TWLPromise</tt>.
+typedef NS_OPTIONS(NSInteger, TWLPromiseOptions) {
+    /// This option links cancellation of the returned \c TWLPromise to the parent promise. When the
+    /// new \c TWLPromise is requested to cancel, the \c TWLPromise it was created from is also
+    /// requested to cancel.
+    ///
+    /// This should be used in cases where you create a cancellable \c TWPromise chain and can
+    /// guarantee the parent promise isn't observable by anyone else.
+    ///
+    /// This option also works well with
+    /// <tt>-[TWLPromiseInvalidationToken requestCancelOnInvalidate]</tt>.
+    ///
+    /// Example:
+    ///
+    /// \code
+    ///return [[TWLPromise<NSData*,NSError*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSData*,NSError*> * _Nonnull resolver) {
+    ///    NSURLSessionDataTask *task = [NSURLSession.sharedSession dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    ///        if (data) {
+    ///            [resolver fulfillWithValue:data];
+    ///        } else if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+    ///            [resolver cancel];
+    ///        } else {
+    ///            [resolver rejectWithError:error];
+    ///        }
+    ///    }];
+    ///    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSData*,NSError*> * _Nonnull resolver) {
+    ///        [task cancel];
+    ///    ];
+    ///    [task resume];
+    ///}] mapOnContext:TWLContext.utility options:TWLPromiseOptionsLinkCancel handler:^(NSData * _Nonnull data) {
+    ///    UIImage *image = [UIImage imageWithData:data];
+    ///    if (image) {
+    ///        return image;
+    ///    } else {
+    ///        return [TWLPromise newRejectedWithError:[NSError errorWithDomain:LoadErrorDomain code:LoadErrorDataIsNotImage userInfo:nil]];
+    ///    }
+    ///}];
+    /// \endcode
+    TWLPromiseOptionsLinkCancel = 1 << 0,
+    
+    /// This option guarantees the returned \c TWLPromise will be resolved on the specified context
+    /// even when its value is taken from a nested \c TWLPromise that resolves on a different
+    /// context.
+    ///
+    /// This option only applies to callback handlers that return a nested <tt>TWLPromise</tt>. All
+    /// other callback handlers already resolve on the specified context.
+    TWLPromiseOptionsEnforceContext = 1 << 1
+};

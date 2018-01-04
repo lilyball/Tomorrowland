@@ -1327,9 +1327,11 @@ extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
 
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
 public struct PromiseInvalidationToken {
-    private let _box = PromiseInvalidationTokenBox()
+    private let _box: PromiseInvalidationTokenBox
     
-    public init() {}
+    public init() {
+        _box = PromiseInvalidationTokenBox()
+    }
     
     /// After invoking this method, all `Promise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
@@ -1345,6 +1347,12 @@ public struct PromiseInvalidationToken {
     /// Registers a `Promise` to be requested to cancel automatically when the token is invalidated.
     public func requestCancelOnInvalidate<V,E>(_ promise: Promise<V,E>) {
         _box.requestCancelOnInvalidate(promise.cancellable)
+    }
+    
+    /// Registers an `ObjCPromise` to be requested to cancel automatically when the token is
+    /// invalidated.
+    public func requestCancelOnInvalidate<V,E>(_ promise: ObjCPromise<V,E>) {
+        _box.requestCancelOnInvalidate(PromiseCancellable(promise))
     }
     
     internal var generation: UInt {

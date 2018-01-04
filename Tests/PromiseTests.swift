@@ -530,7 +530,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testResolvingFulfilledPromise() {
-        // Resolving a promise that has already been fulfliled does nothing
+        // Resolving a promise that has already been fulfilled does nothing
         let expectation = XCTestExpectation(description: "promise")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.fulfill(with: 42)
@@ -592,7 +592,7 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation, expectation2], timeout: 1)
     }
     
-    func testMultipleRequestCancel() {
+    func testMultipleOnRequestCancel() {
         let queue = DispatchQueue(label: "test queue")
         let expectations = (1...3).map({ XCTestExpectation(description: "onRequestCancel \($0)")} )
         let sema = DispatchSemaphore(value: 0)
@@ -726,33 +726,43 @@ final class PromiseTests: XCTestCase {
                     XCTAssertTrue(initialDelayed) // this block shouldn't be immediate
                     observer.invoked = false
                     resolver.fulfill(with: 42)
-                }).then(on: .main, { (x) -> Int in
+                }).then(on: .main, { (x) -> Void in
                     XCTAssertFalse(observer.invoked, "then callback was delayed")
                     XCTAssertEqual(order, 0)
                     order += 1
                     observer.invoked = false
-                    return x+1
-                }).then(on: .main, { (x) -> Promise<Int,String> in
+                }).then(on: .main, { (x) -> Int in
                     XCTAssertFalse(observer.invoked, "second then callback was delayed")
                     XCTAssertEqual(order, 1)
+                    order += 1
+                    observer.invoked = false
+                    return 43
+                }).then(on: .main, { (x) -> Promise<Int,String> in
+                    XCTAssertFalse(observer.invoked, "third then callback was delayed")
+                    XCTAssertEqual(order, 2)
                     order += 1
                     observer.invoked = false
                     return Promise(rejected: "error")
                 }).catch(on: .main, { (x) in
                     XCTAssertFalse(observer.invoked, "catch callback was delayed")
-                    XCTAssertEqual(order, 2)
-                    order += 1
-                    // don't reset observer.invoked, recover callback is executed on the same promise
-                }).recover(on: .main, { (x) in
-                    XCTAssertFalse(observer.invoked, "recover callback was delayed")
                     XCTAssertEqual(order, 3)
                     order += 1
                     observer.invoked = false
-                    return 42
-                }).always(on: .main, { (x) in
-                    XCTAssertFalse(observer.invoked, "always callback was delayed")
+                }).recover(on: .main, { (x) in
+                    XCTAssertFalse(observer.invoked, "recover callback was delayed")
                     XCTAssertEqual(order, 4)
                     order += 1
+                    observer.invoked = false
+                    return 42
+                }).always(on: .main, { (x) -> Promise<Int,String> in
+                    XCTAssertFalse(observer.invoked, "always callback was delayed")
+                    XCTAssertEqual(order, 5)
+                    order += 1
+                    observer.invoked = false
+                    return Promise.init(fulfilled: 42)
+                }).always(on: .main, { (x) -> Void in
+                    XCTAssertFalse(observer.invoked, "second always callback was delayed")
+                    XCTAssertEqual(order, 6)
                     expectation.fulfill()
                 })
                 initialDelayed = true
@@ -780,9 +790,9 @@ final class PromiseTests: XCTestCase {
                     return Promise(rejected: "error")
                 }).catch(on: .queue(.main), { (x) in
                     XCTAssertTrue(observer.invoked, "catch callback wasn't delayed")
-                    // don't reset observer.invoked, recover callback is executed on the same promise
+                    observer.invoked = false
                 }).recover(on: .queue(.main), { (x) in
-                    XCTAssertTrue(observer.invoked, "recover callback wasn't delayed")
+                    XCTAssertFalse(observer.invoked, "recover callback was delayed") // we run on the same promise as the catch
                     observer.invoked = false
                     return 42
                 }).always(on: .queue(.main), { (x) in
