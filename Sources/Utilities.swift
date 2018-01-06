@@ -13,7 +13,7 @@
 //
 
 import Dispatch
-import struct Foundation.TimeInterval
+import Foundation
 
 extension Promise {
     /// Returns a new `Promise` that adopts the receiver's result after a delay.
@@ -146,11 +146,33 @@ extension Promise where Error == Swift.Error {
 /// The error type returned from `Promise.timeout`.
 ///
 /// - SeeAlso: `Promise.timeout`.
-public enum PromiseTimeoutError<Error>: Swift.Error {
+public enum PromiseTimeoutError<Error>: Swift.Error, CustomNSError {
     /// The promise did not resolve within the given interval.
     case timedOut
     /// The promise was rejected with an error.
     case rejected(Error)
+    
+    public var errorUserInfo: [String: Any] {
+        switch self {
+        case .timedOut:
+            return [
+                NSLocalizedFailureReasonErrorKey: "The operation timed out."
+            ]
+        case .rejected(let error):
+            switch error {
+            case let error as Swift.Error:
+                return [
+                    NSLocalizedDescriptionKey: error.localizedDescription,
+                    NSUnderlyingErrorKey: error as NSError
+                ]
+            default:
+                return [
+                    // Don't set localized description because we don't know if the error has a usable description
+                    NSLocalizedFailureReasonErrorKey: String(describing: error)
+                ]
+            }
+        }
+    }
 }
 
 extension PromiseTimeoutError where Error: Equatable {
