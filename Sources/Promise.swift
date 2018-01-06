@@ -1376,13 +1376,15 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
         /// Destroys the linked list.
         ///
         /// - Precondition: The pointer must be initialized.
-        /// - Postcondition: The pointer points to deinitialized memory.
+        /// - Postcondition: The pointer is deallocated.
         static func destroyPointer(_ pointer: UnsafeMutablePointer<CallbackNode>) {
             var nextPointer = pointer.pointee.next
             pointer.deinitialize(count: 1)
-            while let next = nextPointer {
-                nextPointer = next.pointee.next
-                next.deinitialize(count: 1)
+            pointer.deallocate()
+            while let current = nextPointer {
+                nextPointer = current.pointee.next
+                current.deinitialize(count: 1)
+                current.deallocate()
             }
         }
         
@@ -1673,13 +1675,15 @@ extension NodeProtocol {
     /// Destroys the linked list.
     ///
     /// - Precondition: The pointer must be initialized.
-    /// - Postcondition: The pointer points to deinitialized memory.
+    /// - Postcondition: The pointer is deallocated.
     static func destroyPointer(_ pointer: UnsafeMutablePointer<Self>) {
         var nextPointer = pointer.pointee.next
         pointer.deinitialize(count: 1)
-        while let next = nextPointer {
-            nextPointer = next.pointee.next
-            next.deinitialize(count: 1)
+        pointer.deallocate()
+        while let current = nextPointer {
+            nextPointer = current.pointee.next
+            current.deinitialize(count: 1)
+            current.deallocate()
         }
     }
     
