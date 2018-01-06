@@ -1,0 +1,95 @@
+//
+//  TWLDelayedPromiseTests.m
+//  TomorrowlandTests
+//
+//  Created by Kevin Ballard on 1/5/18.
+//  Copyright © 2018 Kevin Ballard. All rights reserved.
+//
+
+#import <XCTest/XCTest.h>
+#import "XCTestCase+TWLPromise.h"
+@import Tomorrowland;
+
+@interface TWLDelayedPromiseTests : XCTestCase
+
+@end
+
+@interface TWLDelayedPromiseTestsDropSpy : NSObject
+- (nonnull instancetype)initWithDropCallback:(void (^)(void))dropCallback NS_DESIGNATED_INITIALIZER;
++ (nonnull instancetype)new NS_UNAVAILABLE;
+- (nonnull instancetype)init NS_UNAVAILABLE;
+@end
+
+@implementation TWLDelayedPromiseTests
+
+- (void)testDelayedPromiseResolves {
+    TWLDelayedPromise<NSNumber*,NSString*> *dp = [TWLDelayedPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTestExpectation *expectation = [self expectationOnSuccess:dp.promise expectedValue:@42];
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testDelayedPromiseDelays {
+    __block BOOL invoked = NO;
+    TWLDelayedPromise<NSNumber*,NSString*> *dp = [TWLDelayedPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        invoked = YES;
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTAssertFalse(invoked);
+    (void)dp.promise;
+    XCTAssertTrue(invoked);
+}
+
+- (void)testDelayedPromiseReturnsSamePromise {
+    TWLDelayedPromise *dp = [TWLDelayedPromise newOnContext:TWLContext.utility handler:^(TWLResolver * _Nonnull resolver) {
+        [resolver fulfillWithValue:@42];
+    }];
+    TWLPromise *promiseA = dp.promise;
+    TWLPromise *promiseB = dp.promise;
+    XCTAssertEqualObjects(promiseA, promiseB);
+    XCTestExpectation *expectationA = [self expectationOnSuccess:promiseA expectedValue:@42];
+    XCTestExpectation *expectationB = [self expectationOnSuccess:promiseB expectedValue:@42];
+    [self waitForExpectations:@[expectationA, expectationB] timeout:1];
+}
+
+- (void)testDelayedPromiseDropsCallbackAfterInvocation {
+    XCTestExpectation *dropExpectation = [[XCTestExpectation alloc] initWithDescription:@"callback dropped"];
+    XCTestExpectation *notDroppedExpectation = [[XCTestExpectation alloc] initWithDescription:@"callback not yet dropped"];
+    notDroppedExpectation.inverted = YES;
+    TWLDelayedPromise *dp;
+    @autoreleasepool {
+        TWLDelayedPromiseTestsDropSpy *dropSpy = [[TWLDelayedPromiseTestsDropSpy alloc] initWithDropCallback:^{
+            [dropExpectation fulfill];
+            [notDroppedExpectation fulfill];
+        }];
+        dp = [TWLDelayedPromise newOnContext:TWLContext.utility handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver fulfillWithValue:@42];
+            (void)dropSpy;
+        }];
+        dropSpy = nil;
+    }
+    [self waitForExpectations:@[notDroppedExpectation] timeout:0]; // ensure DropSpy is held by dp
+    (void)dp.promise;
+    [self waitForExpectations:@[dropExpectation] timeout:1];
+    (void)dp;
+}
+
+@end
+
+@implementation TWLDelayedPromiseTestsDropSpy {
+    void (^ _Nonnull _callback)(void);
+}
+
+- (instancetype)initWithDropCallback:(void (^)(void))dropCallback {
+    if ((self = [super init])) {
+        _callback = [dropCallback copy];
+    }
+    return self;
+}
+
+- (void)dealloc {
+    _callback();
+}
+
+@end

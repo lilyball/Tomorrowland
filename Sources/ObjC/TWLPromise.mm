@@ -6,7 +6,7 @@
 //  Copyright © 2018 Kevin Ballard. All rights reserved.
 //
 
-#import <Tomorrowland/TWLPromise.h>
+#import "TWLPromisePrivate.h"
 #import <Tomorrowland/Tomorrowland-Swift.h>
 #import "TWLContextPrivate.h"
 #import "TWLPromiseBox.h"
@@ -16,8 +16,6 @@
 @public
     TWLPromise * _Nonnull _promise;
 }
-
-- (nonnull instancetype)initWithPromise:(nonnull TWLPromise<id,id> *)promise NS_DESIGNATED_INITIALIZER;
 @end
 
 @interface TWLInvalidationToken (Private)
@@ -26,7 +24,6 @@
 
 @implementation TWLPromise {
 @public
-    TWLPromiseBox * _Nonnull _box;
     id _Nullable _value;
     id _Nullable _error;
 }
@@ -80,6 +77,13 @@
     if ((self = [super init])) {
         _box = [[TWLPromiseBox alloc] init];
         *outResolver = [[TWLResolver alloc] initWithPromise:self];
+    }
+    return self;
+}
+
+- (instancetype)initDelayed {
+    if ((self = [super init])) {
+        _box = [[TWLPromiseBox alloc] initWithState:TWLPromiseBoxStateDelayed];
     }
     return self;
 }

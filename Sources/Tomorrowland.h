@@ -23,3 +23,4 @@ FOUNDATION_EXPORT const unsigned char TomorrowlandVersionString[];
 #import <Tomorrowland/TWLPromise.h>
 #import <Tomorrowland/TWLDefines.h>
 #import <Tomorrowland/TWLContext.h>
+#import <Tomorrowland/TWLDelayedPromise.h>
