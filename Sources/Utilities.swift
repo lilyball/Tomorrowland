@@ -63,15 +63,7 @@ extension Promise {
     /// - Returns: A new `Promise`.
     public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,PromiseTimeoutError<Error>> {
         let (promise, resolver) = Promise<Value,PromiseTimeoutError<Error>>.makeWithResolver()
-        _box.enqueue { (result) in
-            context.execute {
-                resolver.resolve(with: result.mapError({ .rejected($0) }))
-            }
-        }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
-        }
-        context.getQueue().asyncAfter(deadline: .now() + delay) { [weak _box, weak newBox=promise._box] in
+        let timeoutBlock = DispatchWorkItem { [weak _box, weak newBox=promise._box] in
             if let box = newBox {
                 let resolver = Promise<Value,PromiseTimeoutError<Error>>.Resolver(box: box)
                 // double-check the result just in case
@@ -85,6 +77,16 @@ extension Promise {
                 _box?.requestCancel()
             }
         }
+        _box.enqueue { (result) in
+            timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
+            context.execute {
+                resolver.resolve(with: result.mapError({ .rejected($0) }))
+            }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
+            cancellable.requestCancel()
+        }
+        context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise
     }
 }
@@ -113,15 +115,7 @@ extension Promise where Error == Swift.Error {
     /// - Returns: A new `Promise`.
     public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { (result) in
-            context.execute {
-                resolver.resolve(with: result)
-            }
-        }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
-        }
-        context.getQueue().asyncAfter(deadline: .now() + delay) { [weak _box, weak newBox=promise._box] in
+        let timeoutBlock = DispatchWorkItem { [weak _box, weak newBox=promise._box] in
             if let box = newBox {
                 let resolver = Promise<Value,Error>.Resolver(box: box)
                 // double-check the result just in case
@@ -135,6 +129,16 @@ extension Promise where Error == Swift.Error {
                 _box?.requestCancel()
             }
         }
+        _box.enqueue { (result) in
+            timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
+            context.execute {
+                resolver.resolve(with: result)
+            }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
+            cancellable.requestCancel()
+        }
+        context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise
     }
 }
