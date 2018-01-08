@@ -136,6 +136,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0ACA1F82200316DB00A65481 /* ObjC */ = {
+			isa = PBXGroup;
+			children = (
+				0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */,
+				0ACA1F6E200087EB00A65481 /* ObjCEnforceContextTests.m */,
+				0ACA1F76200095F400A65481 /* TWLDelayedPromiseTests.m */,
+				0ACA1F8020020FC900A65481 /* TWLUtilityTests.m */,
+			);
+			path = ObjC;
+			sourceTree = "<group>";
+		};
 		0AFD1B621FFD790500AB2029 /* ObjC */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,10 +221,7 @@
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
 				0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */,
 				0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */,
-				0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */,
-				0ACA1F6E200087EB00A65481 /* ObjCEnforceContextTests.m */,
-				0ACA1F76200095F400A65481 /* TWLDelayedPromiseTests.m */,
-				0ACA1F8020020FC900A65481 /* TWLUtilityTests.m */,
+				0ACA1F82200316DB00A65481 /* ObjC */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
 			path = Tests;
