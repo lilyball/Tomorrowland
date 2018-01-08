@@ -196,8 +196,8 @@ requested to cancel (using `.requestCancel()`) the next time the token is invali
 
 #### `.linkCancel`
 
-Most promise callback registration methods have an optional `options:` parameter. Right now there is only one option, called `.linkCancel`. This option makes it
-so requesting the resulting `Promise` to cancel automatically requests its parent to cancel. This should be used whenever you have a child promise whose parent is
+Most promise callback registration methods have an optional `options:` parameter. One of these options is called `.linkCancel`. This option makes it so
+requesting the resulting `Promise` to cancel automatically requests its parent to cancel. This should be used whenever you have a child promise whose parent is
 cancellable and is guaranteed to be non-observable by any other promise. This is also commonly used with `PromiseInvalidationToken`'s
 `requestCancelOnInvalidate(_:)` method, so invalidating the child promise's callbacks will then automatically cancel the parent.
 
@@ -230,7 +230,7 @@ class URLImageView: UIImageView {
 }
 ```
 
-This is particularly useful when writing methods that return chained promises
+This is particularly useful when writing methods that return chained promises.
 
 ### Promise Helpers
 
