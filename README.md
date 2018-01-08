@@ -80,7 +80,7 @@ let promise = Promise<String,Error>(on: .utility, { (resolver) in
 ```
 
 The body of this promise runs on the specified `PromiseContext`, which in this case is `.utility` (which means `DispatchQueue.global(qos: .utility)`).
-Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on th main thread. The available contexts
+Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on the main thread. The available contexts
 include `.main`, every Dispatch QoS, a specific `DispatchQueue`, a specific `OperationQueue`, or the value `.immediate` which means to run the block
 synchronously. There's also the special context `.auto`, which evaluates to `.main` on the main thread and `.default` otherwise. This special context is the default
 context for all callbacks that don't otherwise specify one.
