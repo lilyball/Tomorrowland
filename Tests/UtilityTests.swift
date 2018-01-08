@@ -210,9 +210,7 @@ final class UtilityTests: XCTestCase {
     
     func testZeroDelayAlreadyResolved() {
         let promise = Promise<Int,String>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
-        let expectation = XCTestExpectation(onSuccess: promise, handler: { (x) in
-            XCTAssertEqual(x, 42)
-        })
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
         wait(for: [expectation], timeout: 1)
     }
     

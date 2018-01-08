@@ -18,15 +18,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TWLPromise () {
+@interface TWLPromise<ValueType,ErrorType> () {
 @public
     TWLPromiseBox * _Nonnull _box;
 }
 - (instancetype)initDelayed NS_DESIGNATED_INITIALIZER;
+
+- (void)enqueueCallback:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))callback;
 @end
 
-@interface TWLResolver ()
-- (nonnull instancetype)initWithPromise:(nonnull TWLPromise<id,id> *)promise NS_DESIGNATED_INITIALIZER;
+@interface TWLResolver<ValueType,ErrorType> ()
+- (nonnull instancetype)initWithPromise:(nonnull TWLPromise<ValueType,ErrorType> *)promise NS_DESIGNATED_INITIALIZER;
 @end
 
 NS_ASSUME_NONNULL_END

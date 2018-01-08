@@ -24,7 +24,9 @@
 @class TWLResolver<ValueType,ErrorType>;
 @class TWLInvalidationToken;
 
+#ifndef TWL_WARN_UNUSED_RESULT
 #define TWL_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 

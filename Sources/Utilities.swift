@@ -30,11 +30,7 @@ extension Promise {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [queue=context.getQueue()] (result) in
             queue.asyncAfter(deadline: .now() + delay) {
-                switch result {
-                case .value(let value): resolver.fulfill(with: value)
-                case .error(let error): resolver.reject(with: error)
-                case .cancelled: resolver.cancel()
-                }
+                resolver.resolve(with: result)
             }
         }
         return promise
