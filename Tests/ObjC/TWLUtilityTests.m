@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
+#include <mach/mach_time.h>
 @import Tomorrowland;
 
 @interface TWLUtilityTests : XCTestCase
