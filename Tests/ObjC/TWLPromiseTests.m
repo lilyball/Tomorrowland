@@ -739,6 +739,15 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)compileTimeCheckForVariance:(TWLPromise<NSObject*,NSString*> *)promise resolver:(TWLResolver<NSObject*,NSString*> *)resolver {
+    // promises are covariant
+    TWLPromise<NSObject*,NSObject*> *upcastPromise = promise;
+#pragma unused(upcastPromise)
+    // resolvers are contravariant
+    TWLResolver<NSNumber*,NSString*> *upcastResolver = resolver;
+#pragma unused(upcastResolver)
+}
+
 @end
 
 @implementation TWLPromiseTestsRunLoopObserver {
