@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/kballard/Tomorrowland.git", :tag => "v#{s.version}" }
   s.source_files  = "Sources/**/*.{h,m,mm,swift}"
-  s.private_header_files = "Sources/Private/*.h"
+  s.private_header_files = "Sources/Private/*.h", "Sources/ObjC/*Private.h", "Sources/ObjC/objc_cast.h"
 
   s.module_map = "Sources/tomorrowland.modulemap"
 end
