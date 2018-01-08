@@ -274,7 +274,7 @@ generic over its types, the return values of callback registration methods that 
 
 ## Requirements
 
-Requires a minimum of iOS 8, macOS 10.10, watchOS 2.0, or tvOS 9.0.
+Requires a minimum of iOS 9, macOS 10.10, watchOS 2.0, or tvOS 9.0.
 
 ## License
 
