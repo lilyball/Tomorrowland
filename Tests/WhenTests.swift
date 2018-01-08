@@ -393,8 +393,8 @@ final class WhenFirstTests: XCTestCase {
         })
         let promise = when(first: promises)
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 6)
-        sema.signal()
         wait(for: [expectation], timeout: 1)
+        sema.signal()
     }
     
     func testWhenRejected() {
@@ -413,8 +413,8 @@ final class WhenFirstTests: XCTestCase {
         })
         let promise = when(first: promises)
         let expectation = XCTestExpectation(onError: promise, expectedError: "foo")
-        sema.signal()
         wait(for: [expectation], timeout: 1)
+        sema.signal()
     }
     
     func testWhenCancelled() {
@@ -446,6 +446,36 @@ final class WhenFirstTests: XCTestCase {
         let promise = when(first: promises)
         let expectation = XCTestExpectation(onCancel: promise)
         wait(for: [expectation], timeout: 1)
+    }
+    
+    func testWhenCancelRemaining() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promisesAndExpectations = (1...5).map({ x -> (Promise<Int,String>,XCTestExpectation) in
+            let expectation = XCTestExpectation(description: "promise \(x)")
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                if x == 3 {
+                    resolver.fulfill(with: x * 2)
+                    expectation.fulfill()
+                } else {
+                    resolver.onRequestCancel(on: .immediate) { (resolver) in
+                        expectation.fulfill()
+                        resolver.cancel()
+                    }
+                    sema.wait()
+                    sema.signal()
+                    resolver.fulfill(with: x * 2)
+                }
+            })
+            return (promise,expectation)
+        })
+        let promises = promisesAndExpectations.map({ $0.0 })
+        let expectations = promisesAndExpectations.map({ $0.1 })
+        let promise = when(first: promises, cancelRemaining: true)
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 6)
+        wait(for: [expectation], timeout: 1)
+        sema.signal()
+        wait(for: expectations, timeout: 1)
     }
     
     func testWhenEmptyInput() {

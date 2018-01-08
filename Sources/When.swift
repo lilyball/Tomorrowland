@@ -15,18 +15,18 @@
 import Tomorrowland.Private
 
 /// Waits on an array of `Promise`s and returns a `Promise` that is fulfilled with an array of the
-/// resulting values.
+/// resulting fulfilled values.
 ///
 /// The value of the returned `Promise` is an array of the same length as the input array and where
 /// each element in the resulting array corresponds to the same element in the input array.
 ///
 /// If any input `Promise` is rejected, the resulting `Promise` is rejected with the same error. If
 /// any input `Promise` is cancelled, the resulting `Promise` is cancelled. If multiple input
-/// `Promise`s are rejected or cancelled, the first such one determines how the resulting `Promise`
+/// `Promise`s are rejected or cancelled, the first such one determines how the returned `Promise`
 /// behaves.
 ///
-/// - Parameter promises: An array of `Promise`s whose values will be collected to fulfill the
-///   returned `Promise`.
+/// - Parameter promises: An array of `Promise`s whose fulfilled values will be collected to fulfill
+///   the returned `Promise`.
 /// - Parameter qos: The QoS to use for the dispatch queues that coordinate the work. The default
 ///   value is `.default`.
 /// - Parameter cancelOnFailure: If `true`, all input `Promise`s will be cancelled if any of them
@@ -54,9 +54,10 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     var resultBuffer = UnsafeMutablePointer<Value?>.allocate(capacity: count)
     resultBuffer.initialize(repeating: nil, count: count)
     let group = DispatchGroup()
+    let context = PromiseContext(qos: qos)
     for (i, promise) in promises.enumerated() {
         group.enter()
-        promise.always(on: PromiseContext(qos: qos), { (result) in
+        promise.always(on: context, { (result) in
             switch result {
             case .value(let value):
                 resultBuffer[i] = value
