@@ -139,12 +139,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -mapOnContext:options:handler and pass the \c TWLPromiseOptionsEnforceContext option.
-///
 /// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
 /// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
 /// use \c -mapOnContext:handler: instead.
@@ -159,12 +153,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -mapOnContext:options:handler and pass the \c TWLPromiseOptionsEnforceContext option.
-///
 /// \param context The context to invoke the callback on.
 /// \param handler The callback that is invoked with the fulfilled value.
 /// \returns A new promise that will be fulfilled with the return value of \a handler. If the
@@ -175,12 +163,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If the receiver is fulfilled, the returned promise will be fulfilled using the result of the
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -mapOnContext:token:options:handler and pass the \c TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
@@ -196,12 +178,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must pass the \c
-/// TWLPromiseOptionsEnforceContext option.
-///
 /// \param context The context to invoke the callback on.
 /// \param options Options which affect the cancellation and invalidation behavior of the returned
 /// <tt>TWLPromise</tt>.
@@ -214,12 +190,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If the receiver is fulfilled, the returned promise will be fulfilled using the result of the
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must pass the \c
-/// TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
@@ -274,12 +244,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -recoverOnContext:token:handler: and pass the \c TWLPromiseOptionsEnforceContext option.
-///
 /// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
 /// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
 /// use \c -recoverOnContext:handler: instead.
@@ -294,12 +258,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -recoverOnContext:token:handler: and pass the \c TWLPromiseOptionsEnforceContext option.
-///
 /// \param context The context to invoke the callback on.
 /// \param handler The callback that is invoked with the rejected error.
 /// \returns A new promise that will be fulfilled with the return value of \a handler. If the
@@ -310,12 +268,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If the receiver is rejected, the returned promise will be fulfilled using the result of the
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must pass the \c
-/// TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
@@ -331,12 +283,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must use \c
-/// -recoverOnContext:token:options:handler: and pass the \c TWLPromiseOptionsEnforceContext option.
-///
 /// \param context The context to invoke the callback on.
 /// \param options Options which affect the cancellation and invalidation behavior of the returned
 /// <tt>TWLPromise</tt>.
@@ -349,12 +295,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If the receiver is rejected, the returned promise will be fulfilled using the result of the
 /// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// If \c handler is invoked and returns a <tt>TWLPromise</tt>, by default the returned promise will
-/// be resolved immediately on the same context that the nested promise is resolved on. If you want
-/// to ensure the returned promise resolves on \a context then you must pass the \c
-/// TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
@@ -404,12 +344,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// By default the returned promise will be resolved immediately on the same context that the nested
-/// promise is resolved on. If you want to ensure the returned promise resolves on \a context then
-/// you must use \c -alwaysOnContext:token:handler: and pass the \c TWLPromiseOptionsEnforceContext
-/// option.
-///
 /// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
 /// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
 /// use \c -alwaysOnContext:handler: instead.
@@ -426,12 +360,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// By default the returned promise will be resolved immediately on the same context that the nested
-/// promise is resolved on. If you want to ensure the returned promise resolves on \a context then
-/// you must use \c -alwaysOnContext:token:handler: and pass the \c TWLPromiseOptionsEnforceContext
-/// option.
-///
 /// \param context The context to invoke the callback on.
 /// \param handler The callback that is invoked with the promise's result. The first parameter is
 /// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
@@ -444,11 +372,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// When the receiver is resolved, the returned promise will be fulfilled using the result of
 /// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// By default the returned promise will be resolved immediately on the same context that the nested
-/// promise is resolved on. If you want to ensure the returned promise resolves on \a context then
-/// you must pass the \c TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
@@ -466,12 +389,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
 ///
-/// \warning
-/// By default the returned promise will be resolved immediately on the same context that the nested
-/// promise is resolved on. If you want to ensure the returned promise resolves on \a context then
-/// you must use \c -alwaysOnContext:token:options:handler: and pass the \c
-/// TWLPromiseOptionsEnforceContext option.
-///
 /// \param context The context to invoke the callback on.
 /// \param options Options which affect the cancellation and invalidation behavior of the returned
 /// <tt>TWLPromise</tt>.
@@ -486,11 +403,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// When the receiver is resolved, the returned promise will be fulfilled using the result of
 /// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
 /// resolved using the result of that nested promise.
-///
-/// \warning
-/// By default the returned promise will be resolved immediately on the same context that the nested
-/// promise is resolved on. If you want to ensure the returned promise resolves on \a context then
-/// you must pass the \c TWLPromiseOptionsEnforceContext option.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on

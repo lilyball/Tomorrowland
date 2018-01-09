@@ -161,7 +161,6 @@
 - (TWLPromise *)mapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto pipeContext = (options & TWLPromiseOptionsEnforceContext) ? context : TWLContext.immediate;
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [context executeBlock:^{
@@ -171,7 +170,7 @@
                 } else {
                     id newValue = handler(value);
                     if (auto nextPromise = objc_cast<TWLPromise>(newValue)) {
-                        [nextPromise pipeToResolver:resolver onContext:pipeContext];
+                        [nextPromise pipeToResolver:resolver];
                     } else {
                         [resolver fulfillWithValue:newValue];
                     }
@@ -232,7 +231,6 @@
 - (TWLPromise *)recoverOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto pipeContext = (options & TWLPromiseOptionsEnforceContext) ? context : TWLContext.immediate;
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [context executeBlock:^{
@@ -244,7 +242,7 @@
                 } else {
                     id newValue = handler(error);
                     if (auto nextPromise = objc_cast<TWLPromise>(newValue)) {
-                        [nextPromise pipeToResolver:resolver onContext:pipeContext];
+                        [nextPromise pipeToResolver:resolver];
                     } else {
                         [resolver fulfillWithValue:newValue];
                     }
@@ -301,7 +299,6 @@
 - (TWLPromise *)alwaysOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto pipeContext = (options & TWLPromiseOptionsEnforceContext) ? context : TWLContext.immediate;
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [context executeBlock:^{
@@ -309,7 +306,7 @@
                 [resolver cancel];
             } else {
                 auto nextPromise = handler(value, error);
-                [nextPromise pipeToResolver:resolver onContext:pipeContext];
+                [nextPromise pipeToResolver:resolver];
             }
         }];
     }];
@@ -450,11 +447,9 @@ handleCallbacks:
     }
 }
 
-- (void)pipeToResolver:(nonnull TWLResolver *)resolver onContext:(nonnull TWLContext *)context {
+- (void)pipeToResolver:(nonnull TWLResolver *)resolver {
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        [context executeBlock:^{
-            [resolver resolveWithValue:value error:error];
-        }];
+        [resolver resolveWithValue:value error:error];
     }];
     __weak typeof(self) weakSelf = self;
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {

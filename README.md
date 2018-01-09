@@ -85,6 +85,10 @@ include `.main`, every Dispatch QoS, a specific `DispatchQueue`, a specific `Ope
 synchronously. There's also the special context `.auto`, which evaluates to `.main` on the main thread and `.default` otherwise. This special context is the default
 context for all callbacks that don't otherwise specify one.
 
+**Note:** The `.immediate` context can be dangerous to use for callback handlers and should be avoided in most cases. It's primarily intended for creating
+promises, and whenever it's used with a callback handler the handler must be prepared to execute on *any thread*. For callbacks it's usually only useful for short
+thread-agnostic callbacks, such as an `.onRequestCancel` that does nothing more than cancelling a `URLSessionTask`.
+
 The body of a `Promise` receives a "resolver", which it must use to fulfill, reject, or cancel the promise. If the resolver goes out of scope without being used, the
 promise is automatically cancelled. If the promise's error type is `Error`, the promise body may also throw an error (as seen above), which is then used to reject the
 promise. This resolver can also be used to observe cancellation requests using `resolver.onRequestCancel`, as seen here:
@@ -196,7 +200,7 @@ requested to cancel (using `.requestCancel()`) the next time the token is invali
 
 #### `.linkCancel`
 
-Most promise callback registration methods have an optional `options:` parameter. One of these options is called `.linkCancel`. This option makes it so
+Most promise callback registration methods have an optional `options:` parameter. The only option right now is called `.linkCancel`. This option makes it so
 requesting the resulting `Promise` to cancel automatically requests its parent to cancel. This should be used whenever you have a child promise whose parent is
 cancellable and is guaranteed to be non-observable by any other promise. This is also commonly used with `PromiseInvalidationToken`'s
 `requestCancelOnInvalidate(_:)` method, so invalidating the child promise's callbacks will then automatically cancel the parent.

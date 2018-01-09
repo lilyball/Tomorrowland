@@ -10,7 +10,6 @@
 		0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1777D41FF614EA003920C7 /* Compatibility.swift */; };
 		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
 		0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */; };
-		0A2CDAC51FF5FB1300B9C652 /* EnforceContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAC41FF5FB1300B9C652 /* EnforceContextTests.swift */; };
 		0A843A301FFE117200D171B4 /* TWLInvalidationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */; };
 		0A843A321FFF3FC500D171B4 /* objc_cast.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A843A311FFF3FC500D171B4 /* objc_cast.h */; };
 		0A843A341FFF477300D171B4 /* Bridging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A331FFF477300D171B4 /* Bridging.swift */; };
@@ -20,7 +19,6 @@
 		0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0A9482171FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */; };
 		0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */; };
-		0ACA1F6F200087EB00A65481 /* ObjCEnforceContextTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ACA1F6E200087EB00A65481 /* ObjCEnforceContextTests.m */; };
 		0ACA1F72200090B200A65481 /* TWLDelayedPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 0ACA1F70200090B200A65481 /* TWLDelayedPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0ACA1F73200090B200A65481 /* TWLDelayedPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ACA1F71200090B200A65481 /* TWLDelayedPromise.m */; };
 		0ACA1F752000934D00A65481 /* TWLPromisePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 0ACA1F742000934D00A65481 /* TWLPromisePrivate.h */; };
@@ -69,7 +67,6 @@
 		0A1777D41FF614EA003920C7 /* Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compatibility.swift; sourceTree = "<group>"; };
 		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
 		0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromiseTests.swift; sourceTree = "<group>"; };
-		0A2CDAC41FF5FB1300B9C652 /* EnforceContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnforceContextTests.swift; sourceTree = "<group>"; };
 		0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TWLInvalidationToken.swift; sourceTree = "<group>"; };
 		0A843A311FFF3FC500D171B4 /* objc_cast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = objc_cast.h; sourceTree = "<group>"; };
 		0A843A331FFF477300D171B4 /* Bridging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bridging.swift; sourceTree = "<group>"; };
@@ -80,7 +77,6 @@
 		0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseInvalidationTokenBox.h; sourceTree = "<group>"; };
 		0A9482151FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseInvalidationTokenBox.m; sourceTree = "<group>"; };
 		0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestExpectation+Promise.swift"; sourceTree = "<group>"; };
-		0ACA1F6E200087EB00A65481 /* ObjCEnforceContextTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjCEnforceContextTests.m; sourceTree = "<group>"; };
 		0ACA1F70200090B200A65481 /* TWLDelayedPromise.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLDelayedPromise.h; sourceTree = "<group>"; };
 		0ACA1F71200090B200A65481 /* TWLDelayedPromise.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLDelayedPromise.m; sourceTree = "<group>"; };
 		0ACA1F742000934D00A65481 /* TWLPromisePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromisePrivate.h; sourceTree = "<group>"; };
@@ -146,7 +142,6 @@
 			isa = PBXGroup;
 			children = (
 				0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */,
-				0ACA1F6E200087EB00A65481 /* ObjCEnforceContextTests.m */,
 				0ACA1F76200095F400A65481 /* TWLDelayedPromiseTests.m */,
 				0ACA1F8720032DC700A65481 /* TWLWhenTests.m */,
 				0ACA1F8020020FC900A65481 /* TWLUtilityTests.m */,
@@ -223,7 +218,6 @@
 				0A843A361FFF5F2200D171B4 /* XCTestCase+TWLPromise.h */,
 				0A843A351FFF5F2200D171B4 /* XCTestCase+TWLPromise.m */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
-				0A2CDAC41FF5FB1300B9C652 /* EnforceContextTests.swift */,
 				0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */,
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
@@ -405,11 +399,9 @@
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				0A843A3A1FFF5F7700D171B4 /* TWLPromiseTests.m in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
-				0ACA1F6F200087EB00A65481 /* ObjCEnforceContextTests.m in Sources */,
 				0ACA1F8120020FC900A65481 /* TWLUtilityTests.m in Sources */,
 				0A843A371FFF5F2200D171B4 /* XCTestCase+TWLPromise.m in Sources */,
 				AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */,
-				0A2CDAC51FF5FB1300B9C652 /* EnforceContextTests.swift in Sources */,
 				0ACA1F8820032DC700A65481 /* TWLWhenTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

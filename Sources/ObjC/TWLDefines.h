@@ -54,12 +54,4 @@ typedef NS_OPTIONS(NSInteger, TWLPromiseOptions) {
     ///}];
     /// \endcode
     TWLPromiseOptionsLinkCancel = 1 << 0,
-    
-    /// This option guarantees the returned \c TWLPromise will be resolved on the specified context
-    /// even when its value is taken from a nested \c TWLPromise that resolves on a different
-    /// context.
-    ///
-    /// This option only applies to callback handlers that return a nested <tt>TWLPromise</tt>. All
-    /// other callback handlers already resolve on the specified context.
-    TWLPromiseOptionsEnforceContext = 1 << 1
 };
