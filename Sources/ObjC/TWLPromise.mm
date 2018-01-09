@@ -182,12 +182,7 @@
             [resolver cancel];
         }
     }];
-    if (options & TWLPromiseOptionsLinkCancel) {
-        __weak typeof(self) weakSelf = self;
-        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-            [weakSelf requestCancel];
-        }];
-    }
+    applyLinkCancel(options, resolver, self);
     return promise;
 }
 
@@ -252,12 +247,7 @@
             [resolver cancel];
         }
     }];
-    if (options & TWLPromiseOptionsLinkCancel) {
-        __weak typeof(self) weakSelf = self;
-        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-            [weakSelf requestCancel];
-        }];
-    }
+    applyLinkCancel(options, resolver, self);
     return promise;
 }
 
@@ -310,12 +300,7 @@
             }
         }];
     }];
-    if (options & TWLPromiseOptionsLinkCancel) {
-        __weak typeof(self) weakSelf = self;
-        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-            [weakSelf requestCancel];
-        }];
-    }
+    applyLinkCancel(options, resolver, self);
     return promise;
 }
 
@@ -473,6 +458,15 @@ handleCallbacks:
         case TWLPromiseBoxStateCancelled: stateName = @"cancelled"; break;
     }
     return [NSString stringWithFormat:@"<%@: %p state=%@ callbackList=%zd requestCancelList=%zd>", NSStringFromClass([self class]), self, stateName, describe(callbackCount), describe(requestCancelCount)];
+}
+
+static void applyLinkCancel(TWLPromiseOptions options, TWLResolver *resolver, TWLPromise *promise) {
+    if (options & TWLPromiseOptionsLinkCancel) {
+        __weak TWLPromise *cancellable = promise;
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [cancellable requestCancel];
+        }];
+    }
 }
 
 namespace {

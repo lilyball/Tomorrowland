@@ -211,6 +211,14 @@ public struct PromiseOptions: OptionSet {
     ///         }
     ///     })
     public static let linkCancel = PromiseOptions(rawValue: 1 << 0)
+    
+    fileprivate func linkCancelIfSet<T,U,T2,U2>(from resolver: Promise<T,U>.Resolver, to promise: Promise<T2,U2>) {
+        if self.contains(.linkCancel) {
+            resolver.onRequestCancel(on: .immediate, { [cancellable=promise.cancellable] (_) in
+                cancellable.requestCancel()
+            })
+        }
+    }
 }
 
 /// A `Promise` is a construct that will eventually hold a value or error, and can invoke callbacks
@@ -395,11 +403,7 @@ public struct Promise<Value,Error> {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -435,11 +439,7 @@ public struct Promise<Value,Error> {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -502,11 +502,7 @@ public struct Promise<Value,Error> {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -544,11 +540,7 @@ public struct Promise<Value,Error> {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -597,11 +589,7 @@ public struct Promise<Value,Error> {
                 nextPromise.pipe(to: resolver)
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -635,11 +623,7 @@ public struct Promise<Value,Error> {
                 }
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -673,11 +657,7 @@ public struct Promise<Value,Error> {
                 }
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -817,11 +797,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -861,11 +837,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -905,11 +877,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -950,11 +918,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -996,11 +960,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
     
@@ -1042,11 +1002,7 @@ extension Promise where Error == Swift.Error {
                 resolver.cancel()
             }
         }
-        if options.contains(.linkCancel) {
-            resolver.onRequestCancel(on: .immediate, { [cancellable] (_) in
-                cancellable.requestCancel()
-            })
-        }
+        options.linkCancelIfSet(from: resolver, to: self)
         return promise
     }
 }
