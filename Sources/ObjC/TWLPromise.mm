@@ -163,8 +163,8 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        [context executeBlock:^{
-            if (value) {
+        if (value) {
+            [context executeBlock:^{
                 if (token && generation != token.generation) {
                     [resolver cancel];
                 } else {
@@ -175,12 +175,12 @@
                         [resolver fulfillWithValue:newValue];
                     }
                 }
-            } else if (error) {
-                [resolver rejectWithError:error];
-            } else {
-                [resolver cancel];
-            }
-        }];
+            }];
+        } else if (error) {
+            [resolver rejectWithError:error];
+        } else {
+            [resolver cancel];
+        }
     }];
     if (options & TWLPromiseOptionsLinkCancel) {
         __weak typeof(self) weakSelf = self;
@@ -233,10 +233,10 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        [context executeBlock:^{
-            if (value) {
-                [resolver fulfillWithValue:value];
-            } else if (error) {
+        if (value) {
+            [resolver fulfillWithValue:value];
+        } else if (error) {
+            [context executeBlock:^{
                 if (token && generation != token.generation) {
                     [resolver cancel];
                 } else {
@@ -247,10 +247,10 @@
                         [resolver fulfillWithValue:newValue];
                     }
                 }
-            } else {
-                [resolver cancel];
-            }
-        }];
+            }];
+        } else {
+            [resolver cancel];
+        }
     }];
     if (options & TWLPromiseOptionsLinkCancel) {
         __weak typeof(self) weakSelf = self;

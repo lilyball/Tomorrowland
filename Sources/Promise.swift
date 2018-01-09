@@ -380,19 +380,19 @@ public struct Promise<Value,Error> {
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
+            switch result {
+            case .value(let value):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     resolver.fulfill(with: onSuccess(value))
-                case .error(let error):
-                    resolver.reject(with: error)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -419,20 +419,20 @@ public struct Promise<Value,Error> {
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
+            switch result {
+            case .value(let value):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     let nextPromise = onSuccess(value)
                     nextPromise.pipe(to: resolver)
-                case .error(let error):
-                    resolver.reject(with: error)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -487,19 +487,19 @@ public struct Promise<Value,Error> {
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(with: value)
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     resolver.fulfill(with: onError(error))
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -528,20 +528,20 @@ public struct Promise<Value,Error> {
     public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(with: value)
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     let nextPromise = onError(error)
                     nextPromise.pipe(to: resolver)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -798,23 +798,23 @@ extension Promise where Error == Swift.Error {
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
+            switch result {
+            case .value(let value):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         resolver.fulfill(with: try onSuccess(value))
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .error(let error):
-                    resolver.reject(with: error)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -841,12 +841,12 @@ extension Promise where Error == Swift.Error {
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
+            switch result {
+            case .value(let value):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         let nextPromise = try onSuccess(value)
@@ -854,11 +854,11 @@ extension Promise where Error == Swift.Error {
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .error(let error):
-                    resolver.reject(with: error)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -885,12 +885,12 @@ extension Promise where Error == Swift.Error {
     public func then<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
+            switch result {
+            case .value(let value):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         let nextPromise = try onSuccess(value)
@@ -898,11 +898,11 @@ extension Promise where Error == Swift.Error {
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .error(let error):
-                    resolver.reject(with: error)
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -931,23 +931,23 @@ extension Promise where Error == Swift.Error {
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(with: value)
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         resolver.fulfill(with: try onError(error))
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -976,14 +976,14 @@ extension Promise where Error == Swift.Error {
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(with: value)
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         let nextPromise = try onError(error)
@@ -991,9 +991,9 @@ extension Promise where Error == Swift.Error {
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
@@ -1022,14 +1022,14 @@ extension Promise where Error == Swift.Error {
     public func recover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
-            context.execute {
-                switch result {
-                case .value(let value):
-                    resolver.fulfill(with: value)
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
                     guard generation == token?.generation else {
                         resolver.cancel()
-                        break
+                        return
                     }
                     do {
                         let nextPromise = try onError(error)
@@ -1037,9 +1037,9 @@ extension Promise where Error == Swift.Error {
                     } catch {
                         resolver.reject(with: error)
                     }
-                case .cancelled:
-                    resolver.cancel()
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
         if options.contains(.linkCancel) {
