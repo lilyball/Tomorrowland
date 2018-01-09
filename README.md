@@ -117,9 +117,9 @@ Once you have a promise, you can register callbacks to be executed when the prom
 callback, but if you don't specify it then it defaults to `.auto`, which means the main thread if the callback is registered from the main thread, otherwise the dispatch
 queue with QoS `.default`.
 
-When you register a callback, the method also returns a `Promise`. In most cases it's a new `Promise` whose value is affected by the callback, and in some cases
-it's the same `Promise` you just had, being returned again to make chaining convenient. For example, the `then` callback returns a value which is used to fulfill the
-promise returned from `then`. However, `catch` just returns the original `Promise`, so you can call `always` on it.
+When you register a callback, the method also returns a `Promise`. All callback registration methods return a new `Promise` even if the callback doesn't affect the
+value of the promise. The reason for this is so chained callbacks always guarantee that the previous callback finished executing before the new one starts, even
+when using concurrent contexts (e.g. `.utility`).
 
 Most callback registration methods also have versions that allow you to return a `Promise` from your callback. In this event, the resulting `Promise` waits for the
 promise you returned to resolve before adopting its value. This allows for easy composition of promises.
@@ -144,10 +144,9 @@ fetchUserCredentials().then { (credentials) in
 }
 ```
 
-Note that when your callback returns a `Promise`, its error type must be the same as the original promise's error type. The exception to this is when the original
-promise's error type is `Error` and the callback's returned `Promise` has an error type that is compatible with `Error`. The convenience methods for working with
-`Error`-compatible errors don't cover all cases; if you find yourself hitting one of these cases, any `Promise` whose error type conforms to `Error` has a property
-`.upcast` that will convert that error into an `Error` to allow for easier composition of promises.
+When composing callbacks that return promises, you may run into issues with incompatible error types. There are convenience methods for working with promises
+whose errors are compatible with `Error`, but they don't cover all cases. If you find yourself hitting one of these cases, any `Promise` whose error type conforms to
+`Error` has a property `.upcast` that will convert that error into an `Error` to allow for easier composition of promises.
 
 Tomorrowland also offers a typealias `StdPromise<Value>` as shorthand for `Promise<T,Error>`. This is frequently useful to avoid having to repeat the types,
 such as with `StdPromise(fulfilled: someValue)` instead of `Promise<SomeValue,Error>(fulfilled: someValue)`.

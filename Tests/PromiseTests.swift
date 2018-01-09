@@ -162,12 +162,6 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testCatchReturnsSamePromise() {
-        let promiseA = Promise<Int,String>(rejected: "foo")
-        let promiseB = promiseA.catch(on: .utility) { _ in }
-        XCTAssertEqual(promiseA, promiseB)
-    }
-    
     func testRecover() {
         let promise = Promise<Int,String>(rejected: "foo").recover(on: .utility, { (x) in
             return 42
@@ -792,7 +786,7 @@ final class PromiseTests: XCTestCase {
                     XCTAssertTrue(observer.invoked, "catch callback wasn't delayed")
                     observer.invoked = false
                 }).recover(on: .queue(.main), { (x) in
-                    XCTAssertFalse(observer.invoked, "recover callback was delayed") // we run on the same promise as the catch
+                    XCTAssertTrue(observer.invoked, "recover callback wasn't delayed")
                     observer.invoked = false
                     return 42
                 }).always(on: .queue(.main), { (x) in

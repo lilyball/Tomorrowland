@@ -68,14 +68,6 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
-- (void)testThenReturnsSamePromise {
-    TWLPromise<NSNumber*,NSString*> *promiseA = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
-    TWLPromise<NSNumber*,NSString*> *promiseB = [promiseA thenOnContext:TWLContext.utility handler:^(NSNumber * _Nonnull value) {
-        // no-op
-    }];
-    XCTAssertEqualObjects(promiseA, promiseB);
-}
-
 - (void)testMapResult {
     TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.utility handler:^(NSNumber * _Nonnull x) {
         return @(x.integerValue + 1);
@@ -161,14 +153,6 @@
         [expectation fulfill];
     }];
     [self waitForExpectations:@[expectation] timeout:1];
-}
-
-- (void)testCatchReturnsSamePromise {
-    TWLPromise<NSNumber*,NSString*> *promiseA = [TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"];
-    TWLPromise<NSNumber*,NSString*> *promiseB = [promiseA catchOnContext:TWLContext.utility handler:^(NSString * _Nonnull error) {
-        // no-op
-    }];
-    XCTAssertEqualObjects(promiseA, promiseB);
 }
 
 - (void)testRecover {
@@ -618,7 +602,7 @@
                 XCTAssertFalse(observer.invoked, @"then callback was delayed");
                 XCTAssertEqual(order, 0);
                 ++order;
-                // don't reset observer.invoked, map callback is executed on the same promise
+                observer.invoked = NO;
             }] mapOnContext:TWLContext.main handler:^id _Nonnull(id  _Nonnull value) {
                 XCTAssertFalse(observer.invoked, @"map callback was delayed");
                 XCTAssertEqual(order, 1);
@@ -635,7 +619,7 @@
                 XCTAssertFalse(observer.invoked, @"catch callback was delayed");
                 XCTAssertEqual(order, 3);
                 ++order;
-                // don't reset observer.invoked, recover callback is executed on the same promise
+                observer.invoked = NO;
             }] recoverOnContext:TWLContext.main handler:^id _Nonnull(id  _Nonnull error) {
                 XCTAssertFalse(observer.invoked, @"recover callback was delayed");
                 XCTAssertEqual(order, 4);
@@ -681,7 +665,7 @@
                 XCTAssertTrue(observer.invoked, @"catch callback wasn't delayed");
                 observer.invoked = NO;
             }] recoverOnContext:mainContext handler:^id _Nonnull(id _Nonnull error) {
-                XCTAssertFalse(observer.invoked, @"recover callback was delayed"); // we run on the same promise as the catch
+                XCTAssertTrue(observer.invoked, @"recover callback wasn't delayed");
                 observer.invoked = NO;
                 return @42;
             }] inspectOnContext:mainContext handler:^(id _Nullable value, id _Nullable error) {

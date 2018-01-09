@@ -452,21 +452,28 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked.
     /// - Parameter onError: The callback that is invoked with the rejected error.
-    /// - Returns: The same promise this method was invoked on. In most cases you should ignore the
-    ///   return value, it's mainly provided so you can call `.always` on it.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
     @discardableResult
-    public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) -> Promise {
+    public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             switch result {
-            case .value, .cancelled: break
+            case .value(let value):
+                resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
-                    guard generation == token?.generation else { return }
-                    onError(error)
+                    if generation == token?.generation {
+                        onError(error)
+                    }
+                    resolver.reject(with: error)
                 }
+            case .cancelled:
+                resolver.cancel()
             }
         }
-        return self
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -551,16 +558,21 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onComplete` from being invoked.
     /// - Parameter onComplete: The callback that is invoked with the promise's value.
-    /// - Returns: The same promise this method was invoked on.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
     @discardableResult
-    public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
+    public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             context.execute {
-                guard generation == token?.generation else { return }
-                onComplete(result)
+                if generation == token?.generation {
+                    onComplete(result)
+                }
+                resolver.resolve(with: result)
             }
         }
-        return self
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
@@ -668,20 +680,28 @@ public struct Promise<Value,Error> {
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onCancel` from being invoked.
     /// - Parameter onCancel: The callback that is invoked when the promise is cancelled.
-    /// - Returns: The same promise this method was invoked on.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
     @discardableResult
-    public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise {
+    public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onCancel: @escaping () -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             switch result {
-            case .value, .error: break
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                resolver.reject(with: error)
             case .cancelled:
                 context.execute {
-                    guard generation == token?.generation else { return }
-                    onCancel()
+                    if generation == token?.generation {
+                        onCancel()
+                    }
+                    resolver.cancel()
                 }
             }
         }
-        return self
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
     }
     
     // MARK: -

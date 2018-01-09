@@ -122,24 +122,41 @@
 #pragma mark -
 
 - (TWLPromise *)then:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:TWLContext.automatic token:nil handler:handler];
+    return [self thenOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)thenOnContext:(TWLContext *)context handler:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:context token:nil handler:handler];
+    return [self thenOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)thenOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
+    return [self thenOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
+}
+
+- (TWLPromise *)thenOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
+    return [self thenOnContext:context token:nil options:options handler:handler];
+}
+
+- (TWLPromise *)thenOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         if (value) {
             [context executeBlock:^{
-                if (token && generation != token.generation) return;
-                handler(value);
+                if (!token || generation == token.generation) {
+                    handler(value);
+                }
+                [resolver fulfillWithValue:value];
             }];
+        } else if (error) {
+            [resolver rejectWithError:error];
+        } else {
+            [resolver cancel];
         }
     }];
-    return self;
+    applyLinkCancel(options, resolver, self);
+    return promise;
 }
 
 - (TWLPromise *)map:(id _Nonnull (^)(id _Nonnull))handler {
@@ -187,24 +204,41 @@
 }
 
 - (TWLPromise *)catch:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:TWLContext.automatic token:nil handler:handler];
+    return [self catchOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)catchOnContext:(TWLContext *)context handler:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:context token:nil handler:handler];
+    return [self catchOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)catchOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
+    return [self catchOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
+}
+
+- (TWLPromise *)catchOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
+    return [self catchOnContext:context token:nil options:options handler:handler];
+}
+
+- (TWLPromise *)catchOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        if (error) {
+        if (value) {
+            [resolver fulfillWithValue:value];
+        } else if (error) {
             [context executeBlock:^{
-                if (token && generation != token.generation) return;
-                handler(error);
+                if (!token || generation == token.generation) {
+                    handler(error);
+                }
+                [resolver rejectWithError:error];
             }];
+        } else {
+            [resolver cancel];
         }
     }];
-    return self;
+    applyLinkCancel(options, resolver, self);
+    return promise;
 }
 
 - (TWLPromise *)recover:(id _Nonnull (^)(id _Nonnull))handler {
@@ -252,22 +286,35 @@
 }
 
 - (TWLPromise *)inspect:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:TWLContext.automatic token:nil handler:handler];
+    return [self inspectOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)inspectOnContext:(TWLContext *)context handler:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:context token:nil handler:handler];
+    return [self inspectOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)inspectOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
+    return [self inspectOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
+}
+
+- (TWLPromise *)inspectOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nullable, id _Nullable))handler {
+    return [self inspectOnContext:context token:nil options:options handler:handler];
+}
+
+- (TWLPromise *)inspectOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nullable, id _Nullable))handler {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [context executeBlock:^{
-            if (token && generation != token.generation) return;
-            handler(value, error);
+            if (!token || generation == token.generation) {
+                handler(value, error);
+            }
+            [resolver resolveWithValue:value error:error];
         }];
     }];
-    return self;
+    applyLinkCancel(options, resolver, self);
+    return promise;
 }
 
 - (TWLPromise *)always:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
@@ -305,24 +352,41 @@
 }
 
 - (TWLPromise *)whenCancelled:(void (^)(void))handler {
-    return [self whenCancelledOnContext:TWLContext.automatic token:nil handler:handler];
+    return [self whenCancelledOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)whenCancelledOnContext:(TWLContext *)context handler:(void (^)(void))handler {
-    return [self whenCancelledOnContext:context token:nil handler:handler];
+    return [self whenCancelledOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
 }
 
 - (TWLPromise *)whenCancelledOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(void))handler {
+    return [self whenCancelledOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
+}
+
+- (TWLPromise *)whenCancelledOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(void))handler {
+    return [self whenCancelledOnContext:context token:nil options:options handler:handler];
+}
+
+- (TWLPromise *)whenCancelledOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(void))handler {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        if (!value && !error) {
+        if (value) {
+            [resolver fulfillWithValue:value];
+        } else if (error) {
+            [resolver rejectWithError:error];
+        } else {
             [context executeBlock:^{
-                if (token && generation != token.generation) return;
-                handler();
+                if (!token || generation == token.generation) {
+                    handler();
+                }
+                [resolver cancel];
             }];
         }
     }];
-    return self;
+    applyLinkCancel(options, resolver, self);
+    return promise;
 }
 
 - (BOOL)getValue:(id  _Nullable __strong *)outValue error:(id  _Nullable __strong *)outError {
