@@ -193,7 +193,7 @@ final class PromiseTests: XCTestCase {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
             resolver.reject(with: 42)
-        }).always(on: .utility, { (result) -> Promise<String,DummyError> in
+        }).tryAlways(on: .utility, { (result) -> Promise<String,DummyError> in
             throw DummyError()
         })
         let expectation = XCTestExpectation(onError: promise, handler: { (error) in
@@ -206,7 +206,7 @@ final class PromiseTests: XCTestCase {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
             resolver.reject(with: 42)
-        }).always(on: .utility, { (result) -> Promise<String,Swift.Error> in
+        }).tryAlways(on: .utility, { (result) -> Promise<String,Swift.Error> in
             throw DummyError()
         })
         let expectation = XCTestExpectation(onError: promise, handler: { (error) in
@@ -259,7 +259,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testPromiseThenThrowingError() {
-        let promise = Promise<Int,Error>(fulfilled: 42).then(on: .utility, { (x) -> Int in
+        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) -> Int in
             throw TestError()
         })
         let expectation = XCTestExpectation(onError: promise) { (error) in
@@ -272,7 +272,7 @@ final class PromiseTests: XCTestCase {
         func handler(_ x: Int) throws -> Promise<String,Error> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(fulfilled: 42).then(on: .utility, { (x) in
+        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(x)
@@ -287,7 +287,7 @@ final class PromiseTests: XCTestCase {
         func handler(_ x: Int) throws -> Promise<String,TestError> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(fulfilled: 42).then(on: .utility, { (x) in
+        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(x)
@@ -300,7 +300,7 @@ final class PromiseTests: XCTestCase {
     
     func testPromiseRecoverThrowingError() {
         struct DummyError: Error {}
-        let promise = Promise<Int,Error>(rejected: DummyError()).recover(on: .utility, { (error) -> Int in
+        let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) -> Int in
             throw TestError()
         })
         let expectation = XCTestExpectation(onError: promise) { (error) in
@@ -314,7 +314,7 @@ final class PromiseTests: XCTestCase {
         func handler(_ error: Error) throws -> Promise<Int,Error> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(rejected: DummyError()).recover(on: .utility, { (error) in
+        let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(error)
@@ -330,7 +330,7 @@ final class PromiseTests: XCTestCase {
         func handler(_ error: Error) throws -> Promise<Int,TestError> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(rejected: DummyError()).recover(on: .utility, { (error) in
+        let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(error)

@@ -102,7 +102,7 @@ final class CancelTests: XCTestCase {
     func testLinkCancelAlwaysReturningPromiseThrowingCompatibleError() {
         struct DummyError: Swift.Error {}
         let (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-        let promise2 = promise.always(on: .utility, options: [.linkCancel], { (result) -> Promise<String,DummyError> in
+        let promise2 = promise.tryAlways(on: .utility, options: [.linkCancel], { (result) -> Promise<String,DummyError> in
             XCTAssertEqual(result, .cancelled)
             throw DummyError()
         })
@@ -114,7 +114,7 @@ final class CancelTests: XCTestCase {
     
     func testLinkCancelAlwaysReturningPromiseThrowingSwiftError() {
         let (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-        let promise2 = promise.always(on: .utility, options: [.linkCancel], { (result) -> Promise<String,Swift.Error> in
+        let promise2 = promise.tryAlways(on: .utility, options: [.linkCancel], { (result) -> Promise<String,Swift.Error> in
             XCTAssertEqual(result, .cancelled)
             struct DummyError: Swift.Error {}
             throw DummyError()
@@ -128,7 +128,7 @@ final class CancelTests: XCTestCase {
     func testLinkCancelSwiftErrorThenThrowing() {
         struct DummyError: Swift.Error {}
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-        let promise2 = promise.then(on: .utility, options: [.linkCancel], { (_) -> String in
+        let promise2 = promise.tryThen(on: .utility, options: [.linkCancel], { (_) -> String in
             XCTFail("callback invoked")
             struct DummyError: Swift.Error {}
             throw DummyError()
@@ -142,7 +142,7 @@ final class CancelTests: XCTestCase {
     func testLinkCancelSwiftErrorThenReturningPromiseThrowing() {
         struct DummyError: Swift.Error {}
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-        let promise2 = promise.then(on: .utility, options: [.linkCancel], { (_) -> StdPromise<String> in
+        let promise2 = promise.tryThen(on: .utility, options: [.linkCancel], { (_) -> StdPromise<String> in
             XCTFail("callback invoked")
             struct DummyError: Swift.Error {}
             throw DummyError()
@@ -156,7 +156,7 @@ final class CancelTests: XCTestCase {
     func testLinkCancelSwiftErrorThenReturningCompatiblePromiseThrowing() {
         struct DummyError: Swift.Error {}
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-        let promise2 = promise.then(on: .utility, options: [.linkCancel], { (_) -> Promise<Int,DummyError> in
+        let promise2 = promise.tryThen(on: .utility, options: [.linkCancel], { (_) -> Promise<Int,DummyError> in
             XCTFail("callback invoked")
             throw DummyError()
         })
@@ -168,7 +168,7 @@ final class CancelTests: XCTestCase {
     
     func testLinkCancelSwiftErrorRecoverThrowing() {
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(value: 2)
-        let promise2 = promise.recover(on: .utility, options: [.linkCancel], { (_) -> Int in
+        let promise2 = promise.tryRecover(on: .utility, options: [.linkCancel], { (_) -> Int in
             XCTFail("callback invoked")
             struct DummyError: Swift.Error {}
             throw DummyError()
@@ -181,7 +181,7 @@ final class CancelTests: XCTestCase {
     
     func testLinkCancelSwiftErrorRecoverReturningPromiseThrowing() {
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(value: 2)
-        let promise2 = promise.recover(on: .utility, options: [.linkCancel], { (_) -> StdPromise<Int> in
+        let promise2 = promise.tryRecover(on: .utility, options: [.linkCancel], { (_) -> StdPromise<Int> in
             XCTFail("callback invoked")
             struct DummyError: Swift.Error {}
             throw DummyError()
@@ -195,7 +195,7 @@ final class CancelTests: XCTestCase {
     func testLinkCancelSwiftErrorRecoverReturningCompatiblePromiseThrowing() {
         struct DummyError: Swift.Error {}
         let (promise, sema) = StdPromise<Int>.makeCancellablePromise(value: 2)
-        let promise2 = promise.recover(on: .utility, options: [.linkCancel], { (_) -> Promise<Int,DummyError> in
+        let promise2 = promise.tryRecover(on: .utility, options: [.linkCancel], { (_) -> Promise<Int,DummyError> in
             XCTFail("callback invoked")
             throw DummyError()
         })
