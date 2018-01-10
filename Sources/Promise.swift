@@ -491,8 +491,8 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
     ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
     ///   cancelled.
-    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Value) -> Promise<Value,Error> {
-        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+    public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], _ onError: @escaping (Error) -> Value) -> Promise<Value,NoError> {
+        let (promise, resolver) = Promise<Value,NoError>.makeWithResolver()
         _box.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
@@ -760,6 +760,31 @@ extension Promise where Error: Swift.Error {
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
             cancellable.requestCancel()
         }
+    }
+}
+
+extension Promise where Error == NoError {
+    /// Returns a new promise with an error type of `Swift.Error`.
+    ///
+    /// The new promise adopts the exact same result as the receiver. As the receiver's error type
+    /// is `NoError`, the receiver cannot ever be rejected, but this upcast allows the promise to
+    /// compose better with other promises.
+    public var upcast: Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        _box.enqueue { (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error:
+                fatalError("unreachable")
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
+            cancellable.requestCancel()
+        }
+        return promise
     }
 }
 
@@ -1277,6 +1302,28 @@ public struct PromiseInvalidationToken {
     
     internal var generation: UInt {
         return _box.generation
+    }
+}
+
+/// `NoError` is a type that cannot be constructed.
+///
+/// It's intended to be used as the error type for promises that cannot return an error. It is
+/// similar to `Never` except it conforms to some protocols in order to make working with types
+/// containing it easier.
+public enum NoError: Hashable, Equatable, Encodable {
+    // Note: We cannot conform to Decodable, because then someone would be able to attempt to create
+    // an instance of us (which would crash).
+    
+    public static func ==(lhs: NoError, rhs: NoError) -> Bool {
+        return true
+    }
+    
+    public var hashValue: Int {
+        return 0
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        fatalError()
     }
 }
 
