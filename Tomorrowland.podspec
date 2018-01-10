@@ -19,8 +19,11 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = "9.0"
 
   s.source       = { :git => "https://github.com/kballard/Tomorrowland.git", :tag => "v#{s.version}" }
-  s.source_files  = "Sources/**/*.{h,m,mm,swift}"
-  s.private_header_files = "Sources/Private/*.h", "Sources/ObjC/*Private.h", "Sources/ObjC/objc_cast.h"
+
+  project_headers = Dir['Sources/ObjC/*Private.h'] + ['Sources/ObjC/objc_cast.h']
+  s.source_files  = Dir['Sources/**/*.{h,m,mm,swift}'] - project_headers
+  s.private_header_files = 'Sources/Private/*.h'
+  s.preserve_paths = project_headers
 
   s.module_map = "Sources/tomorrowland.modulemap"
 end
