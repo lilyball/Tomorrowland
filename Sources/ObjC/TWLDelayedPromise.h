@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// Example:
 ///
-///<code>
+///\code
 ///std::pair<NSString*,TWLDelayedPromise<UIImage*,NSError*>* getUserInfo() {
 ///    …
 ///}
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///[userInfo.second.promise then:^(UIImage *image){
 ///    weakSelf.imageView.image = image;
 ///}];
-///</code>
+///\endcode
 @interface TWLDelayedPromise<ValueType,ErrorType> : NSObject
 
 /// Returns a \c TWLPromise that asynchronously contains the value of the computation.
