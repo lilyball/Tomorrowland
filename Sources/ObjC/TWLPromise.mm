@@ -444,14 +444,13 @@
 #pragma mark - Private
 
 - (void)resolveOrCancelWithValue:(nullable id)value error:(nullable id)error {
-    NSParameterAssert(value == nil || error == nil);
     if (!value && !error) {
         if ([_box transitionStateTo:TWLPromiseBoxStateCancelled]) {
             goto handleCallbacks;
         }
     } else if ([_box transitionStateTo:TWLPromiseBoxStateResolving]) {
         _value = value;
-        _error = error;
+        _error = value != nil ? nil : error;
         if ([_box transitionStateTo:TWLPromiseBoxStateResolved]) {
             goto handleCallbacks;
         } else {

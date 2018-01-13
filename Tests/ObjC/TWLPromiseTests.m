@@ -50,6 +50,26 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testBasicResolve {
+    TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithValue:@42 error:nil];
+    }];
+    XCTestExpectation *expectation1 = [self expectationOnSuccess:promise1 expectedValue:@42];
+    TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithValue:nil error:@"foo"];
+    }];
+    XCTestExpectation *expectation2 = [self expectationOnError:promise2 expectedError:@"foo"];
+    TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithValue:nil error:nil];
+    }];
+    XCTestExpectation *expectation3 = [self expectationOnCancel:promise3];
+    TWLPromise *promise4 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithValue:@42 error:@"foo"];
+    }];
+    XCTestExpectation *expectation4 = [self expectationOnSuccess:promise4 expectedValue:@42];
+    [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4] timeout:1];
+}
+
 - (void)testAlreadyFulfilled {
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
     __block BOOL invoked = NO;

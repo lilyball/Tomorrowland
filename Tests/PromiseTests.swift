@@ -49,6 +49,22 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testBasicResolve() {
+        let promise1 = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.resolve(with: .value(42))
+        })
+        let expectation1 = XCTestExpectation(onSuccess: promise1, expectedValue: 42)
+        let promise2 = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.resolve(with: .error("foo"))
+        })
+        let expectation2 = XCTestExpectation(onError: promise2, expectedError: "foo")
+        let promise3 = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.resolve(with: .cancelled)
+        })
+        let expectation3 = XCTestExpectation(onCancel: promise3)
+        wait(for: [expectation1, expectation2, expectation3], timeout: 1)
+    }
+    
     func testAlreadyFulfilled() {
         let promise = Promise<Int,String>(fulfilled: 42)
         XCTAssertEqual(promise.result, .value(42))
