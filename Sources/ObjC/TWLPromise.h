@@ -621,20 +621,46 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \param handler The callback to invoke.
 - (void)whenCancelRequestedOnContext:(TWLContext *)context handler:(void (^)(TWLResolver<ValueType,ErrorType> *resolver))handler NS_SWIFT_NAME(onRequestCancel(on:_:));
 
-/// Resolves the promise with the given value or error.
+/// Convenience method for handling framework callbacks.
 ///
-/// This is similar to \c -resolveWithValue:error: except it cannot be used to cancel the promise.
-/// If both \a value and \a error are \c nil this is considered an error and the promise is rejected
-/// with <tt>TWLPromiseCallbackErrorAPIMismatch</tt>.
-///
-/// This is a convenience method meant to be used with framework callbacks. For example:
+/// This method returns a block that can be passed to a framework method as a callback in order to
+/// resolve the promise. For example:
 ///
 ///\code
-///[geocoder reverseGeocodeLocation:location completionHandler:^(NSArray<CLLocation> * _Nullable promises, NSError * _Nullable error) {
-///    [resolver handleCallbackWithValue:promises error:error];
-///}];
+///[geocoder reverseGeocodeLocation:location completionHandler:[resolver handleCallback]];
 ///\endcode
-- (void)handleCallbackWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
+///
+/// If both \a value and \a error passed to the block are \c nil the promise is rejected with
+/// <tt>TWLPromiseCallbackErrorAPIMismatch</tt>. If they're both non-<tt>nil</tt> this should be
+/// considered an error, but the promise will be fulfilled with the value and the error will be
+/// ignored.
+///
+/// \seealso -handleCallback
+- (void (^)(ValueType _Nullable value, ErrorType _Nullable error))handleCallback;
+
+/// Convenience method for handling framework callbacks.
+///
+/// This method returns a block that can be passed to a framework method as a callback in order to
+/// resolve the promise. It takes a block that can be used to determine when the error represents
+/// cancellation. For example:
+///
+///\code
+///[geocoder reverseGeocodeLocation:location completionHandler:[resolver handleCallbackWithCancelPredicate:^(NSError * _Nonnull error) {
+///    return [error.domain isEqualToString:kCLErrorDomain] && error.code == kCLErrorGeocodeCanceled;
+///}]];
+///\endcode
+///
+/// If both \a value and \a error passed to the block are \c nil the promise is rejected with
+/// <tt>TWLPromiseCallbackErrorAPIMismatch</tt>. If they're both non-<tt>nil</tt> this should be
+/// considered an error, but the promise will be fulfilled with the value and the error will be
+/// ignored.
+///
+/// \param predicate A block that is executed if the framework method returns an error. If the
+/// predicate returns \c YES the promise is cancelled instead of rejected.
+/// \returns A block that can be passed to a framework method as a callback.
+///
+/// \seealso -handleCallback
+- (void (^)(ValueType _Nullable value, ErrorType _Nullable error))handleCallbackWithCancelPredicate:(BOOL (^)(ErrorType _Nonnull error))predicate;
 
 @end
 

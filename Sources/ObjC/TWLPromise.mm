@@ -666,13 +666,25 @@ namespace {
     }
 }
 
-- (void)handleCallbackWithValue:(id)value error:(id)error {
-    if (value != nil || error != nil) {
-        [_promise resolveOrCancelWithValue:value error:error];
-    } else {
-        NSError *apiError = [NSError errorWithDomain:TWLPromiseCallbackErrorDomain code:TWLPromiseCallbackErrorAPIMismatch userInfo:nil];
-        [_promise resolveOrCancelWithValue:nil error:apiError];
-    }
+- (void (^)(id _Nullable, id _Nullable))handleCallback {
+    return [self handleCallbackWithCancelPredicate:^(id _Nonnull error) { return NO; }];
+}
+
+- (void (^)(id _Nullable, id _Nullable))handleCallbackWithCancelPredicate:(BOOL (^)(id _Nonnull))predicate {
+    return ^(id _Nullable value, id _Nullable error) {
+        if (value) {
+            [self fulfillWithValue:value];
+        } else if (error) {
+            if (predicate(error)) {
+                [self cancel];
+            } else {
+                [self rejectWithError:error];
+            }
+        } else {
+            NSError *apiError = [NSError errorWithDomain:TWLPromiseCallbackErrorDomain code:TWLPromiseCallbackErrorAPIMismatch userInfo:nil];
+            [self rejectWithError:apiError];
+        }
+    };
 }
 
 @end

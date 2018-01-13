@@ -111,14 +111,13 @@ let promise = Promise<Data,Error>(on: .immediate, { (resolver) in
 })
 ```
 
-Resolvers also have a convenience method `handleCallback(value:error:)` that is intended to make it easy to wrap framework callbacks in promises. This can
-be used as the callback directly, e.g.
+Resolvers also have a convenience method `handleCallback()` that is intended to make it easy to wrap framework callbacks in promises. This method returns a
+closure that can be used as a callback directly. It also takes an optional `isCancelError` parameter that can be used to indicate when an error represents
+cancellation. For example:
 
 ```swift
-geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback)
+geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback(isCancelError: { CLError.geocodeCanceled ~= $0 }))
 ```
-
-Or it could be called from within the callback, if you need to perform additional work first or if the callback has more than 2 parameters.
 
 ### Using Promises
 

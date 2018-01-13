@@ -1083,26 +1083,34 @@ extension Promise.Resolver where Error == Swift.Error {
         }
     }
     
-    /// Resolves the promise with the given value or error.
+    /// Convenience method for handling framework callbacks.
     ///
-    /// This is a convenience method meant to be used with framework callbacks. For example:
+    /// This method returns a closure that can be passed to a framework method as a callback in
+    /// order to resolve the promise. It takes an optional parameter that can be used to determine
+    /// when the error represents cancellation. For example:
     ///
-    ///     geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback)
+    ///     geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback(isCancelError: { CLError.geocodeCanceled ~= $0 }))
     ///
-    /// If both `value` and `error` are `nil` the resolver is rejected with
-    /// `PromiseCallbackError.apiMismatch`. If both `value` and `error` are non-`nil` this should be
-    /// considered an error, but the promise will be fulfilled with the value and will ignore the
-    /// error.
+    /// If both the `Value` and `Error` passed to the closure are `nil` the promise is rejected with
+    /// `PromiseCallbackError.apiMismatch`. If they're both non-`nil` this should be considered an
+    /// error, but the promise will be fulfilled with the value and the error will be ignored.
     ///
-    /// - Parameter value: The value to be fulfilled with, if any.
-    /// - Parameter error: The error to be rejected with, if any.
-    public func handleCallback(value: Value?, error: Error?) {
-        if let value = value {
-            fulfill(with: value)
-        } else if let error = error {
-            reject(with: error)
-        } else {
-            reject(with: PromiseCallbackError.apiMismatch)
+    /// - Parameter isCancelError: An optional block that can be used to indicate that specific
+    ///   errors represent cancellation.
+    /// - Returns: A closure that can be passed to a framework method as a callback.
+    public func handleCallback(isCancelError: @escaping (Error) -> Bool = { _ in false }) -> (Value?, Error?) -> Void {
+        return { (value, error) in
+            if let value = value {
+                self.fulfill(with: value)
+            } else if let error = error {
+                if isCancelError(error) {
+                    self.cancel()
+                } else {
+                    self.reject(with: error)
+                }
+            } else {
+                self.reject(with: PromiseCallbackError.apiMismatch)
+            }
         }
     }
 }

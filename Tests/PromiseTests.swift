@@ -861,22 +861,22 @@ final class PromiseTests: XCTestCase {
     
     func testResolverHandleCallback() {
         let promise1 = StdPromise<Int>(on: .utility, { (resolver) in
-            resolver.handleCallback(value: 42, error: nil)
+            resolver.handleCallback()(42, nil)
         })
         let expectation1 = XCTestExpectation(onSuccess: promise1, expectedValue: 42)
         struct DummyError: Error {}
         let promise2 = StdPromise<Int>(on: .utility, { (resolver) in
-            resolver.handleCallback(value: nil, error: DummyError())
+            resolver.handleCallback()(nil, DummyError())
         })
         let expectation2 = XCTestExpectation(onError: promise2, handler: { (error) in
             XCTAssert(error is DummyError)
         })
         let promise3 = StdPromise<Int>(on: .utility, { (resolver) in
-            resolver.handleCallback(value: 42, error: DummyError())
+            resolver.handleCallback()(42, DummyError())
         })
         let expectation3 = XCTestExpectation(onSuccess: promise3, expectedValue: 42)
         let promise4 = StdPromise<Int>(on: .utility, { (resolver) in
-            resolver.handleCallback(value: nil, error: nil)
+            resolver.handleCallback()(nil, nil)
         })
         let expectation4 = XCTestExpectation(onError: promise4, handler: { (error) in
             switch error {
@@ -884,7 +884,11 @@ final class PromiseTests: XCTestCase {
             default: XCTFail("Expected PromiseCallbackError.apiMismatch, found \(error)")
             }
         })
-        wait(for: [expectation1, expectation2, expectation3, expectation4], timeout: 1)
+        let promise5 = StdPromise<Int>(on: .utility, { (resolver) in
+            resolver.handleCallback(isCancelError: { $0 is DummyError })(nil, DummyError())
+        })
+        let expectation5 = XCTestExpectation(onCancel: promise5)
+        wait(for: [expectation1, expectation2, expectation3, expectation4, expectation5], timeout: 1)
     }
 }
 

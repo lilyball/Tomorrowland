@@ -745,25 +745,31 @@
 
 - (void)testResolverHandleCallback {
     TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
-        [resolver handleCallbackWithValue:@42 error:nil];
+        [resolver handleCallback](@42, nil);
     }];
     XCTestExpectation *expectation1 = [self expectationOnSuccess:promise1 expectedValue:@42];
     TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
-        [resolver handleCallbackWithValue:nil error:@"foo"];
+        [resolver handleCallback](nil, @"foo");
     }];
     XCTestExpectation *expectation2 = [self expectationOnError:promise2 expectedError:@"foo"];
     TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
-        [resolver handleCallbackWithValue:@42 error:@"foo"];
+        [resolver handleCallback](@42, @"foo");
     }];
     XCTestExpectation *expectation3 = [self expectationOnSuccess:promise3 expectedValue:@42];
     TWLPromise *promise4 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
-        [resolver handleCallbackWithValue:nil error:nil];
+        [resolver handleCallback](nil, nil);
     }];
     XCTestExpectation *expectation4 = [self expectationOnError:promise4 handler:^(NSError * _Nonnull error) {
         XCTAssertEqualObjects(error.domain, TWLPromiseCallbackErrorDomain);
         XCTAssertEqual(error.code, TWLPromiseCallbackErrorAPIMismatch);
     }];
-    [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4] timeout:1];
+    TWLPromise *promise5 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver handleCallbackWithCancelPredicate:^BOOL(id _Nonnull error) {
+            return [error isEqual:@"foo"];
+        }](nil, @"foo");
+    }];
+    XCTestExpectation *expectation5 = [self expectationOnCancel:promise5];
+    [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4, expectation5] timeout:1];
 }
 
 - (void)compileTimeCheckForVariance:(TWLPromise<NSObject*,NSString*> *)promise resolver:(TWLResolver<NSObject*,NSString*> *)resolver {
