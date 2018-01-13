@@ -743,6 +743,29 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testResolverHandleCallback {
+    TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver handleCallbackWithValue:@42 error:nil];
+    }];
+    XCTestExpectation *expectation1 = [self expectationOnSuccess:promise1 expectedValue:@42];
+    TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver handleCallbackWithValue:nil error:@"foo"];
+    }];
+    XCTestExpectation *expectation2 = [self expectationOnError:promise2 expectedError:@"foo"];
+    TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver handleCallbackWithValue:@42 error:@"foo"];
+    }];
+    XCTestExpectation *expectation3 = [self expectationOnSuccess:promise3 expectedValue:@42];
+    TWLPromise *promise4 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver handleCallbackWithValue:nil error:nil];
+    }];
+    XCTestExpectation *expectation4 = [self expectationOnError:promise4 handler:^(NSError * _Nonnull error) {
+        XCTAssertEqualObjects(error.domain, TWLPromiseCallbackErrorDomain);
+        XCTAssertEqual(error.code, TWLPromiseCallbackErrorAPIMismatch);
+    }];
+    [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4] timeout:1];
+}
+
 - (void)compileTimeCheckForVariance:(TWLPromise<NSObject*,NSString*> *)promise resolver:(TWLResolver<NSObject*,NSString*> *)resolver {
     // promises are covariant
     TWLPromise<NSObject*,NSObject*> *upcastPromise = promise;

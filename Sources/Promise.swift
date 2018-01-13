@@ -742,6 +742,8 @@ public struct Promise<Value,Error> {
     }
 }
 
+// MARK: Promise<_,E> where E: Swift.Error
+
 extension Promise where Error: Swift.Error {
     /// Returns a new promise with an error type of `Swift.Error`.
     ///
@@ -762,6 +764,8 @@ extension Promise where Error: Swift.Error {
         }
     }
 }
+
+// MARK: Promise<_,NoError>
 
 extension Promise where Error == NoError {
     /// Returns a new promise with an error type of `Swift.Error`.
@@ -787,6 +791,8 @@ extension Promise where Error == NoError {
         return promise
     }
 }
+
+// MARK: Promise<_,Swift.Error>
 
 extension Promise where Error == Swift.Error {
     /// Returns a new `Promise` that will be resolved using the given block.
@@ -1052,6 +1058,8 @@ extension Promise where Error == Swift.Error {
     }
 }
 
+// MARK: Equatable
+
 extension Promise: Equatable {
     /// Two `Promise`s compare as equal if they represent the same promise.
     ///
@@ -1060,6 +1068,8 @@ extension Promise: Equatable {
         return lhs._box === rhs._box
     }
 }
+
+// MARK: Resolver<_,Swift.Error>
 
 extension Promise.Resolver where Error == Swift.Error {
     /// Resolves the promise with the given result.
@@ -1072,6 +1082,36 @@ extension Promise.Resolver where Error == Swift.Error {
         case .cancelled: cancel()
         }
     }
+    
+    /// Resolves the promise with the given value or error.
+    ///
+    /// This is a convenience method meant to be used with framework callbacks. For example:
+    ///
+    ///     geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback)
+    ///
+    /// If both `value` and `error` are `nil` the resolver is rejected with
+    /// `PromiseCallbackError.apiMismatch`. If both `value` and `error` are non-`nil` this should be
+    /// considered an error, but the promise will be fulfilled with the value and will ignore the
+    /// error.
+    ///
+    /// - Parameter value: The value to be fulfilled with, if any.
+    /// - Parameter error: The error to be rejected with, if any.
+    public func handleCallback(value: Value?, error: Error?) {
+        if let value = value {
+            fulfill(with: value)
+        } else if let error = error {
+            reject(with: error)
+        } else {
+            reject(with: PromiseCallbackError.apiMismatch)
+        }
+    }
+}
+
+@objc(TWLPromiseCallbackError)
+public enum PromiseCallbackError: Int, Error {
+    /// The callback did not conform to the expected API.
+    @objc(TWLPromiseCallbackErrorAPIMismatch)
+    case apiMismatch
 }
 
 /// The result of a resolved promise.

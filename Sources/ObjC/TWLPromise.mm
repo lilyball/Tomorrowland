@@ -666,4 +666,13 @@ namespace {
     }
 }
 
+- (void)handleCallbackWithValue:(id)value error:(id)error {
+    if (value != nil || error != nil) {
+        [_promise resolveOrCancelWithValue:value error:error];
+    } else {
+        NSError *apiError = [NSError errorWithDomain:TWLPromiseCallbackErrorDomain code:TWLPromiseCallbackErrorAPIMismatch userInfo:nil];
+        [_promise resolveOrCancelWithValue:nil error:apiError];
+    }
+}
+
 @end

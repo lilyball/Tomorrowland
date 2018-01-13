@@ -621,6 +621,21 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \param handler The callback to invoke.
 - (void)whenCancelRequestedOnContext:(TWLContext *)context handler:(void (^)(TWLResolver<ValueType,ErrorType> *resolver))handler NS_SWIFT_NAME(onRequestCancel(on:_:));
 
+/// Resolves the promise with the given value or error.
+///
+/// This is similar to \c -resolveWithValue:error: except it cannot be used to cancel the promise.
+/// If both \a value and \a error are \c nil this is considered an error and the promise is rejected
+/// with <tt>TWLPromiseCallbackErrorAPIMismatch</tt>.
+///
+/// This is a convenience method meant to be used with framework callbacks. For example:
+///
+///\code
+///[geocoder reverseGeocodeLocation:location completionHandler:^(NSArray<CLLocation> * _Nullable promises, NSError * _Nullable error) {
+///    [resolver handleCallbackWithValue:promises error:error];
+///}];
+///\endcode
+- (void)handleCallbackWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
+
 @end
 
 NS_ASSUME_NONNULL_END

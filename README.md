@@ -111,6 +111,15 @@ let promise = Promise<Data,Error>(on: .immediate, { (resolver) in
 })
 ```
 
+Resolvers also have a convenience method `handleCallback(value:error:)` that is intended to make it easy to wrap framework callbacks in promises. This can
+be used as the callback directly, e.g.
+
+```swift
+geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCallback)
+```
+
+Or it could be called from within the callback, if you need to perform additional work first or if the callback has more than 2 parameters.
+
 ### Using Promises
 
 Once you have a promise, you can register callbacks to be executed when the promise is resolved. As mentioned above, you can specify the context for the
