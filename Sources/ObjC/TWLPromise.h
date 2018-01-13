@@ -606,7 +606,7 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If both \a value and \a error are \c nil the promise is cancelled.
 ///
 /// If the promise has already been resolved or cancelled, this does nothing.
-- (void)resolveWithValue:(nullable ValueType)value error:(nullable ValueType)error;
+- (void)resolveWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
 
 /// Registers a block that will be invoked if \c -requestCancel is invoked on the promise before the
 /// promise is resolved.
