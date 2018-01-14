@@ -416,6 +416,44 @@ public struct Promise<Value,Error> {
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`. If the
+    ///   receiver is rejected or cancelled, the returned promise will also be rejected or
+    ///   cancelled.
+    public func then<U,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onSuccess: @escaping (Object, Value) -> U) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    resolver.fulfill(with: onSuccess(object, value))
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
@@ -443,6 +481,45 @@ public struct Promise<Value,Error> {
         return promise
     }
     
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
+    ///   rejected or cancelled.
+    public func then<U,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onSuccess: @escaping (Object, Value) -> Promise<U,Error>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    let nextPromise = onSuccess(object, value)
+                    nextPromise.pipe(to: resolver)
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+
     /// Registers a callback that is invoked when the promise is rejected.
     ///
     /// This method (or `always`) should be used to terminate a promise chain.
@@ -465,6 +542,42 @@ public struct Promise<Value,Error> {
                 context.execute {
                     if generation == token?.generation {
                         onError(error)
+                    }
+                    resolver.reject(with: error)
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// This method (or `always`) should be used to terminate a promise chain.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
+    @discardableResult
+    public func `catch`<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    if generation == token?.generation, let object = object {
+                        onError(object, error)
                     }
                     resolver.reject(with: error)
                 }
@@ -524,6 +637,46 @@ public struct Promise<Value,Error> {
     ///   rejected and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
+    ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
+    ///   cancelled.
+    public func recover<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) -> Value) -> Promise<Value,NoError> {
+        let (promise, resolver) = Promise<Value,NoError>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    resolver.fulfill(with: onError(object, error))
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`. If the receiver is fulfilled or cancelled, the returned promise will also be
@@ -541,6 +694,47 @@ public struct Promise<Value,Error> {
                         return
                     }
                     let nextPromise = onError(error)
+                    nextPromise.pipe(to: resolver)
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`. If the receiver is fulfilled or cancelled, the returned promise will also be
+    ///   fulfilled or cancelled.
+    public func recover<E,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) -> Promise<Value,E>) -> Promise<Value,E> {
+        let (promise, resolver) = Promise<Value,E>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    let nextPromise = onError(object, error)
                     nextPromise.pipe(to: resolver)
                 }
             case .cancelled:
@@ -575,6 +769,33 @@ public struct Promise<Value,Error> {
         return promise
     }
     
+    /// Registers a callback that will be invoked with the promise result, no matter what it is.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
+    @discardableResult
+    public func always<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onComplete: @escaping (Object, PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            context.execute {
+                if generation == token?.generation, let object = object {
+                    onComplete(object, result)
+                }
+                resolver.resolve(with: result)
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
@@ -598,6 +819,39 @@ public struct Promise<Value,Error> {
                     return
                 }
                 let nextPromise = onComplete(result)
+                nextPromise.pipe(to: resolver)
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new promise to wait on.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new promise, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the same value that the promise returned by
+    ///   `onComplete` does.
+    public func always<T,E,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onComplete: @escaping (Object, PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
+        let (promise, resolver) = Promise<T,E>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            context.execute {
+                guard generation == token?.generation, let object = object else {
+                    resolver.cancel()
+                    return
+                }
+                let nextPromise = onComplete(object, result)
                 nextPromise.pipe(to: resolver)
             }
         }
@@ -649,6 +903,43 @@ public struct Promise<Value,Error> {
     ///   the returned `Promise` to be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new promise, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the same value that the promise returned by
+    ///   `onComplete` does, or is rejected if `onComplete` throws an error.
+    public func tryAlways<T,E: Swift.Error,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onComplete: @escaping (Object, PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
+        let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            context.execute {
+                guard generation == token?.generation, let object = object else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    let nextPromise = try onComplete(object, result)
+                    nextPromise.pipe(to: resolver)
+                } catch {
+                    resolver.reject(with: error)
+                }
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new promise to wait on.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
@@ -663,6 +954,43 @@ public struct Promise<Value,Error> {
                 }
                 do {
                     let nextPromise = try onComplete(result)
+                    nextPromise.pipe(to: resolver)
+                } catch {
+                    resolver.reject(with: error)
+                }
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new promise to wait on.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new promise, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the same value that the promise returned by
+    ///   `onComplete` does, or is rejected if `onComplete` throws an error.
+    public func tryAlways<T,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onComplete: @escaping (Object, PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
+        let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            context.execute {
+                guard generation == token?.generation, let object = object else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    let nextPromise = try onComplete(object, result)
                     nextPromise.pipe(to: resolver)
                 } catch {
                     resolver.reject(with: error)
@@ -695,6 +1023,40 @@ public struct Promise<Value,Error> {
                 context.execute {
                     if generation == token?.generation {
                         onCancel()
+                    }
+                    resolver.cancel()
+                }
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked when the promise is cancelled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onCancel` from being invoked.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped.
+    /// - Parameter onCancel: The callback that is invoked when the promise is cancelled.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
+    @discardableResult
+    public func onCancel<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onCancel: @escaping (Object) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                context.execute {
+                    if generation == token?.generation, let object = object {
+                        onCancel(object)
                     }
                     resolver.cancel()
                 }
@@ -861,6 +1223,48 @@ extension Promise where Error == Swift.Error {
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`, or
+    ///   rejected if `onSuccess` throws an error. If the receiver is rejected or cancelled, the
+    ///   returned promise will also be rejected or cancelled.
+    public func tryThen<U,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onSuccess: @escaping (Object, Value) throws -> U) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        resolver.fulfill(with: try onSuccess(object, value))
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
@@ -901,6 +1305,49 @@ extension Promise where Error == Swift.Error {
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func tryThen<U,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onSuccess: @escaping (Object, Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onSuccess(object, value)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
@@ -917,6 +1364,49 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onSuccess(value)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func tryThen<U,E: Swift.Error,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onSuccess: @escaping (Object, Value) throws -> Promise<U,E>) -> Promise<U,Error> {
+        let (promise, resolver) = Promise<U,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onSuccess(object, value)
                         nextPromise.pipe(to: resolver)
                     } catch {
                         resolver.reject(with: error)
@@ -984,6 +1474,50 @@ extension Promise where Error == Swift.Error {
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be fulfilled with the return value of `onError`, or
+    ///   rejected if `onError` throws an error. If the receiver is rejected or cancelled, the
+    ///   returned promise will also be rejected or cancelled.
+    public func tryRecover<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) throws -> Value) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        resolver.fulfill(with: try onError(object, error))
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
@@ -1026,6 +1560,51 @@ extension Promise where Error == Swift.Error {
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
     ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func tryRecover<Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onError(object, error)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
@@ -1044,6 +1623,51 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onError(error)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        options.linkCancelIfSet(from: resolver, to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter options: Options which affect the cancellation and invalidation behavior of the
+    ///   returned `Promise`.
+    /// - Parameter object: An object that is captured weakly and provided to the callback. This is
+    ///   typically `self`. If the object has deinited by the time the callback is invoked, the
+    ///   callback will be skipped and the resulting promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
+    ///   cancelled, the returned promise will also be rejected or cancelled.
+    public func tryRecover<E: Swift.Error,Object: AnyObject>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, options: Options = [], withWeak object: Object, _ onError: @escaping (Object, Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _box.enqueue { [generation=token?.generation, weak object] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation, let object = object else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onError(object, error)
                         nextPromise.pipe(to: resolver)
                     } catch {
                         resolver.reject(with: error)

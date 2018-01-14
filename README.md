@@ -159,6 +159,35 @@ whose errors are compatible with `Error`, but they don't cover all cases. If you
 Tomorrowland also offers a typealias `StdPromise<Value>` as shorthand for `Promise<T,Error>`. This is frequently useful to avoid having to repeat the types,
 such as with `StdPromise(fulfilled: someValue)` instead of `Promise<SomeValue,Error>(fulfilled: someValue)`.
 
+#### Capturing self
+
+Dealing with capturing `self` is a common problem when using promises. With Tomorrowland, in the Swift API every callback registration handler has a variant that
+can weakly capture an object and provide it to the callback handler. If the object has deinited when the callback handler is invoked, the callback is instead skipped
+and the promise is cancelled. Using these variants, the above code sample might look like:
+
+```swift
+showLoadingIndicator()
+fetchUserCredentials().then { (credentials) in
+    // This returns a new promise
+    return MyAPI.login(name: credentials.name, password: credentials.password)
+}.then(withWeak: self) { (this, apiKey) in
+    // this is invoked when the promise returned by MyAPI.login fulfills.
+    MyAPI.apiKey = apiKey
+    this.transitionToLoggedInState()
+}.always(withWeak: self) { (this, _) in
+    // This is always invoked regardless of whether the previous chain was
+    // fulfilled, rejected, or cancelled.
+    this.hideLoadingIndicator()
+}.catch(withWeak: self) { (this, error) in
+    // this handles any error returned from the previous chain, meaning any error
+    // from `fetchUserCredentials()` or from `MyAPI.login(name:password:)`.
+    this.displayError(error)
+}
+```
+
+In this code sample the difference isn't particularly large, as the original made use of optional chaining. But this becomes more useful when your callback handler
+would otherwise have a `guard` statement to unwrap the weak `self`.
+
 ### Cancelling and Invalidation
 
 All promises expose a method `.requestCancel()`. It is named such because this doesn't actually guarantee that the promise will be cancelled. If the promise
