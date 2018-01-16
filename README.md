@@ -4,6 +4,7 @@
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
+[![CocoaPods](https://img.shields.io/cocoapods/v/Tomorrowland.svg)](http://cocoadocs.org/docsets/Tomorrowland)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)][Carthage]
 
 [Carthage]: https://github.com/carthage/carthage
@@ -55,10 +56,8 @@ github "kballard/Tomorrowland" master
 
 ### CocoaPods
 
-Tomorrowland has not yet been submitted to CocoaPods. This will happen when it hits v1.0. In the meantime, you can pull it directly from our repository.
-
 ```ruby
-pod 'Tomorrowland', :git => 'https://github.com/kballard/Tomorrowland.git'
+pod 'Tomorrowland', '~> 0.1.0'
 ```
 
 ### SwiftPM
@@ -301,4 +300,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-No releases yet.
+### v0.1
+
+Initial alpha release.
