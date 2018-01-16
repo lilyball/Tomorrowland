@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name         = "Tomorrowland"
   s.version      = "0.1.0"
-  s.summary      = "Lightweight implementation of cancellable Promises for Swift"
+  s.summary      = "Lightweight Promises for Swift and Obj-C"
 
   s.description  = <<-DESC
-                   Tomorrowland is a lightweight Promise implementation for Swift that supports cancellation and strongly-typed errors.
+                   Tomorrowland is a lightweight Promise implementation for Swift and Obj-C that supports cancellation and strongly-typed errors.
                    DESC
 
   s.homepage     = "https://github.com/kballard/Tomorrowland"
