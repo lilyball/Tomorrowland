@@ -32,6 +32,8 @@ static void * const _Nonnull TWLLinkedListSwapFailed = (void *)0x1;
 @property (atomic, readonly) TWLPromiseBoxState unfencedState;
 
 @property (atomic, readonly, nullable) void *callbackList;
+/// Returns \c YES if we have a non-<tt>NULL</tt> \a callbackList that isn't equal to <tt>TWLLinkedListSwapFailed</tt>.
+@property (atomic, readonly) BOOL hasCallbackList;
 @property (atomic, readonly, nullable) void *requestCancelLinkedList;
 
 - (nonnull instancetype)init NS_DESIGNATED_INITIALIZER;

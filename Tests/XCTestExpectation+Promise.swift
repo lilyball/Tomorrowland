@@ -47,7 +47,7 @@ extension XCTestExpectation {
     }
     
     func fulfill<T,E>(on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, file: StaticString = #file, line: UInt = #line, handler: @escaping (T) -> Void) {
-        promise.always(on: context) { (result) in
+        promise.tap(on: context) { (result) in
             switch result {
             case .value(let value):
                 handler(value)
@@ -69,7 +69,7 @@ extension XCTestExpectation {
     }
     
     func fulfill<T,E>(on context: PromiseContext = .default, onError promise: Promise<T,E>, file: StaticString = #file, line: UInt = #line, handler: @escaping (E) -> Void) {
-        promise.always(on: context) { (result) in
+        promise.tap(on: context) { (result) in
             switch result {
             case .value(let value):
                 XCTFail("Expected Promise failure, got value \(value)", file: file, line: line)
@@ -91,7 +91,7 @@ extension XCTestExpectation {
     }
     
     func fulfill<T,E>(on context: PromiseContext = .default, onCancel promise: Promise<T,E>, file: StaticString = #file, line: UInt = #line) {
-        promise.always(on: context) { (result) in
+        promise.tap(on: context) { (result) in
             switch result {
             case .value(let value):
                 XCTFail("Expected Promise cancellation, got value: \(value)", file: file, line: line)

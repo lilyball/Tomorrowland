@@ -99,6 +99,27 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testDelayPropagateCancel() {
+        let expectation: XCTestExpectation
+        let promise: Promise<Int,String>
+        let sema = DispatchSemaphore(value: 0)
+        do {
+            let origPromise = Promise<Int,String>(on: .utility, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    resolver.cancel()
+                })
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            expectation = XCTestExpectation(onCancel: origPromise)
+            promise = origPromise.delay(on: .immediate, 0.05)
+            promise.requestCancel()
+            XCTAssertNil(origPromise.result) // shouldn't cancel yet
+        }
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: -
     
     func testTimeout() {
@@ -191,20 +212,25 @@ final class UtilityTests: XCTestCase {
         }
     }
     
-    func testLinkCancel() {
+    func testTimeoutPropagateCancel() {
         let cancelExpectation = XCTestExpectation(description: "promise cancelled")
         
-        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
-            resolver.onRequestCancel(on: .immediate, { (resolver) in
-                cancelExpectation.fulfill()
-                resolver.cancel()
+        let promise: Promise<Int,PromiseTimeoutError<String>>
+        do {
+            let origPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
             })
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
-                resolver.fulfill(with: 42)
-            }
-        }).timeout(on: .utility, delay: 0.5)
+            promise = origPromise.timeout(on: .utility, delay: 0.5)
+            promise.requestCancel()
+            XCTAssertNil(origPromise.result) // not yet cancelled
+        }
         let expectation = XCTestExpectation(onCancel: promise)
-        promise.requestCancel()
         wait(for: [expectation, cancelExpectation], timeout: 1)
     }
     
@@ -309,21 +335,25 @@ final class UtilityTests: XCTestCase {
         }
     }
     
-    func testErrorLinkCancel() {
+    func testErrorTimeoutPropagateCancel() {
         let cancelExpectation = XCTestExpectation(description: "promise cancelled")
         
-        let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
-            resolver.onRequestCancel(on: .immediate, { (resolver) in
-                cancelExpectation.fulfill()
-                resolver.cancel()
+        let promise: Promise<Int,Error>
+        do {
+            let origPromise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
             })
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
-                resolver.fulfill(with: 42)
-            }
-        }).timeout(on: .utility, delay: 0.5)
-        let _: Promise<Int,Error> = promise // type assertion
+            promise = origPromise.timeout(on: .utility, delay: 0.5)
+            promise.requestCancel()
+            XCTAssertNil(origPromise.result) // not yet cancelled
+        }
         let expectation = XCTestExpectation(onCancel: promise)
-        promise.requestCancel()
         wait(for: [expectation, cancelExpectation], timeout: 1)
     }
     

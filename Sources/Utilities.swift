@@ -33,6 +33,9 @@ extension Promise {
                 resolver.resolve(with: result)
             }
         }
+        resolver.onRequestCancel(on: .immediate) { [weak _box] (_) in
+            _box?.propagateCancel()
+        }
         return promise
     }
     
@@ -79,8 +82,8 @@ extension Promise {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
             }
         }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
+        resolver.onRequestCancel(on: .immediate) { [weak _box] (resolver) in
+            _box?.propagateCancel()
         }
         context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise
@@ -131,8 +134,8 @@ extension Promise where Error == Swift.Error {
                 resolver.resolve(with: result)
             }
         }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
+        resolver.onRequestCancel(on: .immediate) { [weak _box] (resolver) in
+            _box?.propagateCancel()
         }
         context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise

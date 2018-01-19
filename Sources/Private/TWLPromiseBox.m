@@ -72,6 +72,11 @@
     return list;
 }
 
+- (BOOL)hasCallbackList {
+    void *list = (void *)atomic_load_explicit(&_callbackList, memory_order_relaxed);
+    return list != NULL && list != TWLLinkedListSwapFailed;
+}
+
 - (void *)requestCancelLinkedList {
     void *list = (void *)atomic_load_explicit(&_requestCancelLinkedList, memory_order_relaxed);
     if (list != TWLLinkedListSwapFailed) {
@@ -111,15 +116,18 @@
     }
 }
 
-- (void *)swapCallbackLinkedListWith:(void *)node linkBlock:(nullable void (^)(void * _Nullable))linkBlock {
+- (void *)swapCallbackLinkedListWith:(void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable))linkBlock {
     return swapLinkedList(&_callbackList, node, linkBlock);
 }
 
-- (void *)swapRequestCancelLinkedListWith:(void *)node linkBlock:(nullable void (^)(void * _Nullable))linkBlock {
+- (void *)swapRequestCancelLinkedListWith:(void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable))linkBlock {
     return swapLinkedList(&_requestCancelLinkedList, node, linkBlock);
 }
 
-static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * _Nullable node, void (^ _Nullable linkBlock)(void * _Nullable)) {
+static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * _Nullable node, void (NS_NOESCAPE ^ _Nullable linkBlock)(void * _Nullable)) {
+    // NB: We don't have to worry about ordering wrt. the retain count operations, because the Obj-C
+    // runtime decrements the retain count with a release operation arleady, and issues a full
+    // memory barrier prior to -dealloc.
     memory_order successMemoryOrder = memory_order_release;
     if (node == TWLLinkedListSwapFailed) {
         successMemoryOrder = memory_order_acq_rel;
