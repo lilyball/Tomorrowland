@@ -95,7 +95,6 @@
 }
 
 - (void)dealloc {
-    [_box issueDeinitFence];
     if (auto nodePtr = CallbackNode::castPointer([_box swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
         // If we actually have a callback list, we must not have been resolved, so inform our
         // callbacks that we've cancelled.

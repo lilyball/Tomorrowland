@@ -72,6 +72,4 @@ static void * const _Nonnull TWLLinkedListSwapFailed = (void *)0x1;
 /// swapping the list at the same time, this block may be invoked multiple times.
 /// \returns The old value of the linked list, or \c TWLLinkedListSwapFailed if the swap failed.
 - (nullable void *)swapRequestCancelLinkedListWith:(nullable void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
-
-- (void)issueDeinitFence;
 @end

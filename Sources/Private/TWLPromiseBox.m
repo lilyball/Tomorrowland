@@ -137,8 +137,4 @@ static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * 
     }
 }
 
-- (void)issueDeinitFence {
-    atomic_thread_fence(memory_order_acquire);
-}
-
 @end
