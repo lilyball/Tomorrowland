@@ -28,7 +28,7 @@ extension Promise {
     /// - Returns: A `Promise` that adopts the same result as the receiver after a delay.
     public func delay(on context: PromiseContext = .auto, _ delay: TimeInterval) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [queue=context.getQueue()] (result) in
+        _seal.enqueue { [queue=context.getQueue()] (result) in
             queue.asyncAfter(deadline: .now() + delay) {
                 resolver.resolve(with: result)
             }
@@ -76,7 +76,7 @@ extension Promise {
                 _box?.requestCancel()
             }
         }
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
@@ -128,7 +128,7 @@ extension Promise where Error == Swift.Error {
                 _box?.requestCancel()
             }
         }
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result)

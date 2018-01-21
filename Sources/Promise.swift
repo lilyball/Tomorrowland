@@ -340,7 +340,7 @@ public struct Promise<Value,Error> {
     ///   cancelled.
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 context.execute {
@@ -373,7 +373,7 @@ public struct Promise<Value,Error> {
     ///   rejected or cancelled.
     public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 context.execute {
@@ -408,7 +408,7 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -442,7 +442,7 @@ public struct Promise<Value,Error> {
     ///   cancelled.
     public func recover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Value) -> Promise<Value,NoError> {
         let (promise, resolver) = Promise<Value,NoError>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -477,7 +477,7 @@ public struct Promise<Value,Error> {
     ///   fulfilled or cancelled.
     public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -510,7 +510,7 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 if generation == token?.generation {
                     onComplete(result)
@@ -536,7 +536,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does.
     public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -564,7 +564,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func tryAlways<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -596,7 +596,7 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func tryAlways<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -633,7 +633,7 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     @discardableResult
     public func tap(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
-        _box.enqueue(willPropagateCancel: false) { [generation=token?.generation] (result) in
+        _seal.enqueue(willPropagateCancel: false) { [generation=token?.generation] (result) in
             context.execute {
                 if generation == token?.generation {
                     onComplete(result)
@@ -659,7 +659,7 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap(on:token:_:)`, `ignoringCancel()`
     public func tap() -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue(willPropagateCancel: false) { (result) in
+        _seal.enqueue(willPropagateCancel: false) { (result) in
             resolver.resolve(with: result)
         }
         return promise
@@ -677,7 +677,7 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -725,14 +725,14 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     public func ignoringCancel() -> Promise<Value,Error> {
         let (promise, resolver) = Promise.makeWithResolver()
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             resolver.resolve(with: result)
         }
         return promise
     }
     
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -755,7 +755,7 @@ extension Promise where Error: Swift.Error {
     }
     
     private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver) {
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -774,7 +774,7 @@ extension Promise where Error == NoError {
     /// compose better with other promises.
     public var upcast: Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -825,7 +825,7 @@ extension Promise where Error == Swift.Error {
     ///   returned promise will also be rejected or cancelled.
     public func tryThen<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 context.execute {
@@ -862,7 +862,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func tryThen<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 context.execute {
@@ -900,7 +900,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func tryThen<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 context.execute {
@@ -940,7 +940,7 @@ extension Promise where Error == Swift.Error {
     ///   returned promise will also be rejected or cancelled.
     public func tryRecover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -979,7 +979,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func tryRecover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1019,7 +1019,7 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func tryRecover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1604,40 +1604,12 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
         }
     }
     
-    /// Enqueues a callback onto the callback list.
-    ///
-    /// If the callback list has already been consumed, the callback is executed immediately.
-    ///
-    /// - Requires: This cannot be invoked after the box is sealed.
-    func enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
-        let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
-        nodePtr.initialize(to: .init(next: nil, callback: callback, count: 0))
-        if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
-            let next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
-            nodePtr.pointee.next = next
-            let prevCount: UInt64 = next?.pointee.count ?? (3 << 62)
-            assert((prevCount & (1 << 63)) != 0, "enqueue was called after the box was sealed")
-            if willPropagateCancel {
-                nodePtr.pointee.count = (prevCount & ~(1 << 62)) &+ 1
-            } else {
-                nodePtr.pointee.count = prevCount
-            }
-        }) == TWLLinkedListSwapFailed {
-            nodePtr.deinitialize(count: 1)
-            nodePtr.deallocate()
-            guard let result = result else {
-                fatalError("Callback list empty but state isn't actually resolved")
-            }
-            callback(result)
-        }
-    }
-    
     /// Propagates cancellation from a downstream Promise.
     ///
     /// This may result in the receiver being cancelled.
     ///
     /// - Precondition: Every call to `propagateCancel()` must be preceded with a call to
-    ///   `enqueue(willPropagateCancel: true, …)` first.
+    ///   `seal.enqueue(willPropagateCancel: true, …)` first.
     func propagateCancel() {
         // NB: If we're invoked, we've probably not resolved already. The only way we could be is if
         // we're cancelled in the short race between us resolving and our downstream promise
@@ -1745,23 +1717,49 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
 
 // Note: Subclass NSObject because we rely on the Obj-C runtime issuing a memory barrier before
 // dealloc.
-internal class PromiseSeal<Value,Error>: NSObject {
-    let box: PromiseBox<Value,Error>
+internal class PromiseSeal<T,E>: NSObject {
+    let box: PromiseBox<T,E>
     
     override init() {
         box = PromiseBox()
     }
     
-    init(result: PromiseResult<Value,Error>) {
+    init(result: PromiseResult<T,E>) {
         box = PromiseBox(result: result)
     }
     
-    init(delayedBox: DelayedPromiseBox<Value,Error>) {
+    init(delayedBox: DelayedPromiseBox<T,E>) {
         box = delayedBox
     }
     
     deinit {
         box.seal()
+    }
+    
+    /// Enqueues a callback onto the box's callback list.
+    ///
+    /// If the callback list has already been consumed, the callback is executed immediately.
+    func enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
+        let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
+        nodePtr.initialize(to: .init(next: nil, callback: callback, count: 0))
+        if box.swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
+            let next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
+            nodePtr.pointee.next = next
+            let prevCount: UInt64 = next?.pointee.count ?? (3 << 62)
+            assert((prevCount & (1 << 63)) != 0, "enqueue was called after the box was sealed")
+            if willPropagateCancel {
+                nodePtr.pointee.count = (prevCount & ~(1 << 62)) &+ 1
+            } else {
+                nodePtr.pointee.count = prevCount
+            }
+        }) == TWLLinkedListSwapFailed {
+            nodePtr.deinitialize(count: 1)
+            nodePtr.deallocate()
+            guard let result = box.result else {
+                fatalError("Callback list empty but state isn't actually resolved")
+            }
+            callback(result)
+        }
     }
 }
 
