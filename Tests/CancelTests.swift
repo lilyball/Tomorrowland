@@ -92,7 +92,7 @@ final class CancelTests: XCTestCase {
             // promise doesn't actually cancel it, it just propagates the cancel request upwards.
             // The promise is only cancelled if its parent promise is cancelled.
             expectations = [XCTestExpectation(onError: promise, expectedError: "foo"),
-                            XCTestExpectation(onError: promise, expectedError: "foo"),
+                            XCTestExpectation(onError: promise2, expectedError: "foo"),
                             XCTestExpectation(onError: promise3, expectedError: "foo")]
         }
         promise2.requestCancel()
@@ -156,6 +156,22 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
+    func testPropgateCancelCatch() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let promise2 = promise.catch(on: .utility, { (error) in
+                XCTFail("callback invoked")
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2)]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
     func testPropagateCancelRecover() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
@@ -201,6 +217,23 @@ final class CancelTests: XCTestCase {
                 return Promise(fulfilled: "foo")
             })
             expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onSuccess: promise2, handler: { _ in })]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelOnCancel() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let cancelExpectation = XCTestExpectation(description: "onCancel")
+            let promise2 = promise.onCancel(on: .utility, {
+                cancelExpectation.fulfill()
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2), cancelExpectation]
             promise2.requestCancel()
         }
         sema.signal()
