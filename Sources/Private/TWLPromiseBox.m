@@ -15,10 +15,17 @@
 #import "TWLPromiseBox.h"
 #import <stdatomic.h>
 
+typedef NS_OPTIONS(uint64_t, ObserveCountFlag) {
+    ObserverCountFlagUnsealed = (uint64_t)1 << 63,
+    ObserverCountFlagUnobserved = (uint64_t)1 << 62,
+    ObserverCountFlagMask = (uint64_t)3 << 62
+};
+
 @implementation TWLPromiseBox {
     atomic_int _state;
     atomic_uintptr_t _callbackList;
     atomic_uintptr_t _requestCancelLinkedList;
+    atomic_uint_fast64_t _observerCount;
 }
 
 - (instancetype)init {
@@ -26,6 +33,7 @@
         atomic_init(&_state, TWLPromiseBoxStateEmpty);
         atomic_init(&_callbackList, 0);
         atomic_init(&_requestCancelLinkedList, 0);
+        atomic_init(&_observerCount, ObserverCountFlagUnsealed | ObserverCountFlagUnobserved);
     }
     return self;
 }
@@ -47,6 +55,7 @@
                 atomic_init(&_requestCancelLinkedList, (uintptr_t)TWLLinkedListSwapFailed);
                 break;
         }
+        atomic_init(&_observerCount, ObserverCountFlagUnsealed | ObserverCountFlagUnobserved);
     }
     return self;
 }
@@ -83,6 +92,10 @@
         atomic_thread_fence(memory_order_acquire);
     }
     return list;
+}
+
+- (uint64_t)flaggedObserverCount {
+    return (uint64_t)atomic_load_explicit(&_observerCount, memory_order_relaxed);
 }
 
 - (BOOL)transitionStateTo:(TWLPromiseBoxState)state {
@@ -141,6 +154,33 @@ static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * 
         if (linkBlock) linkBlock((void *)oldValue);
         if (atomic_compare_exchange_weak_explicit(list, &oldValue, (uintptr_t)node, successMemoryOrder, memory_order_relaxed)) {
             return (void *)oldValue;
+        }
+    }
+}
+
+- (void)incrementObserverCount {
+    uint64_t count = (uint64_t)atomic_load_explicit(&_observerCount, memory_order_relaxed);
+    while (1) {
+        uint64_t newCount = (count & ~ObserverCountFlagUnobserved) + 1;
+        if (atomic_compare_exchange_weak_explicit(&_observerCount, &count, newCount, memory_order_relaxed, memory_order_relaxed)) {
+            break;
+        }
+    }
+}
+
+- (BOOL)decrementObserverCount {
+    uint64_t oldCount = atomic_fetch_sub_explicit(&_observerCount, 1, memory_order_relaxed);
+    NSAssert((oldCount & ~ObserverCountFlagMask) != 0, @"observer count underflow");
+    return oldCount == 1;
+}
+
+- (BOOL)sealObserverCount {
+    uint64_t count = (uint64_t)atomic_load_explicit(&_observerCount, memory_order_relaxed);
+    while (1) {
+        uint64_t newCount = count & ~ObserverCountFlagUnsealed;
+        NSAssert(newCount != count, @"Tried to seal box twice");
+        if (atomic_compare_exchange_weak_explicit(&_observerCount, &count, newCount, memory_order_relaxed, memory_order_relaxed)) {
+            return newCount == 0;
         }
     }
 }

@@ -23,7 +23,7 @@ extension XCTestExpectation {
     }
     
     convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onSuccess promise: Promise<T,E>, expectedValue: T, file: StaticString = #file, line: UInt = #line) where T: Equatable {
-        self.init(description: description, on: context, onSuccess: promise) { (value) in
+        self.init(description: description, on: context, onSuccess: promise, file: file, line: line) { (value) in
             XCTAssertEqual(expectedValue, value, "Promise value", file: file, line: line)
         }
     }
@@ -35,7 +35,7 @@ extension XCTestExpectation {
     }
     
     convenience init<T,E>(description: String? = nil, on context: PromiseContext = .default, onError promise: Promise<T,E>, expectedError: E, file: StaticString = #file, line: UInt = #line) where E: Equatable {
-        self.init(description: description, on: context, onError: promise) { (error) in
+        self.init(description: description, on: context, onError: promise, file: file, line: line) { (error) in
             XCTAssertEqual(expectedError, error, "Promise error", file: file, line: line)
         }
     }

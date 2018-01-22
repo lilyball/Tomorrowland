@@ -90,7 +90,7 @@ final class CancelTests: XCTestCase {
             })
             // Note: promise2 isn't cancelled here because requestCancel on a registered callback
             // promise doesn't actually cancel it, it just propagates the cancel request upwards.
-            // The promise is only cancelled if its parent promis is cancelled.
+            // The promise is only cancelled if its parent promise is cancelled.
             expectations = [XCTestExpectation(onError: promise, expectedError: "foo"),
                             XCTestExpectation(onError: promise, expectedError: "foo"),
                             XCTestExpectation(onError: promise3, expectedError: "foo")]

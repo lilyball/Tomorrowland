@@ -1475,14 +1475,6 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
-        /// The number of uncancelled observers, plus two state flags.
-        /// The MSB bit is the "seal" flag. If it's set, the promise is still observable.
-        /// The MSB-1 bit is the "shouldCancel" flag". If it's set, it means we haven't attached any
-        /// observers that wish to propagate cancellation yet. The first time we attach such an
-        /// observer we unset this flag. The reason for this is we can attach observers that don't
-        /// propagate cancellation, and in the case where we attach one such observer and then seal
-        /// the box, we don't want to immediately cancel.
-        var count: UInt64
     }
     
     struct RequestCancelNode: NodeProtocol {
@@ -1611,27 +1603,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     /// - Precondition: Every call to `propagateCancel()` must be preceded with a call to
     ///   `seal.enqueue(willPropagateCancel: true, …)` first.
     func propagateCancel() {
-        // NB: If we're invoked, we've probably not resolved already. The only way we could be is if
-        // we're cancelled in the short race between us resolving and our downstream promise
-        // handling the the resolution. So don't bother trying to optimize away this allocation in
-        // that case.
-        let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
-        nodePtr.initialize(to: .init(next: nil, callback: { _ in }, count: 0))
-        // NB: We can't touch nodePtr after swapping it in the list because another thread might
-        // deallocate it.
-        var shouldCancel: Bool = false
-        if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
-            // Due to the precondition, we cannot be invoked with a nil callback list.
-            assert(nextPtr != nil, "propagateCancel invoked on a box with no observers")
-            let current = nextPtr.unsafelyUnwrapped.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
-            nodePtr.pointee = current.pointee
-            assert((nodePtr.pointee.count & ~(3 << 62)) > 0, "propagateCancel was called too many times")
-            nodePtr.pointee.count = nodePtr.pointee.count &- 1
-            shouldCancel = nodePtr.pointee.count == 0
-        }) == TWLLinkedListSwapFailed {
-            nodePtr.deinitialize(count: 1)
-            nodePtr.deallocate()
-        } else if shouldCancel {
+        if decrementObserverCount() {
             requestCancel()
         }
     }
@@ -1641,28 +1613,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
     /// If there are no registered observers this does nothing. If there are registered observers
     /// and they've all propagated cancellation, we cancel immediately.
     func seal() {
-        // By the time this is called nobody can call `enqueue` anymore, so checking if we have a
-        // callback list here is safe as one cannot be added after this check.
-        guard hasCallbackList else {
-            // if we have no callback list, we can't seal anything.
-            return
-        }
-        let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
-        nodePtr.initialize(to: .init(next: nil, callback: { _ in }, count: 0))
-        // NB: We can't touch nodePtr after swapping it in the list because another thread might
-        // deallocate it.
-        var shouldCancel: Bool = false
-        if swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
-            assert(nextPtr != nil, "callbackList reverted to nil after being set")
-            let current = nextPtr.unsafelyUnwrapped.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
-            nodePtr.pointee = current.pointee
-            assert((nodePtr.pointee.count & (1 << 63)) != 0, "seal() called twice on the same box")
-            nodePtr.pointee.count = nodePtr.pointee.count & ~(1 << 63)
-            shouldCancel = nodePtr.pointee.count == 0
-        }) == TWLLinkedListSwapFailed {
-            nodePtr.deinitialize(count: 1)
-            nodePtr.deallocate()
-        } else if shouldCancel {
+        if sealObserverCount() {
             requestCancel()
         }
     }
@@ -1708,9 +1659,9 @@ internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
         }
         let callbackCount = countNodes(callbackList, as: CallbackNode.self)
         let requestCancelCount = countNodes(requestCancelLinkedList, as: RequestCancelNode.self)
-        let count = CallbackNode.castPointer(callbackList)?.pointee.count ?? (3 << 62)
-        let observerCount = count & ~(3 << 62)
-        let sealed = (count & (1 << 63)) == 0
+        let flaggedCount = flaggedObserverCount
+        let observerCount = flaggedCount & ~(3 << 62)
+        let sealed = (flaggedCount & (1 << 63)) == 0
         return "<\(type(of: self)): \(address); state=\(unfencedState) callbackList=(\(callbackCount)) requestCancelList=(\(requestCancelCount)) observerCount=\(observerCount)\(sealed ? " sealed" : "")>"
     }
 }
@@ -1740,18 +1691,17 @@ internal class PromiseSeal<T,E>: NSObject {
     ///
     /// If the callback list has already been consumed, the callback is executed immediately.
     func enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
+        if willPropagateCancel {
+            // If the subsequent swap fails, that means we've already resolved (or started
+            // resolving) the promise, so the observer count modification is harmless.
+            box.incrementObserverCount()
+        }
+        
         let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
-        nodePtr.initialize(to: .init(next: nil, callback: callback, count: 0))
+        nodePtr.initialize(to: .init(next: nil, callback: callback))
         if box.swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
             let next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
             nodePtr.pointee.next = next
-            let prevCount: UInt64 = next?.pointee.count ?? (3 << 62)
-            assert((prevCount & (1 << 63)) != 0, "enqueue was called after the box was sealed")
-            if willPropagateCancel {
-                nodePtr.pointee.count = (prevCount & ~(1 << 62)) &+ 1
-            } else {
-                nodePtr.pointee.count = prevCount
-            }
         }) == TWLLinkedListSwapFailed {
             nodePtr.deinitialize(count: 1)
             nodePtr.deallocate()

@@ -36,6 +36,10 @@ static void * const _Nonnull TWLLinkedListSwapFailed = (void *)0x1;
 @property (atomic, readonly) BOOL hasCallbackList;
 @property (atomic, readonly, nullable) void *requestCancelLinkedList;
 
+/// The observer count plus the 2 flags <tt>(1 << 63)</tt> for seal and <tt>(1 << 62)</tt> for
+/// whether we have any propagating observers.
+@property (atomic, readonly) uint64_t flaggedObserverCount;
+
 - (nonnull instancetype)init NS_DESIGNATED_INITIALIZER;
 - (nonnull instancetype)initWithState:(TWLPromiseBoxState)state NS_DESIGNATED_INITIALIZER;
 
@@ -74,4 +78,10 @@ static void * const _Nonnull TWLLinkedListSwapFailed = (void *)0x1;
 /// swapping the list at the same time, this block may be invoked multiple times.
 /// \returns The old value of the linked list, or \c TWLLinkedListSwapFailed if the swap failed.
 - (nullable void *)swapRequestCancelLinkedListWith:(nullable void *)node linkBlock:(nullable void (NS_NOESCAPE ^)(void * _Nullable nextNode))linkBlock __attribute__((warn_unused_result));
+
+- (void)incrementObserverCount;
+/// \returns \c YES if this drops the count to zero.
+- (BOOL)decrementObserverCount;
+/// \returns \c YES if this drops the count to zero.
+- (BOOL)sealObserverCount;
 @end
