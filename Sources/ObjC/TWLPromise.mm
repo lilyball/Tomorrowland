@@ -15,12 +15,11 @@
 #import "TWLPromisePrivate.h"
 #import <Tomorrowland/Tomorrowland-Swift.h>
 #import "TWLContextPrivate.h"
-#import "TWLPromiseBox.h"
 #import "objc_cast.h"
 
-@interface TWLResolver () {
+@interface TWLResolver<ValueType,ErrorType> () {
 @public
-    TWLPromise * _Nonnull _promise;
+    TWLObjCPromiseBox<ValueType,ErrorType> * _Nonnull _box;
 }
 @end
 
@@ -28,11 +27,17 @@
 @property (atomic, readonly) NSUInteger generation;
 @end
 
-@implementation TWLPromise {
+@interface TWLObjCPromiseBox<ValueType,ErrorType> () {
 @public
     id _Nullable _value;
     id _Nullable _error;
 }
+- (void)resolveOrCancelWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
+- (void)requestCancel;
+- (void)seal;
+@end
+
+@implementation TWLPromise
 
 + (instancetype)newOnContext:(TWLContext *)context withBlock:(void (^)(TWLResolver<id,id> * _Nonnull))block {
     return [[self alloc] initOnContext:context withBlock:block];
@@ -54,8 +59,8 @@
 
 - (instancetype)initOnContext:(TWLContext *)context withBlock:(void (^)(TWLResolver<id,id> * _Nonnull))block {
     if ((self = [super init])) {
-        _box = [[TWLPromiseBox alloc] init];
-        TWLResolver *resolver = [[TWLResolver alloc] initWithPromise:self];
+        _box = [[TWLObjCPromiseBox alloc] init];
+        TWLResolver *resolver = [[TWLResolver alloc] initWithBox:_box];
         [context executeBlock:^{
             block(resolver);
         }];
@@ -65,78 +70,50 @@
 
 - (instancetype)initFulfilledWithValue:(id)value {
     if ((self = [super init])) {
-        _box = [[TWLPromiseBox alloc] initWithState:TWLPromiseBoxStateResolved];
-        _value = value;
+        _box = [[TWLObjCPromiseBox alloc] initWithState:TWLPromiseBoxStateResolved];
+        _box->_value = value;
     }
     return self;
 }
 
 - (instancetype)initRejectedWithError:(id)error {
     if ((self = [super init])) {
-        _box = [[TWLPromiseBox alloc] initWithState:TWLPromiseBoxStateResolved];
-        _error = error;
+        _box = [[TWLObjCPromiseBox alloc] initWithState:TWLPromiseBoxStateResolved];
+        _box->_error = error;
     }
     return self;
 }
 
 - (instancetype)initWithResolver:(TWLResolver<id,id> *__strong _Nullable *)outResolver {
     if ((self = [super init])) {
-        _box = [[TWLPromiseBox alloc] init];
-        *outResolver = [[TWLResolver alloc] initWithPromise:self];
+        _box = [[TWLObjCPromiseBox alloc] init];
+        *outResolver = [[TWLResolver alloc] initWithBox:_box];
     }
     return self;
 }
 
 - (instancetype)initDelayed {
     if ((self = [super init])) {
-        _box = [[TWLPromiseBox alloc] initWithState:TWLPromiseBoxStateDelayed];
+        _box = [[TWLObjCPromiseBox alloc] initWithState:TWLPromiseBoxStateDelayed];
     }
     return self;
 }
 
 - (void)dealloc {
-    if (auto nodePtr = CallbackNode::castPointer([_box swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        // If we actually have a callback list, we must not have been resolved, so inform our
-        // callbacks that we've cancelled.
-        // NB: No need to actually transition to the cancelled state first, if anyone still had
-        // a reference to us to look at that, we wouldn't be in deinit.
-        nodePtr = CallbackNode::reverseList(nodePtr);
-        @try {
-            for (auto current = nodePtr; current; current = current->next) {
-                current->callback(nil,nil);
-            }
-        } @finally {
-            CallbackNode::destroyPointer(nodePtr);
-        }
-    }
-    if (auto nodePtr = RequestCancelNode::castPointer([_box swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        // NB: We can't fire these callbacks because they take a TWLResolver and we can't have them
-        // resurrecting ourselves. We could work around this, but the only reason to even have these
-        // callbacks at this point is if the promise handler drops the last reference to the
-        // resolver, and since that means it's a buggy implementation, we don't need to support it.
-        RequestCancelNode::destroyPointer(nodePtr);
-    }
+    [_box seal];
 }
 
 #pragma mark -
 
 - (TWLPromise *)then:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self thenOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)thenOnContext:(TWLContext *)context handler:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self thenOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)thenOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)thenOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
-    return [self thenOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)thenOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -153,28 +130,20 @@
         } else {
             [resolver cancel];
         }
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (TWLPromise *)map:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self mapOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self mapOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)mapOnContext:(TWLContext *)context handler:(id (^)(id _Nonnull))handler {
-    return [self mapOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self mapOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)mapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self mapOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)mapOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self mapOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)mapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -197,28 +166,20 @@
         } else {
             [resolver cancel];
         }
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (TWLPromise *)catch:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self catchOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)catchOnContext:(TWLContext *)context handler:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self catchOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)catchOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)catchOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
-    return [self catchOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)catchOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -235,28 +196,20 @@
         } else {
             [resolver cancel];
         }
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (TWLPromise *)recover:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self recoverOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self recoverOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)recoverOnContext:(TWLContext *)context handler:(id  _Nonnull (^)(id _Nonnull))handler {
-    return [self recoverOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self recoverOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)recoverOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self recoverOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)recoverOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
-    return [self recoverOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)recoverOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -279,28 +232,20 @@
         } else {
             [resolver cancel];
         }
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (TWLPromise *)inspect:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self inspectOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)inspectOnContext:(TWLContext *)context handler:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self inspectOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)inspectOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)inspectOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(id _Nullable, id _Nullable))handler {
-    return [self inspectOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)inspectOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(id _Nullable, id _Nullable))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -311,28 +256,20 @@
             }
             [resolver resolveWithValue:value error:error];
         }];
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (TWLPromise *)always:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
-    return [self alwaysOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self alwaysOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)alwaysOnContext:(TWLContext *)context handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
-    return [self alwaysOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self alwaysOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)alwaysOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
-    return [self alwaysOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)alwaysOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
-    return [self alwaysOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)alwaysOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -345,28 +282,49 @@
                 [nextPromise pipeToResolver:resolver];
             }
         }];
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
+    return promise;
+}
+
+- (TWLPromise *)tap:(void (^)(id _Nullable, id _Nullable))handler {
+    return [self tapOnContext:TWLContext.automatic token:nil handler:handler];
+}
+
+- (TWLPromise *)tapOnContext:(TWLContext *)context handler:(void (^)(id _Nullable, id _Nullable))handler {
+    return [self tapOnContext:context token:nil handler:handler];
+}
+
+- (TWLPromise *)tapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
+    auto generation = token.generation;
+    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [context executeBlock:^{
+            if (!token || generation == token.generation) {
+                handler(value, error);
+            }
+        }];
+    } willPropagateCancel:NO];
+    return self;
+}
+
+- (TWLPromise *)tap {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
+    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [resolver resolveWithValue:value error:error];
+    } willPropagateCancel:NO];
     return promise;
 }
 
 - (TWLPromise *)whenCancelled:(void (^)(void))handler {
-    return [self whenCancelledOnContext:TWLContext.automatic token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self whenCancelledOnContext:TWLContext.automatic token:nil handler:handler];
 }
 
 - (TWLPromise *)whenCancelledOnContext:(TWLContext *)context handler:(void (^)(void))handler {
-    return [self whenCancelledOnContext:context token:nil options:(TWLPromiseOptions)0 handler:handler];
+    return [self whenCancelledOnContext:context token:nil handler:handler];
 }
 
 - (TWLPromise *)whenCancelledOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(void))handler {
-    return [self whenCancelledOnContext:context token:token options:(TWLPromiseOptions)0 handler:handler];
-}
-
-- (TWLPromise *)whenCancelledOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(void))handler {
-    return [self whenCancelledOnContext:context token:nil options:options handler:handler];
-}
-
-- (TWLPromise *)whenCancelledOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(void))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
@@ -383,52 +341,21 @@
                 [resolver cancel];
             }];
         }
-    }];
-    applyLinkCancel(options, resolver, self);
+    } willPropagateCancel:YES];
+    propagateCancellation(resolver, self);
     return promise;
 }
 
 - (BOOL)getValue:(id  _Nullable __strong *)outValue error:(id  _Nullable __strong *)outError {
-    auto result = self.result;
-    if (std::get<BOOL>(result)) {
-        if (outValue) *outValue = std::get<1>(result);
-        if (outError) *outError = std::get<2>(result);
-        return YES;
-    } else {
-        return NO;
-    }
+    return [_box getValue:outValue error:outError];
 }
 
 - (std::tuple<BOOL, id _Nullable, id _Nullable>)result {
-    switch (_box.state) {
-        case TWLPromiseBoxStateDelayed:
-        case TWLPromiseBoxStateEmpty:
-        case TWLPromiseBoxStateResolving:
-        case TWLPromiseBoxStateCancelling:
-            return std::make_tuple(NO,nil,nil);
-        case TWLPromiseBoxStateResolved:
-            NSAssert(_value != nil || _error != nil, @"TWLPromise held nil value/error while in fulfilled state");
-            NSAssert(_value == nil || _error == nil, @"TWLPromise held both a value and an error simultaneously");
-            return std::make_tuple(YES,_value,_error);
-        case TWLPromiseBoxStateCancelled:
-            return std::make_tuple(YES,nil,nil);
-    }
+    return _box.result;
 }
 
 - (void)requestCancel {
-    if ([_box transitionStateTo:TWLPromiseBoxStateCancelling]) {
-        if (auto nodePtr = RequestCancelNode::castPointer([_box swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-            nodePtr = RequestCancelNode::reverseList(nodePtr);
-            @try {
-                auto resolver = [[TWLResolver alloc] initWithPromise:self];
-                for (auto current = nodePtr; current; current = current->next) {
-                    current->invoke(resolver);
-                }
-            } @finally {
-                RequestCancelNode::destroyPointer(nodePtr);
-            }
-        }
-    }
+    [_box requestCancel];
 }
 
 - (TWLPromise *)ignoringCancel {
@@ -436,45 +363,23 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [resolver resolveWithValue:value error:error];
-    }];
+    } willPropagateCancel:YES];
     return promise;
+}
+
+- (id<TWLCancellable>)cancellable {
+    return _box;
 }
 
 #pragma mark - Private
 
-- (void)resolveOrCancelWithValue:(nullable id)value error:(nullable id)error {
-    if (!value && !error) {
-        if ([_box transitionStateTo:TWLPromiseBoxStateCancelled]) {
-            goto handleCallbacks;
-        }
-    } else if ([_box transitionStateTo:TWLPromiseBoxStateResolving]) {
-        _value = value;
-        _error = value != nil ? nil : error;
-        if ([_box transitionStateTo:TWLPromiseBoxStateResolved]) {
-            goto handleCallbacks;
-        } else {
-            NSAssert(NO, @"Couldn't transition TWLPromiseBox to TWLPromiseBoxStateResolved after transitioning to TWLPromiseBoxStateResolving");
-        }
+- (void)enqueueCallback:(void (^)(id _Nullable value, id _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel {
+    if (willPropagateCancel) {
+        // If the subsequent swap fails, that means we've already resolved (or started resolving)
+        // the promise, so the observer count modification is harmless.
+        [_box incrementObserverCount];
     }
-    return;
     
-handleCallbacks:
-    if (auto nodePtr = RequestCancelNode::castPointer([_box swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        RequestCancelNode::destroyPointer(nodePtr);
-    }
-    if (auto nodePtr = CallbackNode::castPointer([_box swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        nodePtr = CallbackNode::reverseList(nodePtr);
-        @try {
-            for (auto current = nodePtr; current; current = current->next) {
-                current->callback(value,error);
-            }
-        } @finally {
-            CallbackNode::destroyPointer(nodePtr);
-        }
-    }
-}
-
-- (void)enqueueCallback:(void (^)(id _Nullable value, id _Nullable error))callback {
     auto nodePtr = new CallbackNode(callback);
     if ([_box swapCallbackLinkedListWith:reinterpret_cast<void *>(nodePtr) linkBlock:^(void * _Nullable nextNode) {
         nodePtr->next = reinterpret_cast<CallbackNode *>(nextNode);
@@ -490,17 +395,17 @@ handleCallbacks:
             case TWLPromiseBoxStateCancelling:
                 @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"TWLPromise callback list empty but state isn't actually resolved" userInfo:nil];
         }
-        callback(_value, _error);
+        callback(_box->_value, _box->_error);
     }
 }
 
 - (void)pipeToResolver:(nonnull TWLResolver *)resolver {
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         [resolver resolveWithValue:value error:error];
-    }];
-    __weak typeof(self) weakSelf = self;
+    } willPropagateCancel:YES];
+    __weak TWLObjCPromiseBox *box = _box;
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-        [weakSelf requestCancel];
+        [box requestCancel];
     }];
 }
 
@@ -522,13 +427,11 @@ handleCallbacks:
     return [NSString stringWithFormat:@"<%@: %p state=%@ callbackList=%zd requestCancelList=%zd>", NSStringFromClass([self class]), self, stateName, describe(callbackCount), describe(requestCancelCount)];
 }
 
-static void applyLinkCancel(TWLPromiseOptions options, TWLResolver *resolver, TWLPromise *promise) {
-    if (options & TWLPromiseOptionsLinkCancel) {
-        __weak TWLPromise *cancellable = promise;
-        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-            [cancellable requestCancel];
-        }];
-    }
+static void propagateCancellation(TWLResolver *resolver, TWLPromise *promise) {
+    __weak TWLObjCPromiseBox *box = promise->_box;
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        [box propagateCancel];
+    }];
 }
 
 namespace {
@@ -595,7 +498,7 @@ namespace {
             } else {
                 auto callback = this->callback;
                 [this->context executeBlock:^{
-                    switch (resolver->_promise->_box.unfencedState) {
+                    switch (resolver->_box.unfencedState) {
                         case TWLPromiseBoxStateDelayed:
                         case TWLPromiseBoxStateEmpty:
                             NSCAssert(NO, @"We shouldn't be invoking a whenCancelRequested callback on an empty promise");
@@ -619,36 +522,36 @@ namespace {
 
 @implementation TWLResolver
 
-- (instancetype)initWithPromise:(TWLPromise<id,id> *)promise {
+- (instancetype)initWithBox:(TWLObjCPromiseBox<id,id> *)box {
     if ((self = [super init])) {
-        _promise = promise;
+        _box = box;
     }
     return self;
 }
 
 - (void)fulfillWithValue:(id)value {
-    [_promise resolveOrCancelWithValue:value error:nil];
+    [_box resolveOrCancelWithValue:value error:nil];
 }
 
 - (void)rejectWithError:(id)error {
-    [_promise resolveOrCancelWithValue:nil error:error];
+    [_box resolveOrCancelWithValue:nil error:error];
 }
 
 - (void)cancel {
-    [_promise resolveOrCancelWithValue:nil error:nil];
+    [_box resolveOrCancelWithValue:nil error:nil];
 }
 
 - (void)resolveWithValue:(id)value error:(id)error {
-    [_promise resolveOrCancelWithValue:value error:error];
+    [_box resolveOrCancelWithValue:value error:error];
 }
 
 - (void)whenCancelRequestedOnContext:(TWLContext *)context handler:(void (^)(TWLResolver<id,id> * _Nonnull))handler {
     auto nodePtr = new RequestCancelNode(context, handler);
-    if ([_promise->_box swapRequestCancelLinkedListWith:nodePtr linkBlock:^(void * _Nullable nextNode) {
+    if ([_box swapRequestCancelLinkedListWith:nodePtr linkBlock:^(void * _Nullable nextNode) {
         nodePtr->next = reinterpret_cast<RequestCancelNode *>(nextNode);
     }] == TWLLinkedListSwapFailed) {
         delete nodePtr;
-        switch (_promise->_box.unfencedState) {
+        switch (_box.unfencedState) {
             case TWLPromiseBoxStateCancelling:
             case TWLPromiseBoxStateCancelled: {
                 [context executeBlock:^{
@@ -684,6 +587,123 @@ namespace {
             [self rejectWithError:apiError];
         }
     };
+}
+
+@end
+
+#pragma mark -
+
+@implementation TWLObjCPromiseBox
+
+- (std::tuple<BOOL, id _Nullable, id _Nullable>)result {
+    switch (self.state) {
+        case TWLPromiseBoxStateDelayed:
+        case TWLPromiseBoxStateEmpty:
+        case TWLPromiseBoxStateResolving:
+        case TWLPromiseBoxStateCancelling:
+            return std::make_tuple(NO,nil,nil);
+        case TWLPromiseBoxStateResolved:
+            NSAssert(_value != nil || _error != nil, @"TWLObjCPromiseBox held nil value/error while in fulfilled state");
+            NSAssert(_value == nil || _error == nil, @"TWLObjCPromiseBox held both a value and an error simultaneously");
+            return std::make_tuple(YES,_value,_error);
+        case TWLPromiseBoxStateCancelled:
+            return std::make_tuple(YES,nil,nil);
+    }
+}
+
+- (BOOL)getValue:(id __strong _Nullable * _Nullable)outValue error:(id __strong _Nullable * _Nullable)outError {
+    auto result = self.result;
+    if (std::get<BOOL>(result)) {
+        if (outValue) *outValue = std::get<1>(result);
+        if (outError) *outError = std::get<2>(result);
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+- (void)resolveOrCancelWithValue:(nullable id)value error:(nullable id)error {
+    if (!value && !error) {
+        if ([self transitionStateTo:TWLPromiseBoxStateCancelled]) {
+            goto handleCallbacks;
+        }
+    } else if ([self transitionStateTo:TWLPromiseBoxStateResolving]) {
+        _value = value;
+        _error = value != nil ? nil : error;
+        if ([self transitionStateTo:TWLPromiseBoxStateResolved]) {
+            goto handleCallbacks;
+        } else {
+            NSAssert(NO, @"Couldn't transition TWLPromiseBox to TWLPromiseBoxStateResolved after transitioning to TWLPromiseBoxStateResolving");
+        }
+    }
+    return;
+    
+handleCallbacks:
+    if (auto nodePtr = RequestCancelNode::castPointer([self swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
+        RequestCancelNode::destroyPointer(nodePtr);
+    }
+    if (auto nodePtr = CallbackNode::castPointer([self swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
+        nodePtr = CallbackNode::reverseList(nodePtr);
+        @try {
+            for (auto current = nodePtr; current; current = current->next) {
+                current->callback(value,error);
+            }
+        } @finally {
+            CallbackNode::destroyPointer(nodePtr);
+        }
+    }
+}
+
+- (void)requestCancel {
+    if ([self transitionStateTo:TWLPromiseBoxStateCancelling]) {
+        if (auto nodePtr = RequestCancelNode::castPointer([self swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
+            nodePtr = RequestCancelNode::reverseList(nodePtr);
+            @try {
+                auto resolver = [[TWLResolver alloc] initWithBox:self];
+                for (auto current = nodePtr; current; current = current->next) {
+                    current->invoke(resolver);
+                }
+            } @finally {
+                RequestCancelNode::destroyPointer(nodePtr);
+            }
+        }
+    }
+}
+
+- (void)propagateCancel {
+    if ([self decrementObserverCount]) {
+        [self requestCancel];
+    }
+}
+
+- (void)seal {
+    if ([self sealObserverCount]) {
+        [self requestCancel];
+    }
+}
+
+- (void)dealloc {
+    if (auto nodePtr = CallbackNode::castPointer([self swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
+        // If we actually have a callback list, we must not have been resolved, so inform our
+        // callbacks that we've cancelled.
+        // NB: No need to actually transition to the cancelled state first, if anyone still had
+        // a reference to us to look at that, we wouldn't be in deinit.
+        nodePtr = CallbackNode::reverseList(nodePtr);
+        @try {
+            for (auto current = nodePtr; current; current = current->next) {
+                current->callback(nil,nil);
+            }
+        } @finally {
+            CallbackNode::destroyPointer(nodePtr);
+        }
+    }
+    if (auto nodePtr = RequestCancelNode::castPointer([self swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
+        // NB: We can't fire these callbacks because they take a TWLResolver and we can't have them
+        // resurrecting ourselves. We could work around this, but the only reason to even have these
+        // callbacks at this point is if the promise handler drops the last reference to the
+        // resolver, and since that means it's a buggy implementation, we don't need to support it.
+        RequestCancelNode::destroyPointer(nodePtr);
+    }
 }
 
 @end

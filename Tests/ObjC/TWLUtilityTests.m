@@ -107,6 +107,27 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testDelayCancelPropagation {
+    XCTestExpectation *expectation;
+    TWLPromise *promise;
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    {
+        TWLPromise * NS_VALID_UNTIL_END_OF_SCOPE origPromise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+                [resolver cancel];
+            }];
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        expectation = [self expectationOnCancel:origPromise];
+        promise = [origPromise delay:0.05 onContext:TWLContext.immediate];
+        [promise requestCancel];
+        XCTAssertFalse([origPromise getValue:NULL error:NULL]); // shouldn't cancel yet
+    }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 // MARK: -
 
 - (void)testTimeout {
@@ -179,20 +200,25 @@
     }
 }
 
-- (void)testLinkCancel {
+- (void)testTimeoutPropagateCancel {
     XCTestExpectation *cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"promise cancelled"];
     
-    TWLPromise<NSNumber*,TWLTimeoutError<NSString*>*> *promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-            [cancelExpectation fulfill];
-            [resolver cancel];
+    TWLPromise<NSNumber*,TWLTimeoutError<NSString*>*> *promise;
+    {
+        TWLPromise<NSNumber*,NSString*> * NS_VALID_UNTIL_END_OF_SCOPE origPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+                [cancelExpectation fulfill];
+                [resolver cancel];
+            }];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                [resolver fulfillWithValue:@42];
+            });
         }];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-            [resolver fulfillWithValue:@42];
-        });
-    }] timeoutOnContext:TWLContext.utility withDelay:0.5];
+        promise = [origPromise timeoutOnContext:TWLContext.utility withDelay:0.5 cancelOnTimeout:NO];
+        [promise requestCancel];
+        XCTAssertFalse([origPromise getValue:NULL error:NULL]); // not yet cancelled
+    }
     XCTestExpectation *expectation = [self expectationOnCancel:promise];
-    [promise requestCancel];
     [self waitForExpectations:@[expectation, cancelExpectation] timeout:1];
 }
 

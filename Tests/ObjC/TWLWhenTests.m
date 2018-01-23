@@ -185,6 +185,33 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testWhenCancelPropagation {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(1);
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    TWLPromise *promise;
+    NSMutableArray<XCTestExpectation*> *expectations = [NSMutableArray new];
+    {
+        NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
+        for (NSUInteger i = 0; i < 3; ++i) {
+            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+                [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+                    [resolver cancel];
+                }];
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                dispatch_semaphore_signal(sema);
+                [resolver rejectWithError:@"foo"];
+            }];
+            XCTestExpectation *expectation = [self expectationOnCancel:promise];
+            [promises addObject:promise];
+            [expectations addObject:expectation];
+        }
+        promise = [TWLPromise whenFulfilled:promises];
+    }
+    [promise requestCancel];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:expectations timeout:1];
+}
+
 #pragma mark -
 
 - (void)testRace {
@@ -302,6 +329,33 @@
     TWLPromise *promise = [TWLPromise race:@[dummy,dummy,dummy]];
     XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
     [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testRaceCancelPropagation {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(1);
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    TWLPromise *promise;
+    NSMutableArray<XCTestExpectation*> *expectations = [NSMutableArray new];
+    {
+        NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
+        for (NSUInteger i = 0; i < 3; ++i) {
+            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+                [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+                    [resolver cancel];
+                }];
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                dispatch_semaphore_signal(sema);
+                [resolver rejectWithError:@"foo"];
+            }];
+            XCTestExpectation *expectation = [self expectationOnCancel:promise];
+            [promises addObject:promise];
+            [expectations addObject:expectation];
+        }
+        promise = [TWLPromise race:promises];
+    }
+    [promise requestCancel];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:expectations timeout:1];
 }
 
 @end

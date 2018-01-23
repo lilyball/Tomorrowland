@@ -37,7 +37,7 @@
 
 - (TWLPromise *)promise {
     if ([_promise->_box transitionStateTo:TWLPromiseBoxStateEmpty]) {
-        TWLResolver *resolver = [[TWLResolver alloc] initWithPromise:_promise];
+        TWLResolver *resolver = [[TWLResolver alloc] initWithBox:_promise->_box];
         void (^callback)(TWLResolver *) = _callback;
         TWLContext *context = _context;
         _context = nil;

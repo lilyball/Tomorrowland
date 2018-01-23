@@ -66,5 +66,3 @@ extension PromiseInvalidationToken {
         self = token._token
     }
 }
-
-extension ObjCPromise: RequestCancellable {}

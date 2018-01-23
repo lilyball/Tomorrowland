@@ -647,7 +647,7 @@ public struct Promise<Value,Error> {
     ///
     /// The returned `Promise` will always resolve with the same value that its receiver does, but
     /// it won't affect the timing of any of the receiver's other observers and it won't affect
-    /// automatic cancel propagation behavior.
+    /// automatic cancellation propagation behavior.
     ///
     /// `tap().always(on:token:_:)` behaves the same as `tap(on:token:_:)` except it returns a new
     /// `Promise` whereas `tap(on:token:_:)` returns the receiver and can be inserted into any
@@ -1238,9 +1238,9 @@ extension Promise {
 ///
 /// This is returned from `Promise.cancellable`.
 public struct PromiseCancellable {
-    private weak var cancellable: RequestCancellable?
+    private weak var cancellable: TWLCancellable?
     
-    fileprivate init(_ cancellable: RequestCancellable) {
+    fileprivate init(_ cancellable: TWLCancellable) {
         self.cancellable = cancellable
     }
     
@@ -1332,7 +1332,7 @@ public struct PromiseInvalidationToken {
     /// Registers an `ObjCPromise` to be requested to cancel automatically when the token is
     /// invalidated.
     public func requestCancelOnInvalidate<V,E>(_ promise: ObjCPromise<V,E>) {
-        _box.requestCancelOnInvalidate(PromiseCancellable(promise))
+        _box.requestCancelOnInvalidate(PromiseCancellable(promise.cancellable))
     }
     
     internal var generation: UInt {
@@ -1471,7 +1471,7 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
     }
 }
 
-internal class PromiseBox<T,E>: TWLPromiseBox, RequestCancellable {
+internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
         var callback: (PromiseResult<T,E>) -> Void
@@ -1711,10 +1711,6 @@ internal class PromiseSeal<T,E>: NSObject {
             callback(result)
         }
     }
-}
-
-internal protocol RequestCancellable: class {
-    func requestCancel()
 }
 
 private protocol NodeProtocol {

@@ -14,6 +14,7 @@
 
 #import "TWLWhen.h"
 #import "TWLOneshotBlock.h"
+#import "TWLPromisePrivate.h"
 #import <Tomorrowland/TWLContext.h>
 
 @implementation TWLPromise (When)
@@ -81,6 +82,15 @@
             }
         }
     });
+    NSHashTable *boxes = [NSHashTable weakObjectsHashTable];
+    for (TWLPromise *promise in promises) {
+        [boxes addObject:promise->_box];
+    }
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        for (TWLObjCPromiseBox *box in boxes) {
+            [box propagateCancel];
+        }
+    }];
     return resultPromise;
 }
 
@@ -122,6 +132,15 @@
     dispatch_group_notify(group, dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         [resolver cancel];
     });
+    NSHashTable *boxes = [NSHashTable weakObjectsHashTable];
+    for (TWLPromise *promise in promises) {
+        [boxes addObject:promise->_box];
+    }
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        for (TWLObjCPromiseBox *box in boxes) {
+            [box propagateCancel];
+        }
+    }];
     return newPromise;
 }
 

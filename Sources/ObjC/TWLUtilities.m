@@ -30,6 +30,10 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, ^{
             [resolver resolveWithValue:value error:error];
         });
+    } willPropagateCancel:YES];
+    __weak TWLObjCPromiseBox *box = _box;
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        [box propagateCancel];
     }];
     return promise;
 }
@@ -45,18 +49,18 @@
 - (TWLPromise *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay cancelOnTimeout:(BOOL)cancelOnTimeout {
     TWLResolver *resolver;
     TWLPromise *promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    __weak TWLPromise *weakSelf = self;
-    __weak TWLPromise *weakPromise = promise;
+    __weak TWLObjCPromiseBox *weakBox = _box;
+    __weak TWLObjCPromiseBox *weakNewBox = promise->_box;
     dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
-        TWLPromise *promise = weakPromise;
-        if (promise) {
-            TWLResolver *resolver = [[TWLResolver alloc] initWithPromise:promise];
+        TWLObjCPromiseBox *newBox = weakNewBox;
+        if (newBox) {
+            TWLResolver *resolver = [[TWLResolver alloc] initWithBox:newBox];
             // double-check the result just in case
             id value;
             id error;
-            if ([weakSelf getValue:&value error:&error]) {
+            if ([weakBox getValue:&value error:&error]) {
                 if (error) {
-                    [TWLTimeoutError newWithRejectedError:error];
+                    error = [TWLTimeoutError newWithRejectedError:error];
                 }
                 [resolver resolveWithValue:value error:error];
             } else {
@@ -64,7 +68,7 @@
             }
         }
         if (cancelOnTimeout) {
-            [weakSelf requestCancel];
+            [weakBox requestCancel];
         }
     });
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
@@ -75,9 +79,9 @@
         [context executeBlock:^{
             [resolver resolveWithValue:value error:error];
         }];
-    }];
+    } willPropagateCancel:YES];
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-        [weakSelf requestCancel];
+        [weakBox propagateCancel];
     }];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), [context getQueue], timeoutBlock);
     return promise;
