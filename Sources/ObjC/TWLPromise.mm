@@ -410,21 +410,7 @@
 }
 
 - (NSString *)debugDescription {
-    NSInteger callbackCount = CallbackNode::countNodes(_box.callbackList);
-    NSInteger requestCancelCount = RequestCancelNode::countNodes(_box.requestCancelLinkedList);
-    auto describe = [](NSInteger count) -> NSString * _Nonnull {
-        return [NSString stringWithFormat:@"%zd node%@", count, count == 1 ? @"" : @"s"];
-    };
-    NSString *stateName;
-    switch (_box.unfencedState) {
-        case TWLPromiseBoxStateDelayed: stateName = @"delayed"; break;
-        case TWLPromiseBoxStateEmpty: stateName = @"empty"; break;
-        case TWLPromiseBoxStateResolving: stateName = @"resolving"; break;
-        case TWLPromiseBoxStateResolved: stateName = @"resolved"; break;
-        case TWLPromiseBoxStateCancelling: stateName = @"cancelling"; break;
-        case TWLPromiseBoxStateCancelled: stateName = @"cancelled"; break;
-    }
-    return [NSString stringWithFormat:@"<%@: %p state=%@ callbackList=%zd requestCancelList=%zd>", NSStringFromClass([self class]), self, stateName, describe(callbackCount), describe(requestCancelCount)];
+    return [NSString stringWithFormat:@"<%@: %p box=%@>", NSStringFromClass([self class]), self, [_box debugDescription]];
 }
 
 static void propagateCancellation(TWLResolver *resolver, TWLPromise *promise) {
@@ -680,6 +666,27 @@ handleCallbacks:
     if ([self sealObserverCount]) {
         [self requestCancel];
     }
+}
+
+- (NSString *)debugDescription {
+    NSInteger callbackCount = CallbackNode::countNodes(self.callbackList);
+    NSInteger requestCancelCount = RequestCancelNode::countNodes(self.requestCancelLinkedList);
+    auto describe = [](NSInteger count) -> NSString * _Nonnull {
+        return [NSString stringWithFormat:@"%zd node%@", count, count == 1 ? @"" : @"s"];
+    };
+    NSString *stateName;
+    switch (self.unfencedState) {
+        case TWLPromiseBoxStateDelayed: stateName = @"delayed"; break;
+        case TWLPromiseBoxStateEmpty: stateName = @"empty"; break;
+        case TWLPromiseBoxStateResolving: stateName = @"resolving"; break;
+        case TWLPromiseBoxStateResolved: stateName = @"resolved"; break;
+        case TWLPromiseBoxStateCancelling: stateName = @"cancelling"; break;
+        case TWLPromiseBoxStateCancelled: stateName = @"cancelled"; break;
+    }
+    uint64_t flaggedCount = self.flaggedObserverCount;
+    uint64_t observerCount = flaggedCount & ~((uint64_t)3 << 62);
+    uint64_t sealed = (flaggedCount & ((uint64_t)1 << 63)) == 0;
+    return [NSString stringWithFormat:@"<%@: %p state=%@ callbackList=%@ requestCancelList=%@ observerCount=%llu%@>", NSStringFromClass([self class]), self, stateName, describe(callbackCount), describe(requestCancelCount), (unsigned long long)observerCount, sealed ? @" sealed" : @""];
 }
 
 - (void)dealloc {
