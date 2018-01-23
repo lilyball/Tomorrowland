@@ -47,6 +47,14 @@ public final class ObjCPromiseInvalidationToken: NSObject {
         _token.requestCancelOnInvalidate(promise)
     }
     
+    /// Registers a `TWLPromise` to be requested to cancel automatically when the token is
+    /// invalidated.
+    @available(swift, obsoleted: 1.0)
+    @objc(requestCancelOnInvalidate:)
+    public func __objc_requestCancelOnInvalidate(_ promise: ObjCPromise<AnyObject,AnyObject>) {
+        _token.requestCancelOnInvalidate(promise)
+    }
+    
     @objc(generation) // hack to allow TWLPromise to query this
     internal var generation: UInt {
         return _token.generation
@@ -58,5 +66,3 @@ extension PromiseInvalidationToken {
         self = token._token
     }
 }
-
-extension ObjCPromise: RequestCancellable {}

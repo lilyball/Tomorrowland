@@ -36,6 +36,7 @@ public struct DelayedPromise<Value,Error> {
     /// The type of the promise resolver. See `Promise<Value,Error>.Resolver`.
     public typealias Resolver = Promise<Value,Error>.Resolver
     
+    private let _seal: PromiseSeal<Value,Error>
     private let _box: DelayedPromiseBox<Value,Error>
     
     /// Returns a new `DelayedPromise` that can be resolved with the given block.
@@ -46,7 +47,8 @@ public struct DelayedPromise<Value,Error> {
     /// - Parameter handler: A block that may be executed in order to fulfill the promise.
     /// - Parameter resolver: The `Resolver` used to resolve the promise.
     public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) -> Void) {
-        _box = DelayedPromiseBox<Value,Error>(context: context, callback: handler)
+        _box = DelayedPromiseBox(context: context, callback: handler)
+        _seal = PromiseSeal(delayedBox: _box)
     }
     
     @available(*, unavailable, message: "Use DelayedPromise(on:_:) instead")
@@ -60,7 +62,7 @@ public struct DelayedPromise<Value,Error> {
     /// same `PromiseContext` and handler. If the computation has started, this returns the same
     /// `Promise` as the first time it was accessed.
     public var promise: Promise<Value,Error> {
-        return _box.toPromise()
+        return _box.toPromise(with: _seal)
     }
 }
 
@@ -74,8 +76,8 @@ internal class DelayedPromiseBox<T,E>: PromiseBox<T,E> {
         super.init(delayed: ())
     }
     
-    func toPromise() -> Promise<T,E> {
-        let promise = Promise<T,E>(box: self)
+    func toPromise(with seal: PromiseSeal<T,E>) -> Promise<T,E> {
+        let promise = Promise<T,E>(seal: seal)
         if transitionState(to: .empty) {
             let resolver = Promise<T,E>.Resolver(box: self)
             let (context, callback) = _promiseInfo.unsafelyUnwrapped

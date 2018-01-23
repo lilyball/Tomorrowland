@@ -202,45 +202,25 @@ class URLImageView: UIImageView {
 ```
 
 `PromiseInvalidationToken` also has a method `.requestCancelOnInvalidate(_:)` that can register any number of `Promise`s to be automatically
-requested to cancel (using `.requestCancel()`) the next time the token is invalidated. This is mostly useful in conjunction with the `.linkCancel` option.
+requested to cancel (using `.requestCancel()`) the next time the token is invalidated.
 
-#### `.linkCancel`
+#### Automatic cancellation propagation
 
-Most promise callback registration methods have an optional `options:` parameter. The only option right now is called `.linkCancel`. This option makes it so
-requesting the resulting `Promise` to cancel automatically requests its parent to cancel. This should be used whenever you have a child promise whose parent is
-cancellable and is guaranteed to be non-observable by any other promise. This is also commonly used with `PromiseInvalidationToken`'s
-`requestCancelOnInvalidate(_:)` method, so invalidating the child promise's callbacks will then automatically cancel the parent.
+Nearly all callback registration methods will automatically propagate cancellation requests from the child to the parent if the parent has no other observers. If all
+observers for a promise request cancellation, the cancellation request will propagate upwards at this time. This means that a promise will not automatically cancel
+as long as there's at least one interested observer. Do note that promises that have no observers do not get automatically cancelled, this only happens if there's at
+least one observer (which then requests cancellation). Automatic cancellation propagation also requires that the promise itself no longer be in scope. For this reason
+you should avoid holding onto promises long-term and instead use the `.cancellable` property or `PromiseInvalidationToken`'s
+`requestCancelOnInvalidate(_:)` if you want to be able to cancel the promise later.
 
-We might modify the above `URLImageView` to take advantage of this like so:
+Automatic cancellation propagation also works with the utility functions `when(fulfilled:)` and `when(first:)` as well as the convenience methods
+`timeout(on:delay:)` and `delay(on:_:)`.
 
-```swift
-class URLImageView: UIImageView {
-    private let invalidationToken = PromiseInvalidationToken()
-    
-    enum LoadError: Error {
-        case dataIsNotImage
-    }
-    
-    /// Loads an image from the URL and displays it in the image view.
-    func loadImage(from url: URL) {
-        invalidationToken.invalidate()
-        // Note: dataTaskAsPromise does not actually exist
-        let promise = URLSession.shared.dataTaskAsPromise(with: url)
-            .then(on: .utility, options: [.linkCancel], { (data) in
-                if let image = UIImage(data: data) {
-                    return image
-                } else {
-                    throw LoadError.dataIsNotImage
-                }
-            }).then(token: token, options: [.linkCancel], { [weak self] (image) in
-                self?.image = image
-            })
-        token.requestCancelOnInvalidate(promise)
-    }
-}
-```
+Promises have a couple of methods that do not participate in automatic cancellation propagation. You can use `tap(on:token:_:)` as an alternative to `always` in
+order to register an observer that won't interfere with the existing automatic cancellation propagation (this is suitable for inserting into the middle of a promise
+chain). You can also use `tap()` as a more generic version of this.
 
-This is particularly useful when writing methods that return chained promises.
+Note that `ignoringCancel()` disables automatic cancellation propagation on the receiver. Once you invoke this on a promise, it will never automatically cancel.
 
 ### Promise Helpers
 
@@ -266,10 +246,10 @@ promise will be cancelled as well.
 This function has an optional parameter `cancelRemaining:` that, if provided as `true`, will cancel the remaining input promises as soon as one of them is fulfilled
 or rejected.
 
-#### `Promise.timeout(on:delay:cancelOnTimeout:)`
+#### `Promise.timeout(on:delay:)`
 
-`Promise.timeout(on:delay:cancelOnTimeout:)` is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an
-error if the receiver isn't resolved within the given interval.
+`Promise.timeout(on:delay:)` is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn't
+resolved within the given interval.
 
 #### `Promise.delay(on:_:)`
 
@@ -299,6 +279,11 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Implement automatic cancellation propagation and remove the `.linkCancel` option.
+- Remove the `cancelOnTimeout:` parameter to `timeout(on:delay:)` in favor of automatic cancellation propagation.
 
 ### v0.1
 

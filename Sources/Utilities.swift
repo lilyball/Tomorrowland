@@ -28,10 +28,13 @@ extension Promise {
     /// - Returns: A `Promise` that adopts the same result as the receiver after a delay.
     public func delay(on context: PromiseContext = .auto, _ delay: TimeInterval) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _box.enqueue { [queue=context.getQueue()] (result) in
+        _seal.enqueue { [queue=context.getQueue()] (result) in
             queue.asyncAfter(deadline: .now() + delay) {
                 resolver.resolve(with: result)
             }
+        }
+        resolver.onRequestCancel(on: .immediate) { [weak _box] (_) in
+            _box?.propagateCancel()
         }
         return promise
     }
@@ -54,11 +57,12 @@ extension Promise {
     /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
-    /// - Parameter cancelOnTimeout: The default value of `true` means the receiver will be
-    ///   cancelled if the returned promise times out.
     /// - Returns: A new `Promise`.
-    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,PromiseTimeoutError<Error>> {
+    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval) -> Promise<Value,PromiseTimeoutError<Error>> {
         let (promise, resolver) = Promise<Value,PromiseTimeoutError<Error>>.makeWithResolver()
+        let propagateCancelBlock = TWLOneshotBlock(block: { [weak _box] in
+            _box?.propagateCancel()
+        })
         let timeoutBlock = DispatchWorkItem { [weak _box, weak newBox=promise._box] in
             if let box = newBox {
                 let resolver = Promise<Value,PromiseTimeoutError<Error>>.Resolver(box: box)
@@ -69,18 +73,16 @@ extension Promise {
                     resolver.reject(with: .timedOut)
                 }
             }
-            if cancelOnTimeout {
-                _box?.requestCancel()
-            }
+            propagateCancelBlock.invoke()
         }
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
             }
         }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
+        resolver.onRequestCancel(on: .immediate) { (resolver) in
+            propagateCancelBlock.invoke()
         }
         context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise
@@ -106,11 +108,12 @@ extension Promise where Error == Swift.Error {
     /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
-    /// - Parameter cancelOnTimeout: The default value of `true` means the receiver will be
-    ///   cancelled if the returned promise times out.
     /// - Returns: A new `Promise`.
-    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval, cancelOnTimeout: Bool = true) -> Promise<Value,Swift.Error> {
+    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        let propagateCancelBlock = TWLOneshotBlock(block: { [weak _box] in
+            _box?.propagateCancel()
+        })
         let timeoutBlock = DispatchWorkItem { [weak _box, weak newBox=promise._box] in
             if let box = newBox {
                 let resolver = Promise<Value,Error>.Resolver(box: box)
@@ -121,18 +124,16 @@ extension Promise where Error == Swift.Error {
                     resolver.reject(with: PromiseTimeoutError<Error>.timedOut)
                 }
             }
-            if cancelOnTimeout {
-                _box?.requestCancel()
-            }
+            propagateCancelBlock.invoke()
         }
-        _box.enqueue { (result) in
+        _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result)
             }
         }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (resolver) in
-            cancellable.requestCancel()
+        resolver.onRequestCancel(on: .immediate) { (resolver) in
+            propagateCancelBlock.invoke()
         }
         context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         return promise

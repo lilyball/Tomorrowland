@@ -205,6 +205,24 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testAlways() {
+        let expectation = XCTestExpectation(description: "promise resolver")
+        Promise<String,Int>(on: .utility, { (resolver) in
+            resolver.reject(with: 42)
+        }).always(on: .utility, { (result) -> Void in
+            switch result {
+            case .value(let value):
+                XCTFail("unexpected promise fulfill with \(value), expected rejection with 42")
+            case .error(let error):
+                XCTAssertEqual(error, 42)
+            case .cancelled:
+                XCTFail("unexpected promise cancel, expected rejection with 42")
+            }
+            expectation.fulfill()
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
     func testAlwaysReturningThrowingPromise() {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in

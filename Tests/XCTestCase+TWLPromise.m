@@ -32,7 +32,7 @@
 - (XCTestExpectation *)expectationOnContext:(TWLContext *)context onSuccess:(nonnull TWLPromise *)promise {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation for TWLPromise success"];
     expectation.assertForOverFulfill = YES;
-    [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
+    [promise tapOnContext:context handler:^(id _Nullable value, id _Nullable error) {
         if (error) {
             XCTFail(@"Expected TWLPromise success, found error");
         } else if (!value) {
@@ -46,7 +46,7 @@
 - (XCTestExpectation *)expectationOnContext:(TWLContext *)context onSuccess:(TWLPromise *)promise handler:(void (^)(id _Nonnull))handler {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation for TWLPromise success"];
     expectation.assertForOverFulfill = YES;
-    [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
+    [promise tapOnContext:context handler:^(id _Nullable value, id _Nullable error) {
         if (value) {
             handler(value);
         } else if (error) {
@@ -80,7 +80,7 @@
 - (XCTestExpectation *)expectationOnContext:(TWLContext *)context onError:(TWLPromise *)promise {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation for TWLPromise error"];
     expectation.assertForOverFulfill = YES;
-    [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
+    [promise tapOnContext:context handler:^(id _Nullable value, id _Nullable error) {
         if (value) {
             XCTFail(@"Expected TWLPromise error, found success");
         } else if (!error) {
@@ -94,7 +94,7 @@
 - (XCTestExpectation *)expectationOnContext:(TWLContext *)context onError:(TWLPromise *)promise handler:(void (^)(id _Nonnull))handler {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation for TWLPromise error"];
     expectation.assertForOverFulfill = YES;
-    [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
+    [promise tapOnContext:context handler:^(id _Nullable value, id _Nullable error) {
         if (error) {
             handler(error);
         } else if (value) {
@@ -120,7 +120,7 @@
 - (XCTestExpectation *)expectationOnContext:(TWLContext *)context onCancel:(TWLPromise *)promise {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expectation for TWLPromise cancel"];
     expectation.assertForOverFulfill = YES;
-    [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
+    [promise tapOnContext:context handler:^(id _Nullable value, id _Nullable error) {
         if (value) {
             XCTFail(@"Expected TWLPromise cancel, found success");
         } else if (error) {

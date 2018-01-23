@@ -80,25 +80,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// returned promise will be timed out at once unless the receiver is already resolved.
 /// \returns A new <tt>TWLPromise</tt>.
 - (TWLPromise<ValueType,TWLTimeoutError<ErrorType>*> *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay TWL_WARN_UNUSED_RESULT;
-/// Returns a \c TWLPromise that is rejected with an error if the receiver does not resolve within
-/// the given interval.
-///
-/// The returned promise will adopt the receiver's value if it resolves within the given interval.
-/// Otherwise it will be rejected with a \c TWLTimeoutError where \c .timedOut is <tt>YES</tt>. If
-/// the receiver is rejected, the returned promise will be rejected with a \c TWLTimeoutError where
-/// the \c .rejectedError property contains the underlying promise's rejection value.
-///
-/// \param context The context to invoke the callback on. If provided as \c .immediate it behaves
-/// the same as <tt>.automatic</tt>.
-/// If the promise times out, the returned promise will be rejected using the same context. In this
-/// event, \c .immediate is treated the same as <tt>.automatic</tt>. If provided as \c
-/// +operationQueue: it uses the <tt>NSOperationQueue</tt>'s underlying queue, or \c .defaultQoS if
-/// there is no underlying queue.
-/// \param delay The delay before the returned promise times out. If less than or equal to zero, the
-/// returned promise will be timed out at once unless the receiver is already resolved.
-/// \param cancelOnTimeout If \c YES the receiver will be cancelled if the promise times out.
-/// \returns A new <tt>TWLPromise</tt>.
-- (TWLPromise<ValueType,TWLTimeoutError<ErrorType>*> *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay cancelOnTimeout:(BOOL)cancelOnTimeout TWL_WARN_UNUSED_RESULT;
 
 @end
 

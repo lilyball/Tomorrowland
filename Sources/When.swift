@@ -57,19 +57,21 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     let context = PromiseContext(qos: qos)
     for (i, promise) in promises.enumerated() {
         group.enter()
-        promise.always(on: context, { (result) in
-            switch result {
-            case .value(let value):
-                resultBuffer[i] = value
-            case .error(let error):
-                resolver.reject(with: error)
-                cancelAllInput?.invoke()
-            case .cancelled:
-                resolver.cancel()
-                cancelAllInput?.invoke()
+        promise._seal.enqueue { (result) in
+            context.execute {
+                switch result {
+                case .value(let value):
+                    resultBuffer[i] = value
+                case .error(let error):
+                    resolver.reject(with: error)
+                    cancelAllInput?.invoke()
+                case .cancelled:
+                    resolver.cancel()
+                    cancelAllInput?.invoke()
+                }
+                group.leave()
             }
-            group.leave()
-        })
+        }
     }
     group.notify(queue: .global(qos: qos)) {
         defer {
@@ -87,6 +89,11 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
             }
         }
         resolver.fulfill(with: Array(results))
+    }
+    resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
+        for box in boxes {
+            box.value?.propagateCancel()
+        }
     }
     return resultPromise
 }
@@ -145,19 +152,28 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
     var (aResult, bResult, cResult, dResult, eResult, fResult): (Value1?, Value2?, Value3?, Value4?, Value5?, Value6?)
     let group = DispatchGroup()
     
+    /// Like `promise.tap` except it registers a propagateCancel observer
+    func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
+        promise._seal.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+    }
+    
     let context = PromiseContext(qos: qos)
     group.enter()
-    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(c, on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    d.always(on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(d, on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    e.always(on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(e, on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    f.always(on: context, { resolver.handleResult($0, output: &fResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(f, on: context, { resolver.handleResult($0, output: &fResult, cancelAllInput: cancelAllInput); group.leave() })
     
     group.notify(queue: .global(qos: qos)) {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult, let e = eResult, let f = fResult else {
@@ -166,6 +182,16 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
         }
         resolver.fulfill(with: (a,b,c,d,e,f))
     }
+    resolver.onRequestCancel(on: .immediate, {
+        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box, weak boxF=f._box]
+        (resolver) in
+        boxA?.propagateCancel()
+        boxB?.propagateCancel()
+        boxC?.propagateCancel()
+        boxD?.propagateCancel()
+        boxE?.propagateCancel()
+        boxF?.propagateCancel()
+    })
     return resultPromise
 }
 
@@ -219,17 +245,26 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
     var (aResult, bResult, cResult, dResult, eResult): (Value1?, Value2?, Value3?, Value4?, Value5?)
     let group = DispatchGroup()
     
+    /// Like `promise.tap` except it registers a propagateCancel observer
+    func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
+        promise._seal.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+    }
+    
     let context = PromiseContext(qos: qos)
     group.enter()
-    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(c, on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    d.always(on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(d, on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    e.always(on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(e, on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
     
     group.notify(queue: .global(qos: qos)) {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult, let e = eResult else {
@@ -238,6 +273,15 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
         }
         resolver.fulfill(with: (a,b,c,d,e))
     }
+    resolver.onRequestCancel(on: .immediate, {
+        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box]
+        (resolver) in
+        boxA?.propagateCancel()
+        boxB?.propagateCancel()
+        boxC?.propagateCancel()
+        boxD?.propagateCancel()
+        boxE?.propagateCancel()
+    })
     return resultPromise
 }
 
@@ -288,15 +332,24 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
     var (aResult, bResult, cResult, dResult): (Value1?, Value2?, Value3?, Value4?)
     let group = DispatchGroup()
     
+    /// Like `promise.tap` except it registers a propagateCancel observer
+    func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
+        promise._seal.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+    }
+    
     let context = PromiseContext(qos: qos)
     group.enter()
-    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(c, on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    d.always(on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(d, on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
     
     group.notify(queue: .global(qos: qos)) {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult else {
@@ -305,6 +358,14 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
         }
         resolver.fulfill(with: (a,b,c,d))
     }
+    resolver.onRequestCancel(on: .immediate, {
+        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box]
+        (resolver) in
+        boxA?.propagateCancel()
+        boxB?.propagateCancel()
+        boxC?.propagateCancel()
+        boxD?.propagateCancel()
+    })
     return resultPromise
 }
 
@@ -352,13 +413,22 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
     var (aResult, bResult, cResult): (Value1?, Value2?, Value3?)
     let group = DispatchGroup()
     
+    /// Like `promise.tap` except it registers a propagateCancel observer
+    func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
+        promise._seal.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+    }
+    
     let context = PromiseContext(qos: qos)
     group.enter()
-    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    c.always(on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(c, on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
     
     group.notify(queue: .global(qos: qos)) {
         guard let a = aResult, let b = bResult, let c = cResult else {
@@ -367,6 +437,13 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
         }
         resolver.fulfill(with: (a,b,c))
     }
+    resolver.onRequestCancel(on: .immediate, {
+        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box]
+        (resolver) in
+        boxA?.propagateCancel()
+        boxB?.propagateCancel()
+        boxC?.propagateCancel()
+    })
     return resultPromise
 }
 
@@ -411,11 +488,20 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
     var (aResult, bResult): (Value1?, Value2?)
     let group = DispatchGroup()
     
+    /// Like `promise.tap` except it registers a propagateCancel observer
+    func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
+        promise._seal.enqueue { (result) in
+            context.execute {
+                onComplete(result)
+            }
+        }
+    }
+    
     let context = PromiseContext(qos: qos)
     group.enter()
-    a.always(on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
-    b.always(on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
+    tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     
     group.notify(queue: .global(qos: qos)) {
         guard let a = aResult, let b = bResult else {
@@ -424,6 +510,12 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
         }
         resolver.fulfill(with: (a,b))
     }
+    resolver.onRequestCancel(on: .immediate, {
+        [weak boxA=a._box, weak boxB=b._box]
+        (resolver) in
+        boxA?.propagateCancel()
+        boxB?.propagateCancel()
+    })
     return resultPromise
 }
 
@@ -476,7 +568,7 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
     let group = DispatchGroup()
     for promise in promises {
         group.enter()
-        promise.always(on: .immediate, { (result) in
+        promise._seal.enqueue { (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -488,10 +580,25 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
                 break
             }
             group.leave()
-        })
+        }
     }
     group.notify(queue: .global(qos: .utility)) {
         resolver.cancel()
     }
+    resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
+        for box in boxes {
+            box.value?.propagateCancel()
+        }
+    }
     return newPromise
+}
+
+// MARK: - Private
+
+private struct Weak<T: AnyObject> {
+    weak var value: T?
+    
+    init(_ value: T) {
+        self.value = value
+    }
 }

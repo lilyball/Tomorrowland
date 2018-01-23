@@ -13,7 +13,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Tomorrowland/TWLDefines.h>
 
 #if __cplusplus
 #include <utility>
@@ -23,6 +22,8 @@
 @class TWLContext;
 @class TWLResolver<ValueType,ErrorType>;
 @class TWLInvalidationToken;
+
+@protocol TWLCancellable;
 
 #ifndef TWL_WARN_UNUSED_RESULT
 #define TWL_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
@@ -135,26 +136,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will resolve to the same value as the receiver. You may safely
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)thenOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(ValueType value))handler NS_SWIFT_NAME(then(on:token:_:));
-/// Registers a callback that is invoked when the promise is fulfilled.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the fulfilled value.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)thenOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(ValueType value))handler NS_SWIFT_NAME(then(on:options:_:));
-/// Registers a callback that is invoked when the promise is fulfilled.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the fulfilled value.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)thenOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(ValueType value))handler NS_SWIFT_NAME(then(on:token:options:_:));
 
 /// Registers a callback that is invoked when the promise is fulfilled.
 ///
@@ -195,35 +176,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will be fulfilled with the return value of \a handler. If the
 /// receiver is rejected or cancelled, the returned promise will also be rejected or cancelled.
 - (TWLPromise *)mapOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(id (^)(ValueType value))handler NS_SWIFT_NAME(map(on:token:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that is invoked when the promise is fulfilled.
-///
-/// If the receiver is fulfilled, the returned promise will be fulfilled using the result of the
-/// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the fulfilled value.
-/// \returns A new promise that will be fulfilled with the return value of \a handler. If the
-/// receiver is rejected or cancelled, the returned promise will also be rejected or cancelled.
-- (TWLPromise *)mapOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(id (^)(ValueType value))handler NS_SWIFT_NAME(map(on:options:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that is invoked when the promise is fulfilled.
-///
-/// If the receiver is fulfilled, the returned promise will be fulfilled using the result of the
-/// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked. If the promise is fulfilled and the token
-/// is invalidated, the returned promise will be cancelled.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the fulfilled value.
-/// \returns A new promise that will be fulfilled with the return value of \a handler. If the
-/// receiver is rejected or cancelled, the returned promise will also be rejected or cancelled.
-- (TWLPromise *)mapOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id (^)(ValueType value))handler NS_SWIFT_NAME(map(on:token:options:_:)) TWL_WARN_UNUSED_RESULT;
 
 /// Registers a callback that is invoked when the promise is rejected.
 ///
@@ -260,32 +212,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will resolve to the same value as the receiver. You may safely
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)catchOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(ErrorType error))handler NS_SWIFT_NAME(catch(on:token:_:));
-/// Registers a callback that is invoked when the promise is rejected.
-///
-/// This method (or <tt>-inspect:</tt>) should be used to terminate a promise chain in order to
-/// ensure errors are handled.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the rejected error.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)catchOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(ErrorType error))handler NS_SWIFT_NAME(catch(on:options:_:));
-/// Registers a callback that is invoked when the promise is rejected.
-///
-/// This method (or <tt>-inspect:</tt>) should be used to terminate a promise chain in order to
-/// ensure errors are handled.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the rejected error.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)catchOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(ErrorType error))handler NS_SWIFT_NAME(catch(on:token:options:_:));
 
 /// Registers a callback that is invoked when the promise is rejected.
 ///
@@ -326,35 +252,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will be fulfilled with the return value of \a handler. If the
 /// receiver is fulfilled or cancelled, the returned promise will also be fulfilled or cancelled.
 - (TWLPromise *)recoverOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(id (^)(ErrorType error))handler NS_SWIFT_NAME(recover(on:token:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that is invoked when the promise is rejected.
-///
-/// If the receiver is rejected, the returned promise will be fulfilled using the result of the
-/// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the rejected error.
-/// \returns A new promise that will be fulfilled with the return value of \a handler. If the
-/// receiver is fulfilled or cancelled, the returned promise will also be fulfilled or cancelled.
-- (TWLPromise *)recoverOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(id (^)(ErrorType error))handler NS_SWIFT_NAME(recover(on:options:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that is invoked when the promise is rejected.
-///
-/// If the receiver is rejected, the returned promise will be fulfilled using the result of the
-/// handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked. If the promise is rejected and the token
-/// is invalidated, the returned promise will be cancelled.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the rejected error.
-/// \returns A new promise that will be fulfilled with the return value of \a handler. If the
-/// receiver is fulfilled or cancelled, the returned promise will also be fulfilled or cancelled.
-- (TWLPromise *)recoverOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(id (^)(ErrorType error))handler NS_SWIFT_NAME(recover(on:token:options:_:)) TWL_WARN_UNUSED_RESULT;
 
 /// Registers a callback that will be invoked with the promise result, no matter what it is.
 ///
@@ -388,30 +285,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will resolve to the same value as the receiver. You may safely
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)inspectOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(inspect(on:token:_:));
-/// Registers a callback that will be invoked with the promise result, no matter what it is.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the promise's result. The first parameter is
-/// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
-/// cancelled.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)inspectOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(inspect(on:options:_:));
-/// Registers a callback that will be invoked with the promise result, no matter what it is.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked with the promise's result. The first parameter is
-/// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
-/// cancelled.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)inspectOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(inspect(on:token:options:_:));
 
 /// Registers a callback that will be invoked with the promise result, no matter what it is, and
 /// returns a new promise to wait on.
@@ -458,39 +331,82 @@ NS_SWIFT_NAME(ObjCPromise)
 /// cancelled.
 /// \returns A new promise that is resolved with the promise returned by \a handler.
 - (TWLPromise *)alwaysOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(TWLPromise * _Nonnull (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(always(on:token:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that will be invoked with the promise result, no matter what it is, and
-/// returns a new promise to wait on.
+
+/// Registers a callback that will be invoked when the promise is resolved without affecting
+/// behavior.
 ///
-/// When the receiver is resolved, the returned promise will be fulfilled using the result of
-/// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
+/// This is similar to an \c -inspect callback except it doesn't create a new promise and instead
+/// returns its receiver. This means it won't delay any chained callbacks and it won't affect
+/// automatic cancellation propagation behavior.
 ///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
+/// This is similar to <tt>[[promise tap] always:…]</tt> except it can be inserted into any promise
+/// chain without affecting the chain.
+///
+/// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
+/// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
+/// use \c -tapOnContext:handler: instead.
+///
 /// \param handler The callback that is invoked with the promise's result. The first parameter is
 /// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
 /// cancelled.
-/// \returns A new promise that is resolved with the promise returned by \a handler.
-- (TWLPromise *)alwaysOnContext:(TWLContext*)context options:(TWLPromiseOptions)options handler:(TWLPromise * _Nonnull (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(always(on:options:_:)) TWL_WARN_UNUSED_RESULT;
-/// Registers a callback that will be invoked with the promise result, no matter what it is, and
-/// returns a new promise to wait on.
+/// \returns The receiver.
 ///
-/// When the receiver is resolved, the returned promise will be fulfilled using the result of
-/// the handler. If the handler returns a <tt>TWLPromise</tt>, the returned promise will instead be
-/// resolved using the result of that nested promise.
+/// \see -tap
+- (TWLPromise<ValueType,ErrorType> *)tap:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler;
+/// Registers a callback that will be invoked when the promise is resolved without affecting
+/// behavior.
+///
+/// This is similar to an \c -inspect callback except it doesn't create a new promise and instead
+/// returns its receiver. This means it won't delay any chained callbacks and it won't affect
+/// automatic cancellation propagation behavior.
+///
+/// This is similar to <tt>[[promise tap] always:…]</tt> except it can be inserted into any promise
+/// chain without affecting the chain.
+///
+/// \param context The context to invoke the callback on.
+/// \param handler The callback that is invoked with the promise's result. The first parameter is
+/// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
+/// cancelled.
+/// \returns The receiver.
+///
+/// \see -tap
+- (TWLPromise<ValueType,ErrorType> *)tapOnContext:(TWLContext *)context handler:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(tap(on:_:));
+/// Registers a callback that will be invoked when the promise is resolved without affecting
+/// behavior.
+///
+/// This is similar to an \c -inspect callback except it doesn't create a new promise and instead
+/// returns its receiver. This means it won't delay any chained callbacks and it won't affect
+/// automatic cancellation propagation behavior.
+///
+/// This is similar to <tt>[[promise tap] always:…]</tt> except it can be inserted into any promise
+/// chain without affecting the chain.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked and will cause the returned promise to be
-/// cancelled.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
+/// the token will prevent \a handler from being invoked.
 /// \param handler The callback that is invoked with the promise's result. The first parameter is
 /// the fulfilled value, the second is the rejected error. If both are \c nil then the promise was
 /// cancelled.
-/// \returns A new promise that is resolved with the promise returned by \a handler.
-- (TWLPromise *)alwaysOnContext:(TWLContext*)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(TWLPromise * _Nonnull (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(always(on:token:options:_:)) TWL_WARN_UNUSED_RESULT;
+/// \returns The receiver.
+///
+/// \see -tap
+- (TWLPromise<ValueType,ErrorType> *)tapOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))handler NS_SWIFT_NAME(tap(on:token:_:));
+
+/// Returns a new promise that adopts the result of the receiver without affecting its behavior.
+///
+/// The returned promise will always resolve with the same value that its receiver does, but it
+/// won't affect the timing of any of the receiver's other observers and it won't affect automatic
+/// cancellation propagation behavior.
+///
+/// <tt>[[promise tap] always:…]</tt> behaves the same as \c -tap: except it returns a new promise
+/// whereas \c -tap: returns the receiver and can be inserted into any promise chain without
+/// affecting the chain.
+///
+/// \returns A new \c TWLPromise that adopts the same result as the receiver. Requesting this new
+/// promise to cancel does nothing.
+///
+/// \see -tapOnContext:token:handler:
+- (TWLPromise<ValueType,ErrorType> *)tap;
 
 /// Registers a callback that will be invoked when the promise is cancelled.
 ///
@@ -518,26 +434,6 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will resolve to the same value as the receiver. You may safely
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)whenCancelledOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(void))handler NS_SWIFT_NAME(onCancel(on:token:_:));
-/// Registers a callback that will be invoked when the promise is cancelled.
-///
-/// \param context The context to invoke the callback on.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked when the promise is cancelled.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)whenCancelledOnContext:(TWLContext *)context options:(TWLPromiseOptions)options handler:(void (^)(void))handler NS_SWIFT_NAME(onCancel(on:options:_:));
-/// Registers a callback that will be invoked when the promise is cancelled.
-///
-/// \param context The context to invoke the callback on.
-/// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
-/// the token will prevent \a handler from being invoked.
-/// \param options Options which affect the cancellation and invalidation behavior of the returned
-/// <tt>TWLPromise</tt>.
-/// \param handler The callback that is invoked when the promise is cancelled.
-/// \returns A new promise that will resolve to the same value as the receiver. You may safely
-/// ignore this value.
-- (TWLPromise<ValueType,ErrorType> *)whenCancelledOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token options:(TWLPromiseOptions)options handler:(void (^)(void))handler NS_SWIFT_NAME(onCancel(on:token:options:_:));
 
 /// Returns the promise's value if it's already been resolved.
 ///
@@ -579,6 +475,22 @@ NS_SWIFT_NAME(ObjCPromise)
 ///
 /// \note The returned promise will still be cancelled if its parent promise is cancelled.
 - (TWLPromise<ValueType,ErrorType> *)ignoringCancel TWL_WARN_UNUSED_RESULT;
+
+/// Returns an object that can be used to request cancellation of this promise.
+///
+/// You should use this property instead of holding a weak reference to the \c TWLPromise as the \c
+/// TWLPromise object can deallocate before the promise has actually resolved. The return value of
+/// \a cancellable will stay alive until the promise ha resolved and notified all of its observers.
+///
+/// You should hold onto the cancellable object weakly. For example:
+///
+///\code
+///__weak id<TWLCancellable> cancellable = promise.cancellable;
+///[resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+///    [cancellable requestCancel];
+///}];
+///\endcode
+@property (atomic, readonly, nonnull) id<TWLCancellable> cancellable;
 
 @end
 
@@ -662,6 +574,18 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \seealso -handleCallback
 - (void (^)(ValueType _Nullable value, ErrorType _Nullable error))handleCallbackWithCancelPredicate:(BOOL (^)(ErrorType _Nonnull error))predicate;
 
+@end
+
+/// A protocol that can be used to cancel a promise without holding onto the full promise.
+///
+/// This protocol is used by the return type of \c TWLPromise.cancellable and should always be used
+/// instead of holding onto the promise weakly. This allows you to cancel a promise without
+/// interfering with automatic cancel propagation.
+///
+/// This protocol should be held weakly.
+@protocol TWLCancellable <NSObject>
+/// Requests cancellation of the promise this \c TWLCancellable was created from.
+- (void)requestCancel;
 @end
 
 NS_ASSUME_NONNULL_END
