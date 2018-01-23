@@ -15,6 +15,7 @@
 #import "TWLUtilities.h"
 #import "TWLPromisePrivate.h"
 #import "TWLContextPrivate.h"
+#import "TWLOneshotBlock.h"
 
 @implementation TWLPromise (Utilities)
 
@@ -39,18 +40,17 @@
 }
 
 - (TWLPromise *)timeoutWithDelay:(NSTimeInterval)delay {
-    return [self timeoutOnContext:TWLContext.automatic withDelay:delay cancelOnTimeout:YES];
+    return [self timeoutOnContext:TWLContext.automatic withDelay:delay];
 }
 
 - (TWLPromise *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay {
-    return [self timeoutOnContext:context withDelay:delay cancelOnTimeout:YES];
-}
-
-- (TWLPromise *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay cancelOnTimeout:(BOOL)cancelOnTimeout {
     TWLResolver *resolver;
     TWLPromise *promise = [[TWLPromise alloc] initWithResolver:&resolver];
     __weak TWLObjCPromiseBox *weakBox = _box;
     __weak TWLObjCPromiseBox *weakNewBox = promise->_box;
+    TWLOneshotBlock *propagateCancelBlock = [[TWLOneshotBlock alloc] initWithBlock:^{
+        [weakBox propagateCancel];
+    }];
     dispatch_block_t timeoutBlock = dispatch_block_create(0, ^{
         TWLObjCPromiseBox *newBox = weakNewBox;
         if (newBox) {
@@ -67,9 +67,7 @@
                 [resolver rejectWithError:[TWLTimeoutError newTimedOut]];
             }
         }
-        if (cancelOnTimeout) {
-            [weakBox requestCancel];
-        }
+        [propagateCancelBlock invoke];
     });
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         dispatch_block_cancel(timeoutBlock);
@@ -81,7 +79,7 @@
         }];
     } willPropagateCancel:YES];
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-        [weakBox propagateCancel];
+        [propagateCancelBlock invoke];
     }];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), [context getQueue], timeoutBlock);
     return promise;

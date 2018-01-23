@@ -266,10 +266,10 @@ promise will be cancelled as well.
 This function has an optional parameter `cancelRemaining:` that, if provided as `true`, will cancel the remaining input promises as soon as one of them is fulfilled
 or rejected.
 
-#### `Promise.timeout(on:delay:cancelOnTimeout:)`
+#### `Promise.timeout(on:delay:)`
 
-`Promise.timeout(on:delay:cancelOnTimeout:)` is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an
-error if the receiver isn't resolved within the given interval.
+`Promise.timeout(on:delay:)` is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn't
+resolved within the given interval.
 
 #### `Promise.delay(on:_:)`
 
