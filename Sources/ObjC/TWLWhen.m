@@ -15,6 +15,7 @@
 #import "TWLWhen.h"
 #import "TWLOneshotBlock.h"
 #import "TWLPromisePrivate.h"
+#import "TWLContextPrivate.h"
 #import <Tomorrowland/TWLContext.h>
 
 @implementation TWLPromise (When)
@@ -53,18 +54,20 @@
     for (NSUInteger i = 0; i < count; ++i) {
         TWLPromise *promise = promises[i];
         dispatch_group_enter(group);
-        [promise inspectOnContext:context handler:^(id _Nullable value, id _Nullable error) {
-            if (value) {
-                resultBuffer[i] = (__bridge id)CFBridgingRetain(value);
-            } else if (error) {
-                [resolver rejectWithError:error];
-                [cancelAllInput invoke];
-            } else {
-                [resolver cancel];
-                [cancelAllInput invoke];
-            }
-            dispatch_group_leave(group);
-        }];
+        [promise enqueueCallback:^(id _Nullable value, id _Nullable error) {
+            [context executeBlock:^{
+                if (value) {
+                    resultBuffer[i] = (__bridge id)CFBridgingRetain(value);
+                } else if (error) {
+                    [resolver rejectWithError:error];
+                    [cancelAllInput invoke];
+                } else {
+                    [resolver cancel];
+                    [cancelAllInput invoke];
+                }
+                dispatch_group_leave(group);
+            }];
+        } willPropagateCancel:YES];
     }
     dispatch_group_notify(group, dispatch_get_global_queue(qosClass, 0), ^{
         @try {
@@ -118,7 +121,7 @@
     dispatch_group_t group = dispatch_group_create();
     for (TWLPromise *promise in promises) {
         dispatch_group_enter(group);
-        [promise inspectOnContext:TWLContext.immediate handler:^(id _Nullable value, id _Nullable error) {
+        [promise enqueueCallback:^(id _Nullable value, id _Nullable error) {
             if (value) {
                 [resolver fulfillWithValue:value];
                 [cancelAllInput invoke];
@@ -127,7 +130,7 @@
                 [cancelAllInput invoke];
             }
             dispatch_group_leave(group);
-        }];
+        } willPropagateCancel:YES];
     }
     dispatch_group_notify(group, dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         [resolver cancel];
