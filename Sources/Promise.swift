@@ -1303,8 +1303,6 @@ extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
 }
 #endif
 
-// FIXME: (Swift 4.1) Implement Codable if Value and Error conform to it
-
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
 public struct PromiseInvalidationToken {
     private let _box: PromiseInvalidationTokenBox
