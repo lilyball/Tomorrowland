@@ -20,9 +20,35 @@ import Foundation
 public final class ObjCPromiseInvalidationToken: NSObject {
     fileprivate let _token: PromiseInvalidationToken
     
-    public override init() {
-        _token = PromiseInvalidationToken()
+    /// Creates and returns a new `TWLInvalidationToken`.
+    ///
+    /// The token automatically invalidates itself when deallocated. See `-initInvalidateOnDealloc:`
+    /// for details.
+    public convenience override init() {
+        self.init(invalidateOnDealloc: true)
+    }
+    
+    /// Creates and returns a new `TWLInvalidationToken`.
+    ///
+    /// - Parameter invalidateOnDealloc: If `YES` the token will invalidate itself when deallocated.
+    ///   If `NO` it only invalidates if you explicitly call `-invalidate`. Invalidating on dealloc
+    ///   is primarily useful in conjunction with `-requestCancelOnInvalidate:` so you don't have to
+    ///   cancel your promises when the object that owns the invalidation token deallocates.
+    public init(invalidateOnDealloc: Bool) {
+        _token = PromiseInvalidationToken(invalidateOnDeinit: invalidateOnDealloc)
         super.init()
+    }
+    
+    /// Creates and returns a new `TWLInvalidationToken`.
+    ///
+    /// - Parameter invalidateOnDealloc: If `YES` the token will invalidate itself when deallocated.
+    ///   If `NO` it only invalidates if you explicitly call `-invalidate`. Invalidating on dealloc
+    ///   is primarily useful in conjunction with `-requestCancelOnInvalidate:` so you don't have to
+    ///   cancel your promises when the object that owns the invalidation token deallocates.
+    @available(swift, obsoleted: 1.0)
+    @objc(newInvalidateOnDealloc:)
+    public class func new(invalidateOnDealloc: Bool) -> ObjCPromiseInvalidationToken {
+        return self.init(invalidateOnDealloc: invalidateOnDealloc)
     }
     
     public init(_ token: PromiseInvalidationToken) {

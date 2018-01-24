@@ -557,6 +557,42 @@ final class PromiseTests: XCTestCase {
         wait(for: expectations + [expectation], timeout: 1)
     }
     
+    func testInvalidationTokenNoInvalidateOnDeinit() {
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                resolver.cancel()
+            })
+            sema.wait()
+            resolver.fulfill(with: 42)
+        })
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        do {
+            let token = PromiseInvalidationToken(invalidateOnDeinit: false)
+            token.requestCancelOnInvalidate(promise)
+        }
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testInvalidationTokenInvalidateOnDeinit() {
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                resolver.cancel()
+            })
+            sema.wait()
+            resolver.fulfill(with: 42)
+        })
+        let expectation = XCTestExpectation(onCancel: promise)
+        do {
+            let token = PromiseInvalidationToken()
+            token.requestCancelOnInvalidate(promise)
+        }
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
     func testResolvingFulfilledPromise() {
         // Resolving a promise that has already been fulfilled does nothing
         let expectation = XCTestExpectation(description: "promise")

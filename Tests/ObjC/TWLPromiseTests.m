@@ -410,6 +410,42 @@
     [self waitForExpectations:expectations timeout:1];
 }
 
+- (void)testInvalidationTokenNoInvalidateOnDealloc {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }];
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
+    {
+        TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        [token requestCancelOnInvalidate:promise];
+    }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testInvalidationTokenInvalidateOnDealloc {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }];
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    {
+        TWLInvalidationToken *token = [TWLInvalidationToken new];
+        [token requestCancelOnInvalidate:promise];
+    }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 - (void)testResolvingFulfilledPromise {
     // Resolving a promise that has already been fulfilled does nothing
     XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];

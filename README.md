@@ -204,6 +204,10 @@ class URLImageView: UIImageView {
 `PromiseInvalidationToken` also has a method `.requestCancelOnInvalidate(_:)` that can register any number of `Promise`s to be automatically
 requested to cancel (using `.requestCancel()`) the next time the token is invalidated.
 
+By default `PromiseInvalidationToken`s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with
+`requestCancelOnInvalidate(_:)` as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
+disabled with an optional parameter to `init`.
+
 #### Automatic cancellation propagation
 
 Nearly all callback registration methods will automatically propagate cancellation requests from the child to the parent if the parent has no other observers. If all
@@ -284,6 +288,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Implement automatic cancellation propagation and remove the `.linkCancel` option.
 - Remove the `cancelOnTimeout:` parameter to `timeout(on:delay:)` in favor of automatic cancellation propagation.
+- Automatically invalidate `PromiseInvalidationToken`s on `deinit`. This behavior can be disabled via a parameter to `init`.
 
 ### v0.1
 

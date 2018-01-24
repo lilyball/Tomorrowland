@@ -1213,6 +1213,8 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
     }
 #endif
 
+// MARK: -
+
 extension Promise {
     /// Returns a value that can be used to cancel this promise without holding onto the full promise.
     ///
@@ -1303,12 +1305,21 @@ extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
 }
 #endif
 
+// MARK: -
+
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
 public struct PromiseInvalidationToken {
-    private let _box: PromiseInvalidationTokenBox
+    private let _inner: Inner
     
-    public init() {
-        _box = PromiseInvalidationTokenBox()
+    /// Creates and returns a new `PromiseInvalidationToken`.
+    ///
+    /// - Parameter invalidateOnDeinit: The default value of `true` means the token will
+    ///   automatically be invalidated when it deinits. If `false` it won't invalidate unless you
+    ///   explicitly call `invalidate()`. This is primarily useful in conjunction with
+    ///   `requestCancelOnInvalidate(_:)` so you don't have to cancel your promises when the object
+    ///   that owns the invalidation token deinits.
+    public init(invalidateOnDeinit: Bool = true) {
+        _inner = Inner(invalidateOnDeinit: invalidateOnDeinit)
     }
     
     /// After invoking this method, all `Promise` callbacks registered with this token will be
@@ -1319,22 +1330,38 @@ public struct PromiseInvalidationToken {
     /// In addition, any promises that have been registered with `requestCancelOnInvalidate(_:)`
     /// will be requested to cancel.
     public func invalidate() {
-        _box.invalidate()
+        _inner.box.invalidate()
     }
     
     /// Registers a `Promise` to be requested to cancel automatically when the token is invalidated.
     public func requestCancelOnInvalidate<V,E>(_ promise: Promise<V,E>) {
-        _box.requestCancelOnInvalidate(promise.cancellable)
+        _inner.box.requestCancelOnInvalidate(promise.cancellable)
     }
     
     /// Registers an `ObjCPromise` to be requested to cancel automatically when the token is
     /// invalidated.
     public func requestCancelOnInvalidate<V,E>(_ promise: ObjCPromise<V,E>) {
-        _box.requestCancelOnInvalidate(PromiseCancellable(promise.cancellable))
+        _inner.box.requestCancelOnInvalidate(PromiseCancellable(promise.cancellable))
     }
     
     internal var generation: UInt {
-        return _box.generation
+        return _inner.box.generation
+    }
+    
+    private class Inner {
+        let invalidateOnDeinit: Bool
+        let box: PromiseInvalidationTokenBox
+        
+        init(invalidateOnDeinit: Bool) {
+            box = PromiseInvalidationTokenBox()
+            self.invalidateOnDeinit = invalidateOnDeinit
+        }
+        
+        deinit {
+            if invalidateOnDeinit {
+                box.invalidate()
+            }
+        }
     }
 }
 
