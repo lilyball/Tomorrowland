@@ -710,6 +710,26 @@ public struct Promise<Value,Error> {
         _box.requestCancel()
     }
     
+    /// Requests that the `Promise` should be cancelled when the token is invalidated.
+    ///
+    /// This is equivalent to calling `token.requestCancelOnInvalidate(promise)` and is intended to
+    /// be used to terminate a promise chain. For example:
+    ///
+    ///     urlSession.promiseDataTask(for: url).then(token: token, { (data) in
+    ///         …
+    ///     }).catch(token: token, { (error) in
+    ///         …
+    ///     }).requestCancelOnInvalidate(token)
+    ///
+    /// - Parameter token: A `PromiseInvalidationToken`. When the token is invalidated the receiver
+    ///   will be requested to cancel.
+    /// - Returns: The receiver. This value can be ignored.
+    @discardableResult
+    public func requestCancelOnInvalidate(_ token: PromiseInvalidationToken) -> Promise<Value,Error> {
+        token.requestCancelOnInvalidate(self)
+        return self
+    }
+    
     /// Returns a new `Promise` that adopts the value of the receiver but ignores cancel requests.
     ///
     /// This is primarily useful when returning a nested promise in a callback handler in order to

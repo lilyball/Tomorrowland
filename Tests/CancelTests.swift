@@ -40,6 +40,16 @@ final class CancelTests: XCTestCase {
         wait(for: expectationsAndSemas.map({ $0.0 }), timeout: 1)
     }
     
+    func testPromiseRequestCancelOnInvalidate() {
+        let (promise, sema) = StdPromise.makeCancellablePromise(value: 2)
+        let token = PromiseInvalidationToken()
+        promise.requestCancelOnInvalidate(token)
+        let expectation = XCTestExpectation(onCancel: promise)
+        token.invalidate()
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
     func testPropagateCancelThen() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore

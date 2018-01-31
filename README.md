@@ -202,7 +202,9 @@ class URLImageView: UIImageView {
 ```
 
 `PromiseInvalidationToken` also has a method `.requestCancelOnInvalidate(_:)` that can register any number of `Promise`s to be automatically
-requested to cancel (using `.requestCancel()`) the next time the token is invalidated.
+requested to cancel (using `.requestCancel()`) the next time the token is invalidated. `Promise` also has the same method (except it takes a token as the
+argument) as a convenience for calling `.requestCancelOnInvalidate(_:)` on the token. This can be used to terminate a promise chain without ever assigning
+the promise to a local variable.
 
 By default `PromiseInvalidationToken`s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with
 `requestCancelOnInvalidate(_:)` as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
