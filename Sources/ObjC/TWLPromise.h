@@ -468,6 +468,24 @@ NS_SWIFT_NAME(ObjCPromise)
 /// -invalidate on it.
 - (void)requestCancel;
 
+/// Requests that the promise should be cancelled when the token is invalidated.
+///
+/// This is equivalent to calling \c -requestCancelOnInvalidate: on the token and is intended to be
+/// used to terminate a promise chain. For example:
+///
+///\code
+///[[[[urlSession promiseDataTaskForURL:url] thenOnContext:TWLContext.automatic token:token handler:^(NSData * _Nonnull data) {
+///    …
+///] catchOnContext:TWLContext.automatic token:token handler:^(NSError * _Nonnull error) {
+///    …
+///] requestCancelOnInvalidate:token];
+///\endcode
+///
+/// \param token A <tt>TWLInvalidationToken</tt>. When the token is invalidated the receiver will be
+/// requested to cancel.
+/// \returns The receiver. This value can be ignored.
+- (TWLPromise<ValueType,ErrorType> *)requestCancelOnInvalidate:(TWLInvalidationToken *)token;
+
 /// Returns a new promise that adopts the value of the receiver but ignores cancel requests.
 ///
 /// This is primarily useful when returning a nested promise in a callback handler in order to

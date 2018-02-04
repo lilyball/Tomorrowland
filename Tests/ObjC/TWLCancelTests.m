@@ -51,6 +51,17 @@
     [self waitForExpectations:expectations timeout:1];
 }
 
+- (void)testPromiseRequestCancelOnInvalidate {
+    dispatch_semaphore_t sema;
+    TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+    __auto_type token = [TWLInvalidationToken new];
+    [promise requestCancelOnInvalidate:token];
+    __auto_type expectation = [self expectationOnCancel:promise];
+    [token invalidate];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 - (void)testPropagateCancelThen {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;

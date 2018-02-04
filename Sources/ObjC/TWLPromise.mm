@@ -358,6 +358,11 @@
     [_box requestCancel];
 }
 
+- (TWLPromise *)requestCancelOnInvalidate:(TWLInvalidationToken *)token {
+    [token requestCancelOnInvalidate:self];
+    return self;
+}
+
 - (TWLPromise *)ignoringCancel {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
