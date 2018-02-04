@@ -34,6 +34,7 @@ public final class ObjCPromiseInvalidationToken: NSObject {
     ///   If `NO` it only invalidates if you explicitly call `-invalidate`. Invalidating on dealloc
     ///   is primarily useful in conjunction with `-requestCancelOnInvalidate:` so you don't have to
     ///   cancel your promises when the object that owns the invalidation token deallocates.
+    @objc(initInvalidateOnDealloc:)
     public init(invalidateOnDealloc: Bool) {
         _token = PromiseInvalidationToken(invalidateOnDeinit: invalidateOnDealloc)
         super.init()
