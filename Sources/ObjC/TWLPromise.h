@@ -486,6 +486,15 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns The receiver. This value can be ignored.
 - (TWLPromise<ValueType,ErrorType> *)requestCancelOnInvalidate:(TWLInvalidationToken *)token;
 
+/// Requests that the promise should be cancelled when the object deallocates.
+///
+/// This is equivalent to having the object hold a \c TWLInvalidationToken in a property (configured
+/// to invalidate on dealloc) and requesting the promise cancel on that token.
+///
+/// \param object Any object. When the object deallocates the receiver will be requested to cancel.
+/// \returns The receiver. This value can be ignored.
+- (TWLPromise<ValueType,ErrorType> *)requestCancelOnDealloc:(id)object;
+
 /// Returns a new promise that adopts the value of the receiver but ignores cancel requests.
 ///
 /// This is primarily useful when returning a nested promise in a callback handler in order to

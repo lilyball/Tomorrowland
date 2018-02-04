@@ -15,6 +15,7 @@
 #import "TWLPromisePrivate.h"
 #import <Tomorrowland/Tomorrowland-Swift.h>
 #import "TWLContextPrivate.h"
+#import <objc/runtime.h>
 #import "objc_cast.h"
 
 @interface TWLResolver<ValueType,ErrorType> () {
@@ -35,6 +36,10 @@
 - (void)resolveOrCancelWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
 - (void)requestCancel;
 - (void)seal;
+@end
+
+@interface TWLThreadDictionaryKey : NSObject <NSCopying>
+- (nonnull instancetype)initWithDescription:(nonnull NSString *)description;
 @end
 
 @implementation TWLPromise
@@ -360,6 +365,30 @@
 
 - (TWLPromise *)requestCancelOnInvalidate:(TWLInvalidationToken *)token {
     [token requestCancelOnInvalidate:self];
+    return self;
+}
+
+- (TWLPromise *)requestCancelOnDealloc:(id)object {
+    // We store a TWLInvalidationToken on the object using associated objects.
+    // As an optimization, we try to reuse tokens when possible. For safety's sake we can't just use
+    // a single associated object key or we'll have a problem in a multithreaded scenario.
+    // So instead we'll use a separate key per thread.
+    static TWLThreadDictionaryKey *threadKey;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        threadKey = [[TWLThreadDictionaryKey alloc] initWithDescription:@"key for TWLInvalidationToken"];
+    });
+    id keyObject = NSThread.currentThread.threadDictionary[threadKey];
+    if (!keyObject) {
+        keyObject = [NSObject new];
+        NSThread.currentThread.threadDictionary[threadKey] = keyObject;
+    }
+    TWLInvalidationToken *token = objc_getAssociatedObject(object, (__bridge void *)keyObject);
+    if (!token) {
+        token = [TWLInvalidationToken new];
+        objc_setAssociatedObject(object, (__bridge void *)keyObject, token, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    [self requestCancelOnInvalidate:token];
     return self;
 }
 
@@ -716,6 +745,27 @@ handleCallbacks:
         // resolver, and since that means it's a buggy implementation, we don't need to support it.
         RequestCancelNode::destroyPointer(nodePtr);
     }
+}
+
+@end
+
+@implementation TWLThreadDictionaryKey {
+    NSString * _Nonnull _description;
+}
+
+- (instancetype)initWithDescription:(NSString *)description {
+    if ((self = [super init])) {
+        _description = [description copy];
+    }
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    return self;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@: %p %@>", NSStringFromClass([self class]), self, _description];
 }
 
 @end

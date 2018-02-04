@@ -817,6 +817,28 @@
 #pragma unused(upcastResolver)
 }
 
+- (void)testRequestCancelOnDealloc {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    __auto_type promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }];
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTAssertFalse([promise getValue:NULL error:NULL]);
+    {
+        id object __attribute__((objc_precise_lifetime)) = [NSObject new];
+        [promise requestCancelOnDealloc:object];
+        XCTAssertFalse([promise getValue:NULL error:NULL]);
+    }
+    id value, error;
+    XCTAssertTrue([promise getValue:&value error:&error]);
+    XCTAssertNil(value);
+    XCTAssertNil(error);
+    dispatch_semaphore_signal(sema);
+}
+
 @end
 
 @implementation TWLPromiseTestsRunLoopObserver {
