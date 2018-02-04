@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A14B5712027BB310081C4C8 /* ObjectiveCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */; };
 		0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1777D41FF614EA003920C7 /* Compatibility.swift */; };
 		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
 		0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */; };
+		0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A362AA32027B50600807361 /* ObjectiveC.swift */; };
 		0A843A301FFE117200D171B4 /* TWLInvalidationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */; };
 		0A843A321FFF3FC500D171B4 /* objc_cast.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A843A311FFF3FC500D171B4 /* objc_cast.h */; };
 		0A843A341FFF477300D171B4 /* Bridging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A331FFF477300D171B4 /* Bridging.swift */; };
@@ -64,9 +66,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectiveCTests.swift; sourceTree = "<group>"; };
 		0A1777D41FF614EA003920C7 /* Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compatibility.swift; sourceTree = "<group>"; };
 		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
 		0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromiseTests.swift; sourceTree = "<group>"; };
+		0A362AA32027B50600807361 /* ObjectiveC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectiveC.swift; sourceTree = "<group>"; };
 		0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TWLInvalidationToken.swift; sourceTree = "<group>"; };
 		0A843A311FFF3FC500D171B4 /* objc_cast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = objc_cast.h; sourceTree = "<group>"; };
 		0A843A331FFF477300D171B4 /* Bridging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bridging.swift; sourceTree = "<group>"; };
@@ -202,6 +206,7 @@
 				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
+				0A362AA32027B50600807361 /* ObjectiveC.swift */,
 				0A1777D41FF614EA003920C7 /* Compatibility.swift */,
 				0AFD1B621FFD790500AB2029 /* ObjC */,
 				0AFF27711FE0E4D70006D95A /* Private */,
@@ -222,6 +227,7 @@
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
+				0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */,
 				0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */,
 				0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */,
 				0ACA1F82200316DB00A65481 /* ObjC */,
@@ -366,6 +372,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */,
 				0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */,
 				0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
@@ -393,6 +400,7 @@
 				0A843A3B1FFF5F7700D171B4 /* ObjCPromiseTests.swift in Sources */,
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
 				0ACA1F77200095F400A65481 /* TWLDelayedPromiseTests.m in Sources */,
+				0A14B5712027BB310081C4C8 /* ObjectiveCTests.swift in Sources */,
 				0AFD1B601FFC1FF700AB2029 /* PrivateTests.swift in Sources */,
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,

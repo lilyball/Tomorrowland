@@ -210,6 +210,10 @@ By default `PromiseInvalidationToken`s will invalidate themselves automatically 
 `requestCancelOnInvalidate(_:)` as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
 disabled with an optional parameter to `init`.
 
+`Promise` also has a convenience method `requestCancelOnDeinit(_:)` which can be used to request the `Promise` to be cancelled when a given object
+deinits. This is equivalent to adding a `PromiseInvalidationToken` property to the object (configured to invalidate on deinit) and requesting cancellation when
+the token invalidates, but can be used if the token would otherwise not be explicitly invalidated.
+
 #### Automatic cancellation propagation
 
 Nearly all callback registration methods will automatically propagate cancellation requests from the child to the parent if the parent has no other observers. If all
@@ -285,6 +289,11 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Add `Promise.requestCancelOnInvalidate(_:)` as a convenience for `token.requestCancelOnInvalidate(_:)`.
+- Add `Promise.requestCancelOnDeinit(_:)` as a convenience for adding a token property to an object that invalites on deinit.
 
 ### v0.2
 
