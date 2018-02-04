@@ -839,6 +839,71 @@
     dispatch_semaphore_signal(sema);
 }
 
+- (void)testObservationCallbackReleasedWhenPromiseResolved {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    __weak id weakObject;
+    {
+        id object = [NSObject new];
+        weakObject = object;
+        [promise thenOnContext:TWLContext.immediate handler:^(NSNumber * _Nonnull value) {
+            (void)object;
+        }];
+    }
+    XCTAssertNotNil(weakObject);
+    [resolver fulfillWithValue:@42];
+    XCTAssertNil(weakObject);
+}
+
+- (void)testObservationCallbackReleasedWhenPromiseCancelled {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    __weak id weakObject;
+    {
+        id object = [NSObject new];
+        weakObject = object;
+        [promise thenOnContext:TWLContext.immediate handler:^(NSNumber * _Nonnull value) {
+            (void)object;
+        }];
+    }
+    XCTAssertNotNil(weakObject);
+    [resolver cancel];
+    XCTAssertNil(weakObject);
+}
+
+- (void)testWhenCancelCallbackReleasedWhenPromiseResolved {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    (void)[[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    __weak id weakObject;
+    {
+        id object = [NSObject new];
+        weakObject = object;
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            (void)object;
+        }];
+    }
+    XCTAssertNotNil(weakObject);
+    [resolver fulfillWithValue:@42];
+    XCTAssertNil(weakObject);
+}
+
+- (void)testWhenCancelCallbackReleasedWhenPromiseRequestedCancel {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    __weak id weakObject;
+    {
+        id object = [NSObject new];
+        weakObject = object;
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            (void)object;
+            [resolver cancel];
+        }];
+    }
+    XCTAssertNotNil(weakObject);
+    [promise requestCancel];
+    XCTAssertNil(weakObject);
+}
+
 @end
 
 @implementation TWLPromiseTestsRunLoopObserver {

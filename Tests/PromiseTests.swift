@@ -944,6 +944,67 @@ final class PromiseTests: XCTestCase {
         let expectation5 = XCTestExpectation(onCancel: promise5)
         wait(for: [expectation1, expectation2, expectation3, expectation4, expectation5], timeout: 1)
     }
+    
+    func testObservationCallbackReleasedWhenPromiseResolved() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        weak var weakObject: NSObject?
+        do {
+            let object = NSObject()
+            weakObject = object
+            _ = promise.then(on: .immediate, { (x) in
+                withExtendedLifetime(object, {})
+            })
+        }
+        XCTAssertNotNil(weakObject)
+        resolver.fulfill(with: 42)
+        XCTAssertNil(weakObject)
+    }
+    
+    func testObservationCallbackReleasedWhenPromiseCancelled() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        weak var weakObject: NSObject?
+        do {
+            let object = NSObject()
+            weakObject = object
+            _ = promise.then(on: .immediate, { (x) in
+                withExtendedLifetime(object, {})
+            })
+        }
+        XCTAssertNotNil(weakObject)
+        resolver.cancel()
+        XCTAssertNil(weakObject)
+    }
+    
+    func testOnCancelCallbackReleasedWhenPromiseResolved() {
+        let (_, resolver) = Promise<Int,String>.makeWithResolver()
+        weak var weakObject: NSObject?
+        do {
+            let object = NSObject()
+            weakObject = object
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                withExtendedLifetime(object, {})
+            })
+        }
+        XCTAssertNotNil(weakObject)
+        resolver.fulfill(with: 42)
+        XCTAssertNil(weakObject)
+    }
+    
+    func testOnCancelCallbackReleasedWhenPromiseRequestedCancel() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        weak var weakObject: NSObject?
+        do {
+            let object = NSObject()
+            weakObject = object
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                withExtendedLifetime(object, {})
+                resolver.cancel()
+            })
+        }
+        XCTAssertNotNil(weakObject)
+        promise.requestCancel()
+        XCTAssertNil(weakObject)
+    }
 }
 
 final class PromiseResultTests: XCTestCase {
