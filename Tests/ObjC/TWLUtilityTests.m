@@ -128,6 +128,18 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testDelayUsingOperationQueue {
+    __auto_type queue = [NSOperationQueue new];
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        [resolver fulfillWithValue:@42];
+    }] delay:0.05 onContext:[TWLContext operationQueue:queue]];
+    __auto_type expectation = [self expectationOnContext:TWLContext.immediate onSuccess:promise handler:^(NSNumber * _Nonnull value) {
+        XCTAssertEqualObjects(value, @42);
+        XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 // MARK: -
 
 - (void)testTimeout {
@@ -234,6 +246,22 @@
     TWLPromise *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] timeoutOnContext:TWLContext.utility withDelay:0];
     XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
     [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testTimeoutUsingOperationQueue {
+    __auto_type queue = [NSOperationQueue new];
+    
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(50 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            [resolver fulfillWithValue:@42];
+        });
+    }] timeoutOnContext:[TWLContext operationQueue:queue] withDelay:0.01];
+    XCTestExpectation *expectation = [self expectationOnContext:TWLContext.immediate onError:promise handler:^(NSError * _Nonnull error) {
+        XCTAssertEqualObjects(error, [TWLTimeoutError newTimedOut]);
+        XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+
 }
 
 // MARK: -

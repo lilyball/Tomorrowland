@@ -29,8 +29,16 @@ extension Promise {
     public func delay(on context: PromiseContext = .auto, _ delay: TimeInterval) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         _seal.enqueue { [queue=context.getQueue()] (result) in
-            queue.asyncAfter(deadline: .now() + delay) {
-                resolver.resolve(with: result)
+            if let queue = queue {
+                queue.asyncAfter(deadline: .now() + delay) {
+                    resolver.resolve(with: result)
+                }
+            } else {
+                DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+                    context.execute {
+                        resolver.resolve(with: result)
+                    }
+                }
             }
         }
         resolver.onRequestCancel(on: .immediate) { [weak _box] (_) in
@@ -84,7 +92,15 @@ extension Promise {
         resolver.onRequestCancel(on: .immediate) { (resolver) in
             propagateCancelBlock.invoke()
         }
-        context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
+        if let queue = context.getQueue() {
+            queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
+        } else {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+                context.execute {
+                    timeoutBlock.perform()
+                }
+            }
+        }
         return promise
     }
 }
@@ -135,7 +151,16 @@ extension Promise where Error == Swift.Error {
         resolver.onRequestCancel(on: .immediate) { (resolver) in
             propagateCancelBlock.invoke()
         }
-        context.getQueue().asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
+        if let queue = context.getQueue() {
+            queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
+        } else {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+                context.execute {
+                    timeoutBlock.perform()
+                }
+            }
+        }
+
         return promise
     }
 }

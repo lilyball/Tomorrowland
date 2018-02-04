@@ -120,6 +120,18 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testDelayUsingOperationQueue() {
+        let queue = OperationQueue()
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.fulfill(with: 42)
+        }).delay(on: .operationQueue(queue), 0.05)
+        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (x) in
+            XCTAssertEqual(x, 42)
+            XCTAssertEqual(OperationQueue.current, queue)
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: -
     
     func testTimeout() {
@@ -245,6 +257,24 @@ final class UtilityTests: XCTestCase {
     func testZeroDelayAlreadyResolved() {
         let promise = Promise<Int,String>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testTimeoutUsingOperationQueue() {
+        let queue = OperationQueue()
+        
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .operationQueue(queue), delay: 0.01)
+        let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (error) in
+            switch error {
+            case .timedOut: break
+            default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+            }
+            XCTAssertEqual(OperationQueue.current, queue)
+        })
         wait(for: [expectation], timeout: 1)
     }
     
@@ -378,6 +408,25 @@ final class UtilityTests: XCTestCase {
         let _: Promise<Int,Error> = promise // type assertion
         let expectation = XCTestExpectation(onSuccess: promise, handler: { (x) in
             XCTAssertEqual(x, 42)
+        })
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testErrorTimeoutUsingOperationQueue() {
+        let queue = OperationQueue()
+        
+        let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .operationQueue(queue), delay: 0.01)
+        let _: Promise<Int,Error> = promise // type assertion
+        let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (error) in
+            switch error {
+            case PromiseTimeoutError<Error>.timedOut: break
+            default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+            }
+            XCTAssertEqual(OperationQueue.current, queue)
         })
         wait(for: [expectation], timeout: 1)
     }

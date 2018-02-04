@@ -148,10 +148,9 @@ public enum PromiseContext: Equatable, Hashable {
         }
     }
     
-    /// Returns the `DispatchQueue` corresponding to the context. If the context is `.immediate`, it
-    /// behaves like `.auto`. If the context is `.operationQueue` it uses the underlying queue, or
-    /// `.default` if there is no underlying queue.
-    internal func getQueue() -> DispatchQueue {
+    /// Returns the `DispatchQueue` corresponding to the context, if any. If the context is
+    /// `.immediate`, it behaves like `.auto`.
+    internal func getQueue() -> DispatchQueue? {
         switch self {
         case .main: return .main
         case .background: return .global(qos: .background)
@@ -160,7 +159,7 @@ public enum PromiseContext: Equatable, Hashable {
         case .userInitiated: return .global(qos: .userInitiated)
         case .userInteractive: return .global(qos: .userInteractive)
         case .queue(let queue): return queue
-        case .operationQueue(let queue): return queue.underlyingQueue ?? .global(qos: .default)
+        case .operationQueue: return nil
         case .immediate: return PromiseContext.auto.getQueue()
         }
     }

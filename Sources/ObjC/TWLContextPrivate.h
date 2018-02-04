@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface TWLContext ()
 @property (atomic, readonly) BOOL isImmediate;
 - (void)executeBlock:(dispatch_block_t)block;
-- (dispatch_queue_t)getQueue;
+- (nullable dispatch_queue_t)getQueue;
 @end
 
 NS_ASSUME_NONNULL_END

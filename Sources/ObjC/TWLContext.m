@@ -185,11 +185,11 @@
     }
 }
 
-- (dispatch_queue_t)getQueue {
+- (nullable dispatch_queue_t)getQueue {
     if (_queue) {
         return _queue;
     } else if (_operationQueue) {
-        return _operationQueue.underlyingQueue ?: dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0);
+        return nil;
     } else {
         return TWLContext.automatic.getQueue;
     }

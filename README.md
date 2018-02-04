@@ -294,6 +294,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Add `Promise.requestCancelOnInvalidate(_:)` as a convenience for `token.requestCancelOnInvalidate(_:)`.
 - Add `Promise.requestCancelOnDeinit(_:)` as a convenience for adding a token property to an object that invalites on deinit.
+- Better support for `OperationQueue` with `delay`/`timeout`. Instead of using the `OperationQueue`'s underlying queue, we instead use a `.userInitiated`
+  queue for the timer and hop onto the `OperationQueue` to resolve the promise.
 
 ### v0.2
 

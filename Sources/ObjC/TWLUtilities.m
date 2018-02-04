@@ -28,8 +28,14 @@
     TWLPromise *promise = [[TWLPromise alloc] initWithResolver:&resolver];
     dispatch_queue_t queue = [context getQueue];
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, ^{
-            [resolver resolveWithValue:value error:error];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue ?: dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            if (queue) {
+                [resolver resolveWithValue:value error:error];
+            } else {
+                [context executeBlock:^{
+                    [resolver resolveWithValue:value error:error];
+                }];
+            }
         });
     } willPropagateCancel:YES];
     __weak TWLObjCPromiseBox *box = _box;
@@ -81,7 +87,14 @@
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
         [propagateCancelBlock invoke];
     }];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), [context getQueue], timeoutBlock);
+    dispatch_queue_t queue = [context getQueue];
+    if (queue) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, timeoutBlock);
+    } else {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            [context executeBlock:timeoutBlock];
+        });
+    }
     return promise;
 }
 
