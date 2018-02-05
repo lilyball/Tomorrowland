@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.2.0-blue.svg)](https://github.com/kballard/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v0.3.0-blue.svg)](https://github.com/kballard/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -51,13 +51,13 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "kballard/Tomorrowland" ~> 0.2.0
+github "kballard/Tomorrowland" ~> 0.3.0
 ```
 
 ### CocoaPods
 
 ```ruby
-pod 'Tomorrowland', '~> 0.2.0'
+pod 'Tomorrowland', '~> 0.3.0'
 ```
 
 ### SwiftPM
@@ -290,7 +290,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v0.3
 
 - Add `Promise.requestCancelOnInvalidate(_:)` as a convenience for `token.requestCancelOnInvalidate(_:)`.
 - Add `Promise.requestCancelOnDeinit(_:)` as a convenience for adding a token property to an object that invalites on deinit.
