@@ -45,6 +45,7 @@
 		0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF276F1FE0E4D10006D95A /* Promise.swift */; };
 		0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */; };
+		0AFF636820682659006BCA29 /* ObjCBridgingGenerics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */; };
 		AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DC1FECCD680029A283 /* Utilities.swift */; };
 		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
 		AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3E31FEDF9450029A283 /* CancelTests.swift */; };
@@ -109,6 +110,7 @@
 		0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseBox.h; sourceTree = "<group>"; };
 		0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseBox.m; sourceTree = "<group>"; };
 		0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = tomorrowland.modulemap; sourceTree = "<group>"; };
+		0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCBridgingGenerics.swift; sourceTree = "<group>"; };
 		AB1FF3DC1FECCD680029A283 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityTests.swift; sourceTree = "<group>"; };
 		AB1FF3E01FECD7A90029A283 /* LICENSE-APACHE */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE-APACHE"; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */,
 				0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */,
 				0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */,
+				0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */,
 				0ACA1F82200316DB00A65481 /* ObjC */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
@@ -405,6 +408,7 @@
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */,
+				0AFF636820682659006BCA29 /* ObjCBridgingGenerics.swift in Sources */,
 				0A843A3A1FFF5F7700D171B4 /* TWLPromiseTests.m in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 				0ACA1F8120020FC900A65481 /* TWLUtilityTests.m in Sources */,
