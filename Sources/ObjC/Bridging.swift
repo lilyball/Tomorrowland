@@ -133,6 +133,16 @@ extension Promise where Value: AnyObject {
             })
         }
     }
+    
+    public func objc(mapError: @escaping (Error) throws -> Swift.Error) -> ObjCPromise<Value,NSError> {
+        return objc(mapError: { (err) -> NSError in
+            do {
+                return try mapError(err) as NSError
+            } catch {
+                return error as NSError
+            }
+        })
+    }
 }
 
 extension Promise where Error: AnyObject {

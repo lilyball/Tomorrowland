@@ -290,6 +290,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add a missing Swift->ObjC convenience bridging method.
+
 ### v0.3
 
 - Add `Promise.requestCancelOnInvalidate(_:)` as a convenience for `token.requestCancelOnInvalidate(_:)`.

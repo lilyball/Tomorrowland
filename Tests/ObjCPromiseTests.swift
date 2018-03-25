@@ -106,6 +106,34 @@ final class ObjCPromiseTests: XCTestCase {
             wait(for: [expectation], timeout: 1)
         }
         
+        do { // bridge to Error where Value: AnyObject
+            let promise = Promise<NSNumber,String>(on: .utility, { (resolver) in
+                resolver.reject(with: "error")
+            })
+            let objcPromise = promise.objc(mapError: { StringError(message: $0) })
+            let _: ObjCPromise<NSNumber,NSError> = objcPromise // compile-time type assertion
+            let expectation = XCTestExpectation(description: "objcPromise rejected")
+            objcPromise.catch { (error) in
+                XCTAssertTrue(error as Error is StringError)
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // bridge throwing where Value: AnyObject
+            let promise = Promise<NSNumber,String>(on: .utility, { (resolver) in
+                resolver.reject(with: "error")
+            })
+            let objcPromise = promise.objc(mapError: { throw StringError(message: $0) })
+            let _: ObjCPromise<NSNumber,NSError> = objcPromise // compile-time type assertion
+            let expectation = XCTestExpectation(description: "objcPromise rejected")
+            objcPromise.catch { (error) in
+                XCTAssertTrue(error as Error is StringError)
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+        
         do { // bridge where Error: AnyObject
             let promise = Promise<Int,NSString>(on: .utility, { (resolver) in
                 resolver.fulfill(with: 42)
