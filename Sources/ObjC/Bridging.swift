@@ -208,12 +208,12 @@ extension Promise where Error == Swift.Error {
                     if let value = value {
                         resolver.fulfill(with: try mapValue(value))
                     } else if let error = error {
-                        resolver.reject(with: error as NSError)
+                        resolver.reject(with: error)
                     } else {
                         resolver.cancel()
                     }
                 } catch {
-                    resolver.reject(with: error as NSError)
+                    resolver.reject(with: error)
                 }
             })
             resolver.onRequestCancel(on: .immediate, { [weak promise] (_) in
