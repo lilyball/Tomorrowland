@@ -1389,10 +1389,7 @@ public struct PromiseInvalidationToken {
 /// It's intended to be used as the error type for promises that cannot return an error. It is
 /// similar to `Never` except it conforms to some protocols in order to make working with types
 /// containing it easier.
-public enum NoError: Hashable, Equatable, Encodable {
-    // Note: We cannot conform to Decodable, because then someone would be able to attempt to create
-    // an instance of us (which would crash).
-    
+public enum NoError: Hashable, Equatable, Codable {
     public static func ==(lhs: NoError, rhs: NoError) -> Bool {
         return true
     }
@@ -1405,6 +1402,15 @@ public enum NoError: Hashable, Equatable, Encodable {
         fatalError()
     }
 }
+
+// See SR-2729
+protocol _NoErrorDecodableWorkaround : Decodable {}
+extension _NoErrorDecodableWorkaround {
+    public init(from decoder: Decoder) throws {
+        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Tomorrowland.NoError does not support decoding."))
+    }
+}
+extension NoError: _NoErrorDecodableWorkaround {}
 
 // MARK: - Private
 

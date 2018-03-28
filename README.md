@@ -293,6 +293,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ### Development
 
 - Add a missing Swift->ObjC convenience bridging method.
+- Add `Decodable` conformance to `NoError`.
 
 ### v0.3
 
