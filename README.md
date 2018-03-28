@@ -294,6 +294,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Add a missing Swift->ObjC convenience bridging method.
 - Add `Decodable` conformance to `NoError`.
+- Add method `Promise.fork(_:)`.
 
 ### v0.3
 

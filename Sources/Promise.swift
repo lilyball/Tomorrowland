@@ -697,6 +697,26 @@ public struct Promise<Value,Error> {
     
     // MARK: -
     
+    /// Passes the `Promise` to a block and then returns the `Promise` for further chaining.
+    ///
+    /// This method exists to make it easy to add multiple children to the same `Promise` in a
+    /// promise chain.
+    ///
+    /// - Note: Having multiple children on a single `Promise` can interfere with automatic
+    ///   cancellation propagation. You may want to use `tap(on:token:_:)` or `tap()` for your
+    ///   sibling children if you're returning the result of the promise chain to a caller that may
+    ///   wish to cancel the chain.
+    ///
+    /// Example:
+    ///
+    ///     return urlSession.dataTaskAsPromise(for: url)
+    ///         .fork({ $0.tap().then(on: .main, { analytics.recordNetworkLoad($0.response, for: url) }) })
+    ///         .tryThen(on: .utility, { try JSONDecoder().decode(Model.self, from: $0.data) })
+    public func fork(_ handler: (Promise) throws -> Void) rethrows -> Promise {
+        try handler(self)
+        return self
+    }
+    
     /// Requests that the `Promise` should be cancelled.
     ///
     /// If the promise is already resolved, this does nothing. Otherwise, if the `Promise` registers
