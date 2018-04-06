@@ -706,7 +706,7 @@ handleCallbacks:
     NSInteger callbackCount = CallbackNode::countNodes(self.callbackList);
     NSInteger requestCancelCount = RequestCancelNode::countNodes(self.requestCancelLinkedList);
     auto describe = [](NSInteger count) -> NSString * _Nonnull {
-        return [NSString stringWithFormat:@"%zd node%@", count, count == 1 ? @"" : @"s"];
+        return [NSString stringWithFormat:@"%ld node%@", (long)count, count == 1 ? @"" : @"s"];
     };
     NSString *stateName;
     switch (self.unfencedState) {
