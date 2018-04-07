@@ -65,7 +65,7 @@
 - (void)testPropagateCancelThen {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail(@"callback invoked");
@@ -84,7 +84,7 @@
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
     TWLPromise *promise2;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail(@"callback invoked");
@@ -101,7 +101,7 @@
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
     TWLPromise *promise2;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail("callback invoked");
@@ -125,7 +125,7 @@
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
     TWLPromise *promise2, *promise3;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail("callback invoked");
@@ -148,7 +148,7 @@
 - (void)testPropgateCancelNoCancelWithNoObservers {
     XCTestExpectation *expectation;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         expectation = TWLExpectationErrorWithError(promise, @"foo");
     }
@@ -160,7 +160,7 @@
 - (void)testPropagateCancelMap {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise mapOnContext:TWLContext.utility handler:^id(id _Nonnull value) {
             XCTFail(@"callback invoked");
@@ -177,7 +177,7 @@
 - (void)testPropagateCancelCatch {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise catchOnContext:TWLContext.utility handler:^(id _Nonnull error) {
             XCTFail(@"callback invoked");
@@ -193,7 +193,7 @@
 - (void)testPropagateCancelRecover {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise recoverOnContext:TWLContext.utility handler:^id(id _Nonnull error) {
             XCTFail(@"callback invoked");
@@ -210,7 +210,7 @@
 - (void)testPropagateCancelInspect {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise inspectOnContext:TWLContext.utility handler:^(id _Nullable value, id _Nullable error) {
             XCTAssertNil(value);
@@ -227,7 +227,7 @@
 - (void)testPropagateCancelAlways {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         TWLPromise *promise2 = [promise alwaysOnContext:TWLContext.utility handler:^TWLPromise * _Nonnull (id _Nullable value, id _Nullable error) {
             XCTAssertNil(value);
@@ -245,7 +245,7 @@
 - (void)testPropagateCancelWhenCancelled {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
-    {
+    @autoreleasepool {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
         XCTestExpectation *cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"whenCancelRequested"];
         TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.utility handler:^{
@@ -263,7 +263,7 @@
 - (void)testPropagateCancelDelayedPromise {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    {
+    @autoreleasepool {
         TWLDelayedPromise *delayedPromise = [TWLDelayedPromise newOnContext:TWLContext.utility handler:^(TWLResolver * _Nonnull resolver) {
             [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
                 [resolver cancel];

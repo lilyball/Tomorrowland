@@ -190,7 +190,7 @@
     dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     TWLPromise *promise;
     NSMutableArray<XCTestExpectation*> *expectations = [NSMutableArray new];
-    {
+    @autoreleasepool {
         NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
         for (NSUInteger i = 0; i < 3; ++i) {
             TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
@@ -336,7 +336,7 @@
     dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     TWLPromise *promise;
     NSMutableArray<XCTestExpectation*> *expectations = [NSMutableArray new];
-    {
+    @autoreleasepool {
         NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
         for (NSUInteger i = 0; i < 3; ++i) {
             TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {

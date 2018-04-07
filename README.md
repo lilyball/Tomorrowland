@@ -296,6 +296,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Add `Decodable` conformance to `NoError`.
 - Add method `Promise.fork(_:)`.
 - Fix compilation failure when targeting 32-bit iOS 9 simulator in Xcode 9.3.
+- Fix cancellation propagation test cases on iOS 9 simulators.
 
 ### v0.3
 

@@ -111,7 +111,7 @@
     XCTestExpectation *expectation;
     TWLPromise *promise;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    {
+    @autoreleasepool {
         TWLPromise * NS_VALID_UNTIL_END_OF_SCOPE origPromise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
             [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
                 [resolver cancel];
