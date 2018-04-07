@@ -26,7 +26,7 @@ final class ObjectiveCTests: XCTestCase {
             resolver.fulfill(with: 42)
         })
         XCTAssertNil(promise.result)
-        do {
+        autoreleasepool {
             let object = NSObject()
             withExtendedLifetime(object) {
                 promise.requestCancelOnDeinit(object)
