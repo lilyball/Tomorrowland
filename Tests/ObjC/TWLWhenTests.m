@@ -30,7 +30,7 @@
         }]];
     }
     TWLPromise<NSArray<NSNumber*>*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@[@2,@4,@6,@8,@10]];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, (@[@2,@4,@6,@8,@10]));
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -46,7 +46,7 @@
         }]];
     }
     TWLPromise<NSArray<NSNumber*>*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"error"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -62,7 +62,7 @@
         }]];
     }
     TWLPromise<NSArray<NSNumber*>*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -95,7 +95,7 @@
         [promises addObject:promise];
     }
     TWLPromise *promise = [TWLPromise whenFulfilled:promises cancelOnFailure:YES];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"error"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema); // let the promises empty out
     [self waitForExpectations:expectations timeout:1];
@@ -130,7 +130,7 @@
         [promises addObject:promise];
     }
     TWLPromise *promise = [TWLPromise whenFulfilled:promises cancelOnFailure:YES];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema); // let the promises empty out
     [self waitForExpectations:expectations timeout:1];
@@ -166,7 +166,7 @@
         [promises addObject:promise];
     }
     TWLPromise *promise = [TWLPromise whenFulfilled:promises];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema); // let the promises empty out
     [self waitForExpectations:expectations timeout:1];
@@ -174,14 +174,14 @@
 
 - (void)testWhenEmptyInput {
     TWLPromise *promise = [TWLPromise whenFulfilled:@[]];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@[]];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @[]);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
 - (void)testWhenDuplicatePromise {
     TWLPromise *dummy = [TWLPromise newFulfilledWithValue:@42];
     TWLPromise *promise = [TWLPromise whenFulfilled:@[dummy,dummy,dummy]];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@[@42,@42,@42]];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, (@[@42,@42,@42]));
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -201,7 +201,7 @@
                 dispatch_semaphore_signal(sema);
                 [resolver rejectWithError:@"foo"];
             }];
-            XCTestExpectation *expectation = [self expectationOnCancel:promise];
+            XCTestExpectation *expectation = TWLExpectationCancel(promise);
             [promises addObject:promise];
             [expectations addObject:expectation];
         }
@@ -228,7 +228,7 @@
         }]];
     }
     TWLPromise *promise = [TWLPromise race:promises];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@6];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @6);
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema);
 }
@@ -249,7 +249,7 @@
         }]];
     }
     TWLPromise *promise = [TWLPromise race:promises];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"foo"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"foo");
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema);
 }
@@ -270,7 +270,7 @@
         }]];
     }
     TWLPromise *promise = [TWLPromise race:promises];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise];
+    XCTestExpectation *expectation = TWLExpectationSuccess(promise);
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
 }
@@ -283,7 +283,7 @@
         }]];
     }
     TWLPromise *promise = [TWLPromise race:promises];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -312,7 +312,7 @@
         [expectations addObject:expectation];
     }
     TWLPromise *promise = [TWLPromise race:promises cancelRemaining:YES];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@6];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @6);
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:expectations timeout:1];
@@ -320,14 +320,14 @@
 
 - (void)testRaceEmptyInput {
     TWLPromise *promise = [TWLPromise race:@[]];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
 - (void)testRaceDuplicateInput {
     TWLPromise *dummy = [TWLPromise newFulfilledWithValue:@42];
     TWLPromise *promise = [TWLPromise race:@[dummy,dummy,dummy]];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @42);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -347,7 +347,7 @@
                 dispatch_semaphore_signal(sema);
                 [resolver rejectWithError:@"foo"];
             }];
-            XCTestExpectation *expectation = [self expectationOnCancel:promise];
+            XCTestExpectation *expectation = TWLExpectationCancel(promise);
             [promises addObject:promise];
             [expectations addObject:expectation];
         }

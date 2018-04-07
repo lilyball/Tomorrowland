@@ -32,7 +32,7 @@
     TWLDelayedPromise<NSNumber*,NSString*> *dp = [TWLDelayedPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
         [resolver fulfillWithValue:@42];
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:dp.promise expectedValue:@42];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(dp.promise, @42);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -54,8 +54,8 @@
     TWLPromise *promiseA = dp.promise;
     TWLPromise *promiseB = dp.promise;
     XCTAssertEqualObjects(promiseA, promiseB);
-    XCTestExpectation *expectationA = [self expectationOnSuccess:promiseA expectedValue:@42];
-    XCTestExpectation *expectationB = [self expectationOnSuccess:promiseB expectedValue:@42];
+    XCTestExpectation *expectationA = TWLExpectationSuccessWithValue(promiseA, @42);
+    XCTestExpectation *expectationB = TWLExpectationSuccessWithValue(promiseB, @42);
     [self waitForExpectations:@[expectationA, expectationB] timeout:1];
 }
 

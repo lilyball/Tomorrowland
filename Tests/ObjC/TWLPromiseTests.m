@@ -30,7 +30,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
         [resolver fulfillWithValue:@42];
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @42);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -38,7 +38,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
         [resolver rejectWithError:@"error"];
     }];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"error"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -46,7 +46,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
         [resolver cancel];
     }];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -54,19 +54,19 @@
     TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver resolveWithValue:@42 error:nil];
     }];
-    XCTestExpectation *expectation1 = [self expectationOnSuccess:promise1 expectedValue:@42];
+    XCTestExpectation *expectation1 = TWLExpectationSuccessWithValue(promise1, @42);
     TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver resolveWithValue:nil error:@"foo"];
     }];
-    XCTestExpectation *expectation2 = [self expectationOnError:promise2 expectedError:@"foo"];
+    XCTestExpectation *expectation2 = TWLExpectationErrorWithError(promise2, @"foo");
     TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver resolveWithValue:nil error:nil];
     }];
-    XCTestExpectation *expectation3 = [self expectationOnCancel:promise3];
+    XCTestExpectation *expectation3 = TWLExpectationCancel(promise3);
     TWLPromise *promise4 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver resolveWithValue:@42 error:@"foo"];
     }];
-    XCTestExpectation *expectation4 = [self expectationOnSuccess:promise4 expectedValue:@42];
+    XCTestExpectation *expectation4 = TWLExpectationSuccessWithValue(promise4, @42);
     [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4] timeout:1];
 }
 
@@ -92,7 +92,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.utility handler:^(NSNumber * _Nonnull x) {
         return @(x.integerValue + 1);
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@43];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @43);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -102,7 +102,7 @@
             [resolver fulfillWithValue:@(x.integerValue + 1)];
         }];
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@43];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @43);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -112,7 +112,7 @@
             [resolver rejectWithError:@"error"];
         }];
     }];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"error"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -122,7 +122,7 @@
             [resolver cancel];
         }];
     }];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -136,11 +136,11 @@
     __block NSUInteger resolved = 0;
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray arrayWithCapacity:10];
     for (NSUInteger i = 0; i < 10; ++i) {
-        XCTestExpectation *expectation = [self expectationOnContext:[TWLContext queue:queue] onSuccess:promise handler:^(NSNumber * _Nonnull x) {
+        XCTestExpectation *expectation = TWLExpectationSuccessWithHandlerOnContext([TWLContext queue:queue], promise, ^(NSNumber * _Nonnull x) {
             XCTAssertEqual(i, resolved, @"callbacks invoked out of order");
             ++resolved;
             XCTAssertEqualObjects(x, @42);
-        }];
+        });
         [expectations addObject:expectation];
     }
     dispatch_semaphore_signal(sema);
@@ -179,7 +179,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"] recoverOnContext:TWLContext.utility handler:^id _Nonnull(NSString * _Nonnull error) {
         return @42;
     }];
-    XCTestExpectation *expectaton = [self expectationOnSuccess:promise expectedValue:@42];
+    XCTestExpectation *expectaton = TWLExpectationSuccessWithValue(promise, @42);
     [self waitForExpectations:@[expectaton] timeout:1];
 }
 
@@ -187,7 +187,7 @@
     TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"] recoverOnContext:TWLContext.utility handler:^id _Nonnull(NSString * _Nonnull error) {
         return [TWLPromise newRejectedWithError:@"bar"];
     }];
-    XCTestExpectation *expectation = [self expectationOnError:promise expectedError:@"bar"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"bar");
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -214,7 +214,7 @@
             }
         }];
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@43];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @43);
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
@@ -357,7 +357,7 @@
         XCTFail("invalidated callback invoked");
         return @"error";
     }];
-    XCTestExpectation *expectation = [self expectationOnCancel:chainPromise];
+    XCTestExpectation *expectation = TWLExpectationCancel(chainPromise);
     [token invalidate];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
@@ -374,7 +374,7 @@
         XCTFail("invalidated callback invoked");
         return @"error";
     }];
-    XCTestExpectation *expectation = [self expectationOnError:chainPromise expectedError:@"foo"];
+    XCTestExpectation *expectation = TWLExpectationErrorWithError(chainPromise, @"foo");
     [token invalidate];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
@@ -390,7 +390,7 @@
     TWLInvalidationToken *token = [TWLInvalidationToken new];
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray array];
     for (NSInteger i = 1; i <= 3; ++i) {
-        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"chain promise %zd", i]];
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"chain promise %ld", (long)i]];
         [[promise mapOnContext:[TWLContext queue:queue] token:token handler:^id _Nonnull(NSNumber * _Nonnull value) {
             XCTFail("invalidated callback invoked");
             return @0;
@@ -419,7 +419,7 @@
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         [resolver fulfillWithValue:@42];
     }];
-    XCTestExpectation *expectation = [self expectationOnSuccess:promise expectedValue:@42];
+    XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @42);
     {
         TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
         [token requestCancelOnInvalidate:promise];
@@ -437,7 +437,7 @@
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         [resolver fulfillWithValue:@42];
     }];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     {
         TWLInvalidationToken *token = [TWLInvalidationToken new];
         [token requestCancelOnInvalidate:promise];
@@ -456,7 +456,7 @@
         [resolver cancel];
         [expectation fulfill];
     }];
-    XCTestExpectation *expectation2 = [self expectationOnSuccess:promise expectedValue:@42];
+    XCTestExpectation *expectation2 = TWLExpectationSuccessWithValue(promise, @42);
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
     NSNumber *value;
@@ -477,7 +477,7 @@
         [resolver cancel];
         [expectation fulfill];
     }];
-    XCTestExpectation *expectation2 = [self expectationOnError:promise expectedError:@"error"];
+    XCTestExpectation *expectation2 = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
     NSString *error;
@@ -498,7 +498,7 @@
         [resolver fulfillWithValue:@43];
         [expectation fulfill];
     }];
-    XCTestExpectation *expectation2 = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation2 = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
     NSNumber *value;
@@ -519,7 +519,7 @@
             [cancellable cancel];
         }];
     }];
-    XCTestExpectation *cancelExpectation = [self expectationOnCancel:promise];
+    XCTestExpectation *cancelExpectation = TWLExpectationCancel(promise);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         [promise requestCancel];
     });
@@ -530,7 +530,7 @@
     dispatch_queue_t queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray array];
     for (NSInteger i = 1; i <= 3; ++i) {
-        [expectations addObject:[[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"whenCancelRequested %zd", i]]];
+        [expectations addObject:[[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"whenCancelRequested %ld", (long)i]]];
     }
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
@@ -577,7 +577,7 @@
     dispatch_queue_t queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray array];
     for (NSInteger i = 1; i <= 3; ++i) {
-        [expectations addObject:[[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"promise %zd cancel", i]]];
+        [expectations addObject:[[XCTestExpectation alloc] initWithDescription:[NSString stringWithFormat:@"promise %ld cancel", (long)i]]];
     }
     {
         TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
@@ -603,14 +603,14 @@
                 [resolver cancel];
             }];
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-            [resolver fulfillWithValue:[NSString stringWithFormat:@"%zd", value.integerValue + 1]];
+            [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(value.integerValue + 1)]];
         }];
         [innerPromise whenCancelledOnContext:TWLContext.utility handler:^{
             [innerExpectation fulfill];
         }];
         return innerPromise;
     }];
-    XCTestExpectation *outerExpectation = [self expectationOnCancel:promise];
+    XCTestExpectation *outerExpectation = TWLExpectationCancel(promise);
     [promise requestCancel];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[outerExpectation, innerExpectation] timeout:1];
@@ -626,7 +626,7 @@
                 [resolver cancel];
             }];
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-            [resolver fulfillWithValue:[NSString stringWithFormat:@"%zd", x.integerValue + 1]];
+            [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(x.integerValue + 1)]];
         }] ignoringCancel];
         [innerPromise thenOnContext:TWLContext.defaultQoS handler:^(NSString * _Nonnull x) {
             XCTAssertEqualObjects(x, @"43");
@@ -634,7 +634,7 @@
         }];
         return innerPromise;
     }];
-    XCTestExpectation *outerExpectation = [self expectationOnSuccess:promise expectedValue:@"43"];
+    XCTestExpectation *outerExpectation = TWLExpectationSuccessWithValue(promise, @"43");
     [promise requestCancel];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[outerExpectation, innerExpectation] timeout:1];
@@ -783,28 +783,28 @@
     TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver handleCallback](@42, nil);
     }];
-    XCTestExpectation *expectation1 = [self expectationOnSuccess:promise1 expectedValue:@42];
+    XCTestExpectation *expectation1 = TWLExpectationSuccessWithValue(promise1, @42);
     TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver handleCallback](nil, @"foo");
     }];
-    XCTestExpectation *expectation2 = [self expectationOnError:promise2 expectedError:@"foo"];
+    XCTestExpectation *expectation2 = TWLExpectationErrorWithError(promise2, @"foo");
     TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver handleCallback](@42, @"foo");
     }];
-    XCTestExpectation *expectation3 = [self expectationOnSuccess:promise3 expectedValue:@42];
+    XCTestExpectation *expectation3 = TWLExpectationSuccessWithValue(promise3, @42);
     TWLPromise *promise4 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver handleCallback](nil, nil);
     }];
-    XCTestExpectation *expectation4 = [self expectationOnError:promise4 handler:^(NSError * _Nonnull error) {
+    XCTestExpectation *expectation4 = TWLExpectationErrorWithHandler(promise4, ^(NSError * _Nonnull error) {
         XCTAssertEqualObjects(error.domain, TWLPromiseCallbackErrorDomain);
         XCTAssertEqual(error.code, TWLPromiseCallbackErrorAPIMismatch);
-    }];
+    });
     TWLPromise *promise5 = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver handleCallbackWithCancelPredicate:^BOOL(id _Nonnull error) {
             return [error isEqual:@"foo"];
         }](nil, @"foo");
     }];
-    XCTestExpectation *expectation5 = [self expectationOnCancel:promise5];
+    XCTestExpectation *expectation5 = TWLExpectationCancel(promise5);
     [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4, expectation5] timeout:1];
 }
 

@@ -14,30 +14,121 @@
 
 #import <XCTest/XCTest.h>
 
-@class TWLContext;
-@class TWLPromise;
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface XCTestCase (TWLPromise)
+// MARK: Success
 
-- (XCTestExpectation *)expectationOnSuccess:(TWLPromise *)promise;
-- (XCTestExpectation *)expectationOnSuccess:(TWLPromise *)promise handler:(void (^)(id value))handler;
-- (XCTestExpectation *)expectationOnSuccess:(TWLPromise *)promise expectedValue:(id)expectedValue;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onSuccess:(TWLPromise *)promise;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onSuccess:(TWLPromise *)promise handler:(void (^)(id value))handler;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onSuccess:(TWLPromise *)promise expectedValue:(id)expectedValue;
+#define TWLExpectationSuccess(promise) TWLExpectationSuccessOnContext(TWLContext.defaultQoS, promise)
+#define TWLExpectationSuccessOnContext(context, promise) _TWLExpectationSuccessOnContext(self, context, promise)
+#define _TWLExpectationSuccessOnContext(test, context, promise) \
+({ \
+    XCTestExpectation *expectation = [(test) expectationWithDescription:@"Expectation for TWLPromise success"]; \
+    expectation.assertForOverFulfill = YES; \
+    [(promise) tapOnContext:(context) handler:^(id _Nullable value, id _Nullable error) { \
+        if (error) { \
+            XCTFail(@"Expected TWLPromise success, found error"); \
+        } else if (!value) { \
+            XCTFail(@"Expected TWLPromise success, found cancellation"); \
+        } \
+        [expectation fulfill]; \
+    }]; \
+    expectation; \
+})
 
-- (XCTestExpectation *)expectationOnError:(TWLPromise *)promise;
-- (XCTestExpectation *)expectationOnError:(TWLPromise *)promise handler:(void (^)(id error))handler;
-- (XCTestExpectation *)expectationOnError:(TWLPromise *)promise expectedError:(id)expectedError;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onError:(TWLPromise *)promise;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onError:(TWLPromise *)promise handler:(void (^)(id error))handler;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onError:(TWLPromise *)promise expectedError:(id)expectedError;
+// MARK: -
 
-- (XCTestExpectation *)expectationOnCancel:(TWLPromise *)promise;
-- (XCTestExpectation *)expectationOnContext:(TWLContext *)context onCancel:(TWLPromise *)promise;
+#define TWLExpectationSuccessWithHandler(promise, handler) TWLExpectationSuccessWithHandlerOnContext(TWLContext.defaultQoS, promise, handler)
+#define TWLExpectationSuccessWithHandlerOnContext(context, promise, handler) _TWLExpectationSuccessWithHandlerOnContext(self, context, promise, handler)
+#define _TWLExpectationSuccessWithHandlerOnContext(test, context, promise, _handler) \
+({ \
+    XCTestExpectation *expectation = [(test) expectationWithDescription:@"Expectation for TWLPromise success"]; \
+    expectation.assertForOverFulfill = YES; \
+    [(promise) tapOnContext:(context) handler:^(id _Nullable value, id _Nullable error) { \
+        if (value) { \
+            (_handler)(value); \
+        } else if (error) { \
+            XCTFail(@"Expected TWLPromise success, found error"); \
+        } else { \
+            XCTFail(@"Expected TWLPromise success, found cancellation"); \
+        } \
+        [expectation fulfill]; \
+    }]; \
+    expectation; \
+})
 
-@end
+// MARK: -
+
+#define TWLExpectationSuccessWithValue(promise, expectedValue) TWLExpectationSuccessWithValueOnContext(TWLContext.defaultQoS, promise, expectedValue)
+#define TWLExpectationSuccessWithValueOnContext(context, promise, expectedValue) \
+    TWLExpectationSuccessWithHandlerOnContext(context, promise, ^(id _Nonnull value) { \
+        XCTAssertEqualObjects(value, (expectedValue)); \
+    })
+
+// MARK: - Error
+
+#define TWLExpectationError(promise) TWLExpectationErrorOnContext(TWLContext.defaultQoS, promise)
+#define TWLExpectationErrorOnContext(context, promise) _TWLExpectationErrorOnContext(self, context, promise)
+#define _TWLExpectationErrorOnContext(test, context, promise) \
+({ \
+    XCTestExpectation *expectation = [(test) expectationWithDescription:@"Expectation for TWLPromise error"]; \
+    expectation.assertForOverFulfill = YES; \
+    [(promise) tapOnContext:(context) handler:^(id _Nullable value, id _Nullable error) { \
+        if (value) { \
+            XCTFail(@"Expected TWLPromise error, found success"); \
+        } else if (!error) { \
+            XCTFail(@"Expected TWLPromise error, found cancellation"); \
+        } \
+        [expectation fulfill]; \
+    }]; \
+    expectation; \
+})
+
+// MARK: -
+
+#define TWLExpectationErrorWithHandler(promise, handler) TWLExpectationErrorWithHandlerOnContext(TWLContext.defaultQoS, promise, handler)
+#define TWLExpectationErrorWithHandlerOnContext(context, promise, handler) _TWLExpectationErrorWithHandlerOnContext(self, context, promise, handler)
+#define _TWLExpectationErrorWithHandlerOnContext(test, context, promise, _handler) \
+({ \
+    XCTestExpectation *expectation = [(test) expectationWithDescription:@"Expectation for TWLPromise error"]; \
+    expectation.assertForOverFulfill = YES; \
+    [(promise) tapOnContext:(context) handler:^(id _Nullable value, id _Nullable error) { \
+        if (error) { \
+            (_handler)(error); \
+        } else if (value) { \
+            XCTFail(@"Expected TWLPromise error, found success"); \
+        } else { \
+            XCTFail(@"Expected TWLPromise error, found cancellation"); \
+        } \
+        [expectation fulfill]; \
+    }]; \
+    expectation; \
+})
+
+// MARK: -
+
+#define TWLExpectationErrorWithError(promise, expectedError) TWLExpectationErrorWithErrorOnContext(TWLContext.defaultQoS, promise, expectedError)
+#define TWLExpectationErrorWithErrorOnContext(context, promise, expectedError) \
+    TWLExpectationErrorWithHandlerOnContext(context, promise, ^(id _Nonnull error) { \
+        XCTAssertEqualObjects(error, (expectedError)); \
+    })
+
+// MARK: - Cancel
+
+#define TWLExpectationCancel(promise) TWLExpectationCancelOnContext(TWLContext.defaultQoS, promise)
+#define TWLExpectationCancelOnContext(context, promise) _TWLExpectationCancelOnContext(self, context, promise)
+#define _TWLExpectationCancelOnContext(test, context, promise) \
+({ \
+    XCTestExpectation *expectation = [(test) expectationWithDescription:@"Expectation for TWLPromise cancel"]; \
+    expectation.assertForOverFulfill = YES; \
+    [(promise) tapOnContext:(context) handler:^(id _Nullable value, id _Nullable error) { \
+        if (value) { \
+            XCTFail(@"Expected TWLPromise cancel, found success"); \
+        } else if (error) { \
+            XCTFail(@"Expected TWLPromise cancel, found error"); \
+        } \
+        [expectation fulfill]; \
+    }]; \
+    expectation; \
+})
 
 NS_ASSUME_NONNULL_END

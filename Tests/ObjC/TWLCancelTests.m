@@ -27,7 +27,7 @@
     TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
     TWLInvalidationToken *token = [TWLInvalidationToken new];
     [token requestCancelOnInvalidate:promise];
-    XCTestExpectation *expectation = [self expectationOnCancel:promise];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
     [token invalidate];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
@@ -41,7 +41,7 @@
         dispatch_semaphore_t sema;
         TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
         [token requestCancelOnInvalidate:promise];
-        [expectations addObject:[self expectationOnCancel:promise]];
+        [expectations addObject:TWLExpectationCancel(promise)];
         [semas addObject:sema];
     }
     [token invalidate];
@@ -56,7 +56,7 @@
     TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
     __auto_type token = [TWLInvalidationToken new];
     [promise requestCancelOnInvalidate:token];
-    __auto_type expectation = [self expectationOnCancel:promise];
+    __auto_type expectation = TWLExpectationCancel(promise);
     [token invalidate];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
@@ -70,8 +70,8 @@
         TWLPromise *promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail(@"callback invoked");
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -89,8 +89,8 @@
         promise2 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail(@"callback invoked");
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
     }
     [promise2 requestCancel];
     dispatch_semaphore_signal(sema);
@@ -112,9 +112,9 @@
         // Note: promise2 isn't cancelled here because requestCancel on a registered callback
         // promise doesn't actually cancel it, it just propagates the cancel request upwards. The
         // promise is only cancelled if its parent promise is cancelled.
-        expectations = @[[self expectationOnError:promise expectedError:@"foo"],
-                         [self expectationOnError:promise2 expectedError:@"foo"],
-                         [self expectationOnError:promise3 expectedError:@"foo"]];
+        expectations = @[TWLExpectationErrorWithError(promise, @"foo"),
+                         TWLExpectationErrorWithError(promise2, @"foo"),
+                         TWLExpectationErrorWithError(promise3, @"foo")];
     }
     [promise2 requestCancel];
     dispatch_semaphore_signal(sema);
@@ -133,9 +133,9 @@
         promise3 = [promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail("callback invoked");
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2],
-                         [self expectationOnCancel:promise3]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2),
+                         TWLExpectationCancel(promise3)];
     }
     [promise2 requestCancel];
     // if promise cancelled then it should have propagated to promise3 already
@@ -150,7 +150,7 @@
     dispatch_semaphore_t sema;
     {
         TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
-        expectation = [self expectationOnError:promise expectedError:@"foo"];
+        expectation = TWLExpectationErrorWithError(promise, @"foo");
     }
     // promise has gone away, but won't have cancelled
     dispatch_semaphore_signal(sema);
@@ -166,8 +166,8 @@
             XCTFail(@"callback invoked");
             return @42;
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -182,8 +182,8 @@
         TWLPromise *promise2 = [promise catchOnContext:TWLContext.utility handler:^(id _Nonnull error) {
             XCTFail(@"callback invoked");
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -199,8 +199,8 @@
             XCTFail(@"callback invoked");
             return @42;
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -216,8 +216,8 @@
             XCTAssertNil(value);
             XCTAssertNil(error);
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -234,8 +234,8 @@
             XCTAssertNil(error);
             return [TWLPromise newFulfilledWithValue:@42];
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnSuccess:promise2 expectedValue:@42]];
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationSuccessWithValue(promise2, @42)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);
@@ -251,8 +251,8 @@
         TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.utility handler:^{
             [cancelExpectation fulfill];
         }];
-        expectations = @[[self expectationOnCancel:promise],
-                         [self expectationOnCancel:promise2],
+        expectations = @[TWLExpectationCancel(promise),
+                         TWLExpectationCancel(promise2),
                          cancelExpectation];
         [promise2 requestCancel];
     }
@@ -274,8 +274,8 @@
         TWLPromise *promise2 = [delayedPromise.promise thenOnContext:TWLContext.utility handler:^(id _Nonnull value) {
             XCTFail(@"Callback invoked");
         }];
-        expectations = @[[self expectationOnCancel:delayedPromise.promise],
-                         [self expectationOnCancel:promise2]];
+        expectations = @[TWLExpectationCancel(delayedPromise.promise),
+                         TWLExpectationCancel(promise2)];
         [promise2 requestCancel];
     }
     dispatch_semaphore_signal(sema);

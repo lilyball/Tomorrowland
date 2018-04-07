@@ -15,7 +15,6 @@
 		0A843A301FFE117200D171B4 /* TWLInvalidationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */; };
 		0A843A321FFF3FC500D171B4 /* objc_cast.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A843A311FFF3FC500D171B4 /* objc_cast.h */; };
 		0A843A341FFF477300D171B4 /* Bridging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A331FFF477300D171B4 /* Bridging.swift */; };
-		0A843A371FFF5F2200D171B4 /* XCTestCase+TWLPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A351FFF5F2200D171B4 /* XCTestCase+TWLPromise.m */; };
 		0A843A3A1FFF5F7700D171B4 /* TWLPromiseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */; };
 		0A843A3B1FFF5F7700D171B4 /* ObjCPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */; };
 		0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A9482141FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -75,7 +74,6 @@
 		0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TWLInvalidationToken.swift; sourceTree = "<group>"; };
 		0A843A311FFF3FC500D171B4 /* objc_cast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = objc_cast.h; sourceTree = "<group>"; };
 		0A843A331FFF477300D171B4 /* Bridging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bridging.swift; sourceTree = "<group>"; };
-		0A843A351FFF5F2200D171B4 /* XCTestCase+TWLPromise.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "XCTestCase+TWLPromise.m"; sourceTree = "<group>"; };
 		0A843A361FFF5F2200D171B4 /* XCTestCase+TWLPromise.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XCTestCase+TWLPromise.h"; sourceTree = "<group>"; };
 		0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseTests.m; sourceTree = "<group>"; };
 		0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCPromiseTests.swift; sourceTree = "<group>"; };
@@ -223,7 +221,6 @@
 			children = (
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
 				0A843A361FFF5F2200D171B4 /* XCTestCase+TWLPromise.h */,
-				0A843A351FFF5F2200D171B4 /* XCTestCase+TWLPromise.m */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
 				0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */,
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
@@ -412,7 +409,6 @@
 				0A843A3A1FFF5F7700D171B4 /* TWLPromiseTests.m in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 				0ACA1F8120020FC900A65481 /* TWLUtilityTests.m in Sources */,
-				0A843A371FFF5F2200D171B4 /* XCTestCase+TWLPromise.m in Sources */,
 				AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */,
 				0ACA1F8820032DC700A65481 /* TWLWhenTests.m in Sources */,
 			);
