@@ -264,7 +264,7 @@ final class UtilityTests: XCTestCase {
         let queue = OperationQueue()
         
         let promise = Promise<Int,String>(on: .immediate, { (resolver) in
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
                 resolver.fulfill(with: 42)
             }
         }).timeout(on: .operationQueue(queue), delay: 0.01)
@@ -416,7 +416,7 @@ final class UtilityTests: XCTestCase {
         let queue = OperationQueue()
         
         let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
                 resolver.fulfill(with: 42)
             }
         }).timeout(on: .operationQueue(queue), delay: 0.01)

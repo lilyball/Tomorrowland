@@ -252,7 +252,7 @@
     __auto_type queue = [NSOperationQueue new];
     
     __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(50 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1000 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             [resolver fulfillWithValue:@42];
         });
     }] timeoutOnContext:[TWLContext operationQueue:queue] withDelay:0.01];
