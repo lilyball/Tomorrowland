@@ -290,6 +290,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add `Hashable` / `Equatable` conformance to `PromiseInvalidationToken`.
+
 ### v0.3.1
 
 - Add a missing Swift->ObjC convenience bridging method.

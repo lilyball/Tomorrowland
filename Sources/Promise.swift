@@ -1404,6 +1404,18 @@ public struct PromiseInvalidationToken {
     }
 }
 
+// MARK: Equatable
+
+extension PromiseInvalidationToken: Hashable {
+    public static func ==(lhs: PromiseInvalidationToken, rhs: PromiseInvalidationToken) -> Bool {
+        return lhs._inner === rhs._inner
+    }
+    
+    public var hashValue: Int {
+        return ObjectIdentifier(_inner).hashValue
+    }
+}
+
 /// `NoError` is a type that cannot be constructed.
 ///
 /// It's intended to be used as the error type for promises that cannot return an error. It is
