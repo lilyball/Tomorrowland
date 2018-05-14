@@ -194,7 +194,7 @@ class URLImageView: UIImageView {
             } else {
                 throw LoadError.dataIsNotImage
             }
-        }).then(token: token, { [weak self] (image) in
+        }).then(token: invalidationToken, { [weak self] (image) in
             self?.image = image
         })
     }
@@ -213,6 +213,68 @@ disabled with an optional parameter to `init`.
 `Promise` also has a convenience method `requestCancelOnDeinit(_:)` which can be used to request the `Promise` to be cancelled when a given object
 deinits. This is equivalent to adding a `PromiseInvalidationToken` property to the object (configured to invalidate on deinit) and requesting cancellation when
 the token invalidates, but can be used if the token would otherwise not be explicitly invalidated.
+
+Using these methods, the above `loadImage(from:)` can be rewritten as the following including cancellation:
+
+```swift
+class URLImageView: UIImageView {
+    private let promiseToken = PromiseInvalidationToken()
+    
+    enum LoadError: Error {
+        case dataIsNotImage
+    }
+    
+    /// Loads an image from the URL and displays it in the image view.
+    func loadImage(from url: URL) {
+        promiseToken.invalidate()
+        // Note: dataTaskAsPromise does not actually exist
+        promise = URLSession.shared.dataTaskAsPromise(with: url)
+        // Use `_ =` to avoid having to handle errors with `.catch`.
+        _ = promise?.then(on: .utility, { (data) in
+            if let image = UIImage(data: data) {
+                return image
+            } else {
+                throw LoadError.dataIsNotImage
+            }
+        }).then(token: promiseToken, { [weak self] (image) in
+            self?.image = image
+        }).requestCancelOnInvalidate(invalidationToken)
+    }
+}
+```
+
+#### `TokenPromise`
+
+In order to avoid the repetition of passing a `PromiseInvalidationToken` to multiple `Promise` methods as well as cancelling the resulting promise, a type
+`TokenPromise` exists that handles this for you. You can create a `TokenPromise` with the `Promise.withToken(_:)` method. This allows you to take code like
+the following:
+
+```swift
+func loadModel() {
+    promiseToken.invalidate()
+    MyModel.fetchFromNetworkAsPromise()
+        .then(token: promiseToken, { [weak self] (model) in
+            self?.updateUI(with: model)
+        }).catch(token: promiseToken, { [weak self] (error) in
+            self?.handleError(error)
+        }).requestCancelOnInvalidate(promiseToken)
+}
+```
+
+And rewrite it to be less repetitive:
+
+```swift
+func loadModel() {
+    promiseToken.invalidate()
+    MyModel.fetchFromNetworkAsPromise()
+        .withToken(promiseToken)
+        .then({ [weak self] (model) in
+            self?.updateUI(with: model)
+        }).catch({ [weak self] (error) in
+            self?.handleError(error)
+        })
+}
+```
 
 #### Automatic cancellation propagation
 
@@ -293,6 +355,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ### Development
 
 - Add `Hashable` / `Equatable` conformance to `PromiseInvalidationToken`.
+- Add a new type `TokenPromise` that wraps a `Promise` and automatically applies a `PromiseInvalidationToken`. This API is Swift-only.
 
 ### v0.3.1
 

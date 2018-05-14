@@ -49,6 +49,8 @@
 		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
 		AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3E31FEDF9450029A283 /* CancelTests.swift */; };
 		AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AB3E33B02015B9AB00E1228C /* TWLCancelTests.m */; };
+		AB9F708420A9020C00B4426F /* TokenPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9F708320A9020C00B4426F /* TokenPromise.swift */; };
+		AB9F708620A915AC00B4426F /* TokenPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */; };
 		ABDC7F781FEB840200036FCD /* When.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F771FEB840200036FCD /* When.swift */; };
 		ABDC7F7F1FEB909800036FCD /* TWLOneshotBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		ABDC7F801FEB909800036FCD /* TWLOneshotBlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */; };
@@ -117,6 +119,8 @@
 		AB1FF3E31FEDF9450029A283 /* CancelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelTests.swift; sourceTree = "<group>"; };
 		AB1FF3E61FEE36F80029A283 /* Tomorrowland.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; path = Tomorrowland.podspec; sourceTree = "<group>"; };
 		AB3E33B02015B9AB00E1228C /* TWLCancelTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLCancelTests.m; sourceTree = "<group>"; };
+		AB9F708320A9020C00B4426F /* TokenPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenPromise.swift; sourceTree = "<group>"; };
+		AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenPromiseTests.swift; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
 		ABDC7F7D1FEB909800036FCD /* TWLOneshotBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLOneshotBlock.h; sourceTree = "<group>"; };
 		ABDC7F7E1FEB909800036FCD /* TWLOneshotBlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TWLOneshotBlock.mm; sourceTree = "<group>"; };
@@ -203,6 +207,7 @@
 			children = (
 				0AFF27581FE0E3F40006D95A /* Tomorrowland.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
+				AB9F708320A9020C00B4426F /* TokenPromise.swift */,
 				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
@@ -222,6 +227,7 @@
 				0A9482181FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift */,
 				0A843A361FFF5F2200D171B4 /* XCTestCase+TWLPromise.h */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
+				AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */,
 				0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */,
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
@@ -383,6 +389,7 @@
 				0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */,
 				0AFD1B6B1FFE050A00AB2029 /* TWLContext.m in Sources */,
 				ABDC7F801FEB909800036FCD /* TWLOneshotBlock.mm in Sources */,
+				AB9F708420A9020C00B4426F /* TokenPromise.swift in Sources */,
 				0A843A301FFE117200D171B4 /* TWLInvalidationToken.swift in Sources */,
 				0A843A341FFF477300D171B4 /* Bridging.swift in Sources */,
 				0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */,
@@ -401,6 +408,7 @@
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
 				0ACA1F77200095F400A65481 /* TWLDelayedPromiseTests.m in Sources */,
 				0A14B5712027BB310081C4C8 /* ObjectiveCTests.swift in Sources */,
+				AB9F708620A915AC00B4426F /* TokenPromiseTests.swift in Sources */,
 				0AFD1B601FFC1FF700AB2029 /* PrivateTests.swift in Sources */,
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
