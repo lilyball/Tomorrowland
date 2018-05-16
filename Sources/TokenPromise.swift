@@ -327,6 +327,13 @@ extension TokenPromise {
     public func requestCancel() {
         inner.requestCancel()
     }
+    
+    @available(*, unavailable, message: "TokenPromise already requests cancellation when its associated token is invalidated.")
+    @discardableResult
+    public func requestCancelOnInvalidate(_ token: PromiseInvalidationToken) -> TokenPromise<Value,Error> {
+        token.requestCancelOnInvalidate(inner)
+        return self
+    }
 }
 
 // MARK: TokenPromise<_,Swift.Error>
