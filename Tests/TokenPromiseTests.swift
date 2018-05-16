@@ -77,4 +77,30 @@ final class TokenPromiseTests: XCTestCase {
         sema.signal()
         wait(for: [expectation], timeout: 1)
     }
+    
+    func testSuppressesAlwaysWhileCancelling() {
+        let sema = DispatchSemaphore(value: 0)
+        let expectation = XCTestExpectation(description: "cancel")
+        let token: PromiseInvalidationToken, expectation2: XCTestExpectation
+        do {
+            token = PromiseInvalidationToken()
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                resolver.onRequestCancel(on: .utility, { (resolver) in
+                    expectation.fulfill()
+                    resolver.cancel()
+                })
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+                .withToken(token)
+                .always({ (result) in
+                    XCTFail("Unexpected always")
+                })
+                .inner
+            expectation2 = XCTestExpectation(onCancel: promise)
+        }
+        token.invalidate()
+        wait(for: [expectation, expectation2], timeout: 1)
+        sema.signal()
+    }
 }
