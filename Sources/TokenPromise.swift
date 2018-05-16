@@ -41,7 +41,7 @@ extension Promise {
 ///   `tap()` or `tap(on:_:)`, as these methods do not propagate cancellation.
 ///
 /// A `TokenPromise` is created with the method `Promise.withToken(_:)`. The wrapped `Promise` can
-/// be accessed with the `.promise` property.
+/// be accessed with the `.inner` property.
 ///
 /// ### Example
 ///
@@ -54,7 +54,7 @@ extension Promise {
 ///         })
 public struct TokenPromise<Value,Error> {
     /// The wrapped `Promise`.
-    public let promise: Promise<Value,Error>
+    public let inner: Promise<Value,Error>
     
     /// The `PromiseInvalidationToken` to use when invoking methods on the wrapped `Promise`.
     public let token: PromiseInvalidationToken
@@ -77,7 +77,7 @@ public struct TokenPromise<Value,Error> {
     private let initial: Bool
     
     private init(promise: Promise<Value,Error>, token: PromiseInvalidationToken, initial: Bool) {
-        self.promise = promise
+        self.inner = promise
         self.token = token
         self.initial = initial
     }
@@ -102,7 +102,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.then(on:token:_:)`.
     public func then<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) -> U) -> TokenPromise<U,Error> {
-        return wrap(promise.then(on: context, token: token, onSuccess))
+        return wrap(inner.then(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is fulfilled.
@@ -116,7 +116,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.then(on:token:_:)`.
     public func then<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> TokenPromise<U,Error> {
-        return wrap(promise.then(on: context, token: token, onSuccess))
+        return wrap(inner.then(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -132,7 +132,7 @@ extension TokenPromise {
     /// - SeeAlso: `Promise.catch(on:token:_:)`
     @discardableResult
     public func `catch`(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> Void) -> TokenPromise<Value,Error> {
-        return wrap(promise.catch(on: context, token: token, onError))
+        return wrap(inner.catch(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -148,7 +148,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.recover(on:token:_:)`.
     public func recover(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> Value) -> TokenPromise<Value,NoError> {
-        return wrap(promise.recover(on: context, token: token, onError))
+        return wrap(inner.recover(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -165,7 +165,7 @@ extension TokenPromise {
     /// - SeeAlso: `Promise.recover(on:token:_:)`.
     public func recover<E>(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> Promise<Value,E>) ->
         TokenPromise<Value,E> {
-            return wrap(promise.recover(on: context, token: token, onError))
+            return wrap(inner.recover(on: context, token: token, onError))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is.
@@ -179,7 +179,7 @@ extension TokenPromise {
     /// - SeeAlso: `Promise.always(on:token:_:)`
     @discardableResult
     public func always(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> TokenPromise<Value,Error> {
-        return wrap(promise.always(on: context, token: token, onComplete))
+        return wrap(inner.always(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
@@ -194,7 +194,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.always(on:token:_:)`
     public func always<T,E>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> TokenPromise<T,E> {
-        return wrap(promise.always(on: context, token: token, onComplete))
+        return wrap(inner.always(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
@@ -209,7 +209,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.tryAlways(on:token:_:)`
     public func tryAlways<T,E: Swift.Error>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> TokenPromise<T,Swift.Error> {
-        return wrap(promise.tryAlways(on: context, token: token, onComplete))
+        return wrap(inner.tryAlways(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
@@ -224,7 +224,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.tryAlways(on:token:_:)`
     public func tryAlways<T>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> TokenPromise<T,Swift.Error> {
-        return wrap(promise.tryAlways(on: context, token: token, onComplete))
+        return wrap(inner.tryAlways(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked when the promise is resolved without affecting behavior.
@@ -244,7 +244,7 @@ extension TokenPromise {
     /// - SeeAlso: `Promise.tap(on:token:_:)`
     @discardableResult
     public func tap(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> TokenPromise<Value,Error> {
-        return TokenPromise(promise: promise.tap(on: context, token: token, onComplete), token: token, initial: false)
+        return TokenPromise(promise: inner.tap(on: context, token: token, onComplete), token: token, initial: false)
     }
     
     /// Returns a new `TokenPromise` that adopts the result of the receiver without affecting its
@@ -263,7 +263,7 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.tap()`
     public func tap() -> TokenPromise<Value,Error> {
-        return TokenPromise(promise: promise.tap(), token: token, initial: false)
+        return TokenPromise(promise: inner.tap(), token: token, initial: false)
     }
     
     /// Registers a callback that will be invoked when the promise is cancelled.
@@ -277,7 +277,7 @@ extension TokenPromise {
     /// - SeeAlso: `Promise.onCancel(on:token:_:)`
     @discardableResult
     public func onCancel(on context: PromiseContext = .auto, _ onCancel: @escaping () -> Void) -> TokenPromise<Value,Error> {
-        return wrap(promise.onCancel(on: context, token: token, onCancel))
+        return wrap(inner.onCancel(on: context, token: token, onCancel))
     }
     
     // MARK: -
@@ -320,12 +320,12 @@ extension TokenPromise {
     ///
     /// - SeeAlso: `Promise.ignoringCancel()`
     public func ignoringCancel() -> TokenPromise<Value,Error> {
-        return TokenPromise(promise: promise.ignoringCancel(), token: token, initial: false)
+        return TokenPromise(promise: inner.ignoringCancel(), token: token, initial: false)
     }
     
     @available(*, unavailable, message: "Invalidate the associated token or use the .promise property instead.")
     public func requestCancel() {
-        promise.requestCancel()
+        inner.requestCancel()
     }
 }
 
@@ -343,7 +343,7 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// - SeeAlso: `Promise.tryThen(on:token:_:)`
     public func tryThen<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> U) -> TokenPromise<U,Error> {
-        return wrap(promise.tryThen(on: context, token: token, onSuccess))
+        return wrap(inner.tryThen(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is fulfilled.
@@ -357,7 +357,7 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// - SeeAlso: `Promise.tryThen(on:token:_:)`
     public func tryThen<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> TokenPromise<U,Error> {
-        return wrap(promise.tryThen(on: context, token: token, onSuccess))
+        return wrap(inner.tryThen(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is fulfilled.
@@ -371,7 +371,7 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// - SeeAlso: `Promise.tryThen(on:token:_:)`
     public func tryThen<U,E: Swift.Error>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> TokenPromise<U,Error> {
-        return wrap(promise.tryThen(on: context, token: token, onSuccess))
+        return wrap(inner.tryThen(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -388,7 +388,7 @@ extension TokenPromise where Error == Swift.Error {
     /// - SeeAlso: `Promise.tryRecover(on:token:_:)`
     public func tryRecover(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Value) ->
         TokenPromise<Value,Error> {
-            return wrap(promise.tryRecover(on: context, token: token, onError))
+            return wrap(inner.tryRecover(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -404,7 +404,7 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// - SeeAlso: `Promise.tryRecover(on:token:_:)`
     public func tryRecover(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> TokenPromise<Value,Error> {
-        return wrap(promise.tryRecover(on: context, token: token, onError))
+        return wrap(inner.tryRecover(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
@@ -420,7 +420,7 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// - SeeAlso: `Promise.tryRecover(on:token:_:)`
     public func tryRecover<E: Swift.Error>(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> TokenPromise<Value,Error> {
-        return wrap(promise.tryRecover(on: context, token: token, onError))
+        return wrap(inner.tryRecover(on: context, token: token, onError))
     }
 }
 
@@ -434,6 +434,6 @@ extension TokenPromise: Equatable {
         // Ignore the `initial` property; it's not visible to callers, and if we have two
         // `TokenPromise`s that are otherwise identical then the one with `initial == true` is just
         // going to do unnecessary work if it cancels returned promises anyway.
-        return (lhs.promise, lhs.token) == (rhs.promise, rhs.token)
+        return (lhs.inner, lhs.token) == (rhs.inner, rhs.token)
     }
 }
