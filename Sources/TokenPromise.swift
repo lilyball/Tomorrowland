@@ -236,6 +236,11 @@ extension TokenPromise {
     /// This is similar to `tap().always(on:_:)` except it can be inserted into any promise chain
     /// without affecting the chain.
     ///
+    /// - Note: This method is intended for inserting into the middle of a promise chain without
+    ///   affecting existing behavior (in particular, cancellation propagation). If you are not
+    ///   inserting this into the middle of a promise chain, you probably want to use `then(on:_:)`,
+    ///   `catch(on:_:)`, or `always(on:_:)` instead.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter onComplete: The callback that is invoked with the promise's value.
@@ -257,6 +262,11 @@ extension TokenPromise {
     /// `tap().always(on:_:)` behaves the same as `tap(on:_:)` except it returns a `TokenPromise`
     /// wrapping a new `Promise` whereas `tap(on:_:)` returns the receiver and can be inserted into
     /// any promise chain without affecting the chain.
+    ///
+    /// - Note: This method is intended for inserting into the middle of a promise chain without
+    ///   affecting existing behavior (in particular, cancellation propagation). If you are not
+    ///   inserting this into the middle of a promise chain, you probably want to use `then(on:_:)`,
+    ///   `catch(on:_:)`, or `always(on:_:)` instead.
     ///
     /// - Returns: A new `TokenPromise` that adopts the same result as the receiver. Requesting the
     ///   new wrapped `Promise` to cancel does nothing.

@@ -622,6 +622,11 @@ public struct Promise<Value,Error> {
     /// This is similar to `tap().always(on:token:_:)` except it can be inserted into any promise
     /// chain without affecting the chain.
     ///
+    /// - Note: This method is intended for inserting into the middle of a promise chain without
+    ///   affecting existing behavior (in particular, cancellation propagation). If you are not
+    ///   inserting this into the middle of a promise chain, you probably want to use
+    ///   `then(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)` instead.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -651,6 +656,11 @@ public struct Promise<Value,Error> {
     /// `tap().always(on:token:_:)` behaves the same as `tap(on:token:_:)` except it returns a new
     /// `Promise` whereas `tap(on:token:_:)` returns the receiver and can be inserted into any
     /// promise chain without affecting the chain.
+    ///
+    /// - Note: This method is intended for inserting into the middle of a promise chain without
+    ///   affecting existing behavior (in particular, cancellation propagation). If you are not
+    ///   inserting this into the middle of a promise chain, you probably want to use
+    ///   `then(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)` instead.
     ///
     /// - Returns: A new `Promise` that adopts the same result as the receiver. Requesting this new
     ///   promise to cancel does nothing.
