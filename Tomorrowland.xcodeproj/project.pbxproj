@@ -161,6 +161,7 @@
 		0AFD1B621FFD790500AB2029 /* ObjC */ = {
 			isa = PBXGroup;
 			children = (
+				0AFF27581FE0E3F40006D95A /* Tomorrowland.h */,
 				0AFD1B631FFE018200AB2029 /* TWLPromise.h */,
 				0ACA1F742000934D00A65481 /* TWLPromisePrivate.h */,
 				0AFD1B641FFE018200AB2029 /* TWLPromise.mm */,
@@ -205,7 +206,6 @@
 		0AFF27571FE0E3F40006D95A /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				0AFF27581FE0E3F40006D95A /* Tomorrowland.h */,
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
 				AB9F708320A9020C00B4426F /* TokenPromise.swift */,
 				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
