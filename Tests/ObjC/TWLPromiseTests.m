@@ -827,7 +827,7 @@
         [resolver fulfillWithValue:@42];
     }];
     XCTAssertFalse([promise getValue:NULL error:NULL]);
-    {
+    @autoreleasepool {
         id object __attribute__((objc_precise_lifetime)) = [NSObject new];
         [promise requestCancelOnDealloc:object];
         XCTAssertFalse([promise getValue:NULL error:NULL]);
