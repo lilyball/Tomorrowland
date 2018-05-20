@@ -4,7 +4,7 @@
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
-[![CocoaPods](https://img.shields.io/cocoapods/v/Tomorrowland.svg)](http://cocoadocs.org/docsets/Tomorrowland)
+![CocoaPods](https://img.shields.io/cocoapods/v/Tomorrowland.svg)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)][Carthage]
 
 [Carthage]: https://github.com/carthage/carthage
