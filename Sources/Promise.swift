@@ -82,6 +82,14 @@ public enum PromiseContext: Equatable, Hashable {
         }
     }
     
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// Equality is the inverse of inequality. For any values `a` and `b`,
+    /// `a == b` implies that `a != b` is `false`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public static func ==(lhs: PromiseContext, rhs: PromiseContext) -> Bool {
         switch (lhs, rhs) {
         case (.main, .main), (.background, .background), (.utility, .utility),
@@ -1230,6 +1238,14 @@ public enum PromiseResult<Value,Error> {
 }
 
 extension PromiseResult where Value: Equatable, Error: Equatable {
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// Equality is the inverse of inequality. For any values `a` and `b`,
+    /// `a == b` implies that `a != b` is `false`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public static func ==(lhs: PromiseResult, rhs: PromiseResult) -> Bool {
         switch (lhs, rhs) {
         case let (.value(a), .value(b)) where a == b: return true
@@ -1239,6 +1255,17 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
         }
     }
     
+    /// Returns a Boolean value indicating whether two values are not equal.
+    ///
+    /// Inequality is the inverse of equality. For any values `a` and `b`, `a != b`
+    /// implies that `a == b` is `false`.
+    ///
+    /// This is the default implementation of the not-equal-to operator (`!=`)
+    /// for any type that conforms to `Equatable`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public static func !=(lhs: PromiseResult, rhs: PromiseResult) -> Bool {
         return !(lhs == rhs)
     }
@@ -1246,6 +1273,14 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
 #if swift(>=4.1)
     extension PromiseResult: Equatable where Value: Equatable, Error: Equatable {}
 #else
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// Equality is the inverse of inequality. For any values `a` and `b`,
+    /// `a == b` implies that `a != b` is `false`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public func ==<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
         where T: Equatable, E: Equatable
     {
@@ -1256,6 +1291,17 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
         }
     }
     
+    /// Returns a Boolean value indicating whether two values are not equal.
+    ///
+    /// Inequality is the inverse of equality. For any values `a` and `b`, `a != b`
+    /// implies that `a == b` is `false`.
+    ///
+    /// This is the default implementation of the not-equal-to operator (`!=`)
+    /// for any type that conforms to `Equatable`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public func !=<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
         where T: Equatable, E: Equatable
     {
@@ -1418,6 +1464,14 @@ public struct PromiseInvalidationToken {
 // MARK: Equatable
 
 extension PromiseInvalidationToken: Hashable {
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// Equality is the inverse of inequality. For any values `a` and `b`,
+    /// `a == b` implies that `a != b` is `false`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public static func ==(lhs: PromiseInvalidationToken, rhs: PromiseInvalidationToken) -> Bool {
         return lhs._inner === rhs._inner
     }
@@ -1433,6 +1487,14 @@ extension PromiseInvalidationToken: Hashable {
 /// similar to `Never` except it conforms to some protocols in order to make working with types
 /// containing it easier.
 public enum NoError: Hashable, Equatable, Codable {
+    /// Returns a Boolean value indicating whether two values are equal.
+    ///
+    /// Equality is the inverse of inequality. For any values `a` and `b`,
+    /// `a == b` implies that `a != b` is `false`.
+    ///
+    /// - Parameters:
+    ///   - lhs: A value to compare.
+    ///   - rhs: Another value to compare.
     public static func ==(lhs: NoError, rhs: NoError) -> Bool {
         return true
     }
