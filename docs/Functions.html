@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Functions  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Section/Functions" class="dashAnchor"></a>
+    <a title="Functions  Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p class="header-right"><a href="https://github.com/kballard/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="index.html">Tomorrowland Reference</a>
+        <img id="carat" src="img/carat.png" />
+        Functions  Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Enums/NoError.html">NoError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PromiseCallbackError.html">PromiseCallbackError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PromiseContext.html">PromiseContext</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PromiseResult.html">PromiseResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/PromiseTimeoutError.html">PromiseTimeoutError</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyxq_GSayAEG5first_Sb15cancelRemainingtr0_lF">when(first:cancelRemaining:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_q3_tq4_GADyxq4_G9fulfilled_ADyq_q4_GADyq0_q4_GADyq1_q4_GADyq2_q4_GADyq3_q4_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr5_lF">when(fulfilled:_:_:_:_:_:qos:cancelOnFailure:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_tq3_GADyxq3_G9fulfilled_ADyq_q3_GADyq0_q3_GADyq1_q3_GADyq2_q3_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr4_lF">when(fulfilled:_:_:_:_:qos:cancelOnFailure:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_tq2_GADyxq2_G9fulfilled_ADyq_q2_GADyq0_q2_GADyq1_q2_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr3_lF">when(fulfilled:_:_:_:qos:cancelOnFailure:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_tq1_GADyxq1_G9fulfilled_ADyq_q1_GADyq0_q1_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr2_lF">when(fulfilled:_:_:qos:cancelOnFailure:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_tq0_GADyxq0_G9fulfilled_ADyq_q0_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr1_lF">when(fulfilled:_:qos:cancelOnFailure:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVySayxGq_GSayADyxq_GG9fulfilled_8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr0_lF">when(fulfilled:qos:cancelOnFailure:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Structs/DelayedPromise.html">DelayedPromise</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/Promise.html">Promise</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/Promise/Resolver.html">– Resolver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs.html#/s:12Tomorrowland18PromiseCancellableV">PromiseCancellable</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Structs/TokenPromise.html">TokenPromise</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:12Tomorrowland17StdDelayedPromisea">StdDelayedPromise</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Typealiases.html#/s:12Tomorrowland10StdPromisea">StdPromise</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>Functions</h1>
+            <p>The following functions are available globally.</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVySayxGq_GSayADyxq_GG9fulfilled_8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr0_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVySayxGq_GSayADyxq_GG9fulfilled_8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr0_lF">when(fulfilled:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on an array of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with an array of the
+resulting fulfilled values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an array of the same length as the input array and where
+each element in the resulting array corresponds to the same element in the input array.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the returned <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">promises</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">],</span> <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span> <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">[</span><span class="kt">Value</span><span class="p">],</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>promises</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An array of <code><a href="Structs/Promise.html">Promise</a></code>s whose fulfilled values will be collected to fulfill
+the returned <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_q3_tq4_GADyxq4_G9fulfilled_ADyq_q4_GADyq0_q4_GADyq1_q4_GADyq2_q4_GADyq3_q4_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr5_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:_:_:_:_:_:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_q3_tq4_GADyxq4_G9fulfilled_ADyq_q4_GADyq0_q4_GADyq1_q4_GADyq2_q4_GADyq3_q4_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr5_lF">when(fulfilled:_:_:_:_:_:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on a tuple of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with a tuple of the
+resulting values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an tuple where each element in the resulting tuple
+corresponds to the same element in the input tuple.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the resulting <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Value5</span><span class="p">,</span><span class="kt">Value6</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">a</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="n">_</span> <span class="nv">c</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="n">_</span> <span class="nv">d</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="n">_</span> <span class="nv">e</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value5</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="n">_</span> <span class="nv">f</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value6</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                                  <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span>
+                                                                  <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Value5</span><span class="p">,</span><span class="kt">Value6</span><span class="p">),</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>c</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>d</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>e</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>f</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_tq3_GADyxq3_G9fulfilled_ADyq_q3_GADyq0_q3_GADyq1_q3_GADyq2_q3_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr4_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:_:_:_:_:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_tq3_GADyxq3_G9fulfilled_ADyq_q3_GADyq0_q3_GADyq1_q3_GADyq2_q3_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr4_lF">when(fulfilled:_:_:_:_:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on a tuple of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with a tuple of the
+resulting values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an tuple where each element in the resulting tuple
+corresponds to the same element in the input tuple.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the resulting <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Value5</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">a</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                           <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                           <span class="n">_</span> <span class="nv">c</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                           <span class="n">_</span> <span class="nv">d</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                           <span class="n">_</span> <span class="nv">e</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value5</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                           <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span>
+                                                           <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Value5</span><span class="p">),</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>c</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>d</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>e</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_tq2_GADyxq2_G9fulfilled_ADyq_q2_GADyq0_q2_GADyq1_q2_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr3_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:_:_:_:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_tq2_GADyxq2_G9fulfilled_ADyq_q2_GADyq0_q2_GADyq1_q2_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr3_lF">when(fulfilled:_:_:_:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on a tuple of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with a tuple of the
+resulting values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an tuple where each element in the resulting tuple
+corresponds to the same element in the input tuple.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the resulting <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">a</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                    <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                    <span class="n">_</span> <span class="nv">c</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                    <span class="n">_</span> <span class="nv">d</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value4</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                                    <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span>
+                                                    <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Value4</span><span class="p">),</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>c</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>d</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_tq1_GADyxq1_G9fulfilled_ADyq_q1_GADyq0_q1_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr2_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:_:_:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_tq1_GADyxq1_G9fulfilled_ADyq_q1_GADyq0_q1_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr2_lF">when(fulfilled:_:_:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on a tuple of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with a tuple of the
+resulting values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an tuple where each element in the resulting tuple
+corresponds to the same element in the input tuple.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the resulting <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">a</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                             <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                             <span class="n">_</span> <span class="nv">c</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value3</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                             <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span>
+                                             <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Value3</span><span class="p">),</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>c</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyx_q_tq0_GADyxq0_G9fulfilled_ADyq_q0_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr1_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(fulfilled:_:qos:cancelOnFailure:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyx_q_tq0_GADyxq0_G9fulfilled_ADyq_q0_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr1_lF">when(fulfilled:_:qos:cancelOnFailure:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Waits on a tuple of <code><a href="Structs/Promise.html">Promise</a></code>s and returns a <code><a href="Structs/Promise.html">Promise</a></code> that is fulfilled with a tuple of the
+resulting values.</p>
+
+<p>The value of the returned <code><a href="Structs/Promise.html">Promise</a></code> is an tuple where each element in the resulting tuple
+corresponds to the same element in the input tuple.</p>
+
+<p>If any input <code><a href="Structs/Promise.html">Promise</a></code> is rejected, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is rejected with the same error. If
+any input <code><a href="Structs/Promise.html">Promise</a></code> is cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled. If multiple input
+<code><a href="Structs/Promise.html">Promise</a></code>s are rejected or cancelled, the first such one determines how the resulting <code><a href="Structs/Promise.html">Promise</a></code>
+behaves.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">fulfilled</span> <span class="nv">a</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                      <span class="n">_</span> <span class="nv">b</span><span class="p">:</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value2</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span>
+                                      <span class="nv">qos</span><span class="p">:</span> <span class="kt">DispatchQoS</span><span class="o">.</span><span class="kt">QoSClass</span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span>
+                                      <span class="nv">cancelOnFailure</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span>
+    <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="p">(</span><span class="kt">Value1</span><span class="p">,</span><span class="kt">Value2</span><span class="p">),</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>a</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>b</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>A <code><a href="Structs/Promise.html">Promise</a></code> whose value is included in the resulting <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>qos</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The QoS to use for the dispatch queues that coordinate the work. The default
+value is <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelOnFailure</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled if any of them
+are rejected or cancelled. The default value of <code>false</code> means rejecting or cancelling an input
+<code><a href="Structs/Promise.html">Promise</a></code> does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be fulfilled with an array of the fulfilled values from each
+input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland4whenAA7PromiseVyxq_GSayAEG5first_Sb15cancelRemainingtr0_lF"></a>
+                    <a name="//apple_ref/swift/Function/when(first:cancelRemaining:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland4whenAA7PromiseVyxq_GSayAEG5first_Sb15cancelRemainingtr0_lF">when(first:cancelRemaining:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns a <code><a href="Structs/Promise.html">Promise</a></code> that is resolved with the result of the first resolved input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+
+<p>The first input <code><a href="Structs/Promise.html">Promise</a></code> that is either fulfilled or rejected causes the resulting <code><a href="Structs/Promise.html">Promise</a></code> to
+be fulfilled or rejected. An input <code><a href="Structs/Promise.html">Promise</a></code> that is cancelled is ignored. If all input
+<code><a href="Structs/Promise.html">Promise</a></code>s are cancelled, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">when</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">first</span> <span class="nv">promises</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">],</span> <span class="nv">cancelRemaining</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>promises</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An array of <code><a href="Structs/Promise.html">Promise</a></code>s.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cancelRemaining</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>If <code>true</code>, all remaining input <code><a href="Structs/Promise.html">Promise</a></code>s will be cancelled as soon
+as the first one is resolved. The default value of <code>false</code> means resolving an input <code><a href="Structs/Promise.html">Promise</a></code>
+does not cancel the rest.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> that will be resolved with the value or error from the first fulfilled or
+rejected input <code><a href="Structs/Promise.html">Promise</a></code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Kevin Ballard</a>. All rights reserved. (Last updated: 2018-05-20)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
