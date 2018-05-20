@@ -12,7 +12,8 @@ docs: build/ObjC/Tomorrowland
 		--github_url https://github.com/kballard/Tomorrowland \
 		--module Tomorrowland \
 		--umbrella-header build/ObjC/Tomorrowland/Tomorrowland.h \
-		--framework-root build/ObjC
+		--framework-root build/ObjC \
+		--exclude /*/Sources/ObjC/*,/*/Sources/Private/*
 .PHONY: docs
 
 build/ObjC/Tomorrowland:

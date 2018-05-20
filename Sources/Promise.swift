@@ -1446,7 +1446,9 @@ public enum NoError: Hashable, Equatable, Codable {
 }
 
 // See SR-2729
+/// :nodoc:
 protocol _NoErrorDecodableWorkaround : Decodable {}
+/// :nodoc:
 extension _NoErrorDecodableWorkaround {
     public init(from decoder: Decoder) throws {
         throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Tomorrowland.NoError does not support decoding."))
@@ -1846,6 +1848,7 @@ private enum PromiseBoxValue<T,E> {
     case error(E)
 }
 
+/// :nodoc:
 extension TWLPromiseBoxState: CustomStringConvertible {
     public var description: String {
         switch self {
