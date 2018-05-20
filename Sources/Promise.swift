@@ -1151,6 +1151,7 @@ extension Promise.Resolver where Error == Swift.Error {
     }
 }
 
+/// An error potentially returned from `Promise.Resolver.handleCallback(isCancelError:)`.
 @objc(TWLPromiseCallbackError)
 public enum PromiseCallbackError: Int, Error {
     /// The callback did not conform to the expected API.
