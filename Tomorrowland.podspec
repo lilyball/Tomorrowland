@@ -27,5 +27,7 @@ Pod::Spec.new do |s|
   s.private_header_files = 'Sources/Private/*.h'
   s.preserve_paths = project_headers
 
+  s.library      = 'c++'
+
   s.module_map = "Sources/tomorrowland.modulemap"
 end
