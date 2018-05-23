@@ -18,6 +18,8 @@ Pod::Spec.new do |s|
   s.watchos.deployment_target = "2.0"
   s.tvos.deployment_target = "9.0"
 
+  s.swift_version = '4.0'
+
   s.source       = { :git => "https://github.com/kballard/Tomorrowland.git", :tag => "v#{s.version}" }
 
   project_headers = Dir['Sources/ObjC/*Private.h'] + ['Sources/ObjC/objc_cast.h']
