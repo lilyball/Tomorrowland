@@ -332,6 +332,11 @@ public struct Promise<Value,Error> {
         _seal = PromiseSeal(result: .error(error))
     }
     
+    /// Returns a `Promise` that is already resolved with the given result.
+    public init(result: PromiseResult<Value,Error>) {
+        _seal = PromiseSeal(result: result)
+    }
+    
     // MARK: -
     
     /// Registers a callback that is invoked when the promise is fulfilled.

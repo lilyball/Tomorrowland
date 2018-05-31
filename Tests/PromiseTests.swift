@@ -85,6 +85,36 @@ final class PromiseTests: XCTestCase {
         XCTAssertTrue(invoked)
     }
     
+    func testAlreadyFulfilledWithResult() {
+        let promise = Promise<Int,String>(result: .value(42))
+        XCTAssertEqual(promise.result, .value(42))
+        var invoked = false
+        _ = promise.then(on: .immediate) { (x) in
+            invoked = true
+        }
+        XCTAssertTrue(invoked)
+    }
+    
+    func testAlreadyRejectedWithResult() {
+        let promise = Promise<Int,String>(result: .error("foo"))
+        XCTAssertEqual(promise.result, .error("foo"))
+        var invoked = false
+        _ = promise.catch(on: .immediate) { (x) in
+            invoked = true
+        }
+        XCTAssertTrue(invoked)
+    }
+    
+    func testAlreadyCancelledWithResult() {
+        let promise = Promise<Int,String>(result: .cancelled)
+        XCTAssertEqual(promise.result, .cancelled)
+        var invoked = false
+        _ = promise.onCancel(on: .immediate) {
+            invoked = true
+        }
+        XCTAssertTrue(invoked)
+    }
+    
     func testThenResult() {
         let promise = Promise<Int,String>(fulfilled: 42).then(on: .utility) { (x) in
             return x + 1

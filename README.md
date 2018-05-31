@@ -352,6 +352,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add initializer `Promise.init(result:)` for creating a `Promise` from a `PromiseResult`.
+
 ### v0.3.2
 
 - Add `Hashable` / `Equatable` conformance to `PromiseInvalidationToken`.
