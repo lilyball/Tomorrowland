@@ -35,7 +35,7 @@
     return (void *)list;
 }
 
-- (void)pushNodeOntoCallbackLinkedList:(void *)node linkBlock:(void (^)(void * _Nonnull))linkBlock {
+- (void)pushNodeOntoCallbackLinkedList:(void *)node linkBlock:(void (NS_NOESCAPE ^)(void * _Nonnull))linkBlock {
     uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
     while (1) {
         linkBlock((void *)oldValue);
@@ -49,7 +49,7 @@
     }
 }
 
-- (nonnull void *)resetCallbackLinkedListUsing:(nonnull NSUInteger (^)(void * _Nonnull))block {
+- (nonnull void *)resetCallbackLinkedListUsing:(nonnull NSUInteger (NS_NOESCAPE ^)(void * _Nonnull))block {
     uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
     while (1) {
         NSUInteger newValue = block((void *)oldValue);
