@@ -40,9 +40,9 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     }
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
-            for promise in promises {
-                promise.requestCancel()
+        cancelAllInput = TWLOneshotBlock(block: { [cancellables=promises.map({ $0.cancellable })] in
+            for cancellable in cancellables {
+                cancellable.requestCancel()
             }
         })
     } else {
@@ -136,7 +136,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
 {
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: { [a=a.cancellable, b=b.cancellable, c=c.cancellable, d=d.cancellable, e=e.cancellable, f=f.cancellable] in
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -230,7 +230,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
     // NB: copy&paste of 6-element version
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: { [a=a.cancellable, b=b.cancellable, c=c.cancellable, d=d.cancellable, e=e.cancellable] in
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -318,7 +318,7 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
     // NB: copy&paste of 6-element version
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: { [a=a.cancellable, b=b.cancellable, c=c.cancellable, d=d.cancellable] in
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -400,7 +400,7 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
     // NB: copy&paste of 6-element version
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: { [a=a.cancellable, b=b.cancellable, c=c.cancellable] in
             a.requestCancel()
             b.requestCancel()
             c.requestCancel()
@@ -476,7 +476,7 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
     // NB: copy&paste of 6-element version
     let cancelAllInput: TWLOneshotBlock?
     if cancelOnFailure {
-        cancelAllInput = TWLOneshotBlock(block: {
+        cancelAllInput = TWLOneshotBlock(block: { [a=a.cancellable, b=b.cancellable] in
             a.requestCancel()
             b.requestCancel()
         })
@@ -555,9 +555,9 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
     }
     let cancelAllInput: TWLOneshotBlock?
     if cancelRemaining {
-        cancelAllInput = TWLOneshotBlock(block: {
-            for promise in promises {
-                promise.requestCancel()
+        cancelAllInput = TWLOneshotBlock(block: { [cancellables=promises.map({ $0.cancellable })] in
+            for cancellable in cancellables {
+                cancellable.requestCancel()
             }
         })
     } else {

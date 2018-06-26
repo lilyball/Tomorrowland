@@ -198,6 +198,33 @@ final class WhenArrayTests: XCTestCase {
         sema.signal()
         wait(for: expectations, timeout: 1)
     }
+    
+    func testWhenCancelPropagationCancelOnFailure() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promise: Promise<[Int],String>
+        let expectations: [XCTestExpectation]
+        do {
+            let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
+                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate, { (resolver) in
+                        resolver.cancel()
+                    })
+                    sema.wait()
+                    sema.signal()
+                    resolver.reject(with: "foo")
+                })
+                let expectation = XCTestExpectation(onCancel: promise)
+                return (promise, expectation)
+            })
+            let promises = promisesAndExpectations.map({ $0.0 })
+            expectations = promisesAndExpectations.map({ $0.1 })
+            promise = when(fulfilled: promises, cancelOnFailure: true)
+        }
+        promise.requestCancel()
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
 }
 
 final class WhenTupleTests: XCTestCase {
@@ -437,6 +464,40 @@ final class WhenTupleTests: XCTestCase {
         helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2]) }, splat: splat)
         helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1]) }, splat: splat)
     }
+    
+    func testWhenCancelPropagationCancelOnFailure() {
+        func helper<Value>(n: Int, when: ([Promise<Int,String>]) -> Promise<Value,String>, splat: @escaping (Value) -> [Int]) {
+            let sema = DispatchSemaphore(value: 1)
+            sema.wait()
+            let promise: Promise<Value,String>
+            let expectations: [XCTestExpectation]
+            do {
+                let promisesAndExpectations = (1...n).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
+                    let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                        resolver.onRequestCancel(on: .immediate, { (resolver) in
+                            resolver.cancel()
+                        })
+                        sema.wait()
+                        sema.signal()
+                        resolver.reject(with: "foo")
+                    })
+                    let expectation = XCTestExpectation(onCancel: promise)
+                    return (promise, expectation)
+                })
+                let promises = promisesAndExpectations.map({ $0.0 })
+                expectations = promisesAndExpectations.map({ $0.1 })
+                promise = when(promises)
+            }
+            promise.requestCancel()
+            sema.signal()
+            wait(for: expectations, timeout: 1)
+        }
+        helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], cancelOnFailure: true) }, splat: splat)
+        helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], cancelOnFailure: true) }, splat: splat)
+        helper(n: 4, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], cancelOnFailure: true) }, splat: splat)
+        helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], cancelOnFailure: true) }, splat: splat)
+        helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1], cancelOnFailure: true) }, splat: splat)
+    }
 }
 
 final class WhenFirstTests: XCTestCase {
@@ -573,6 +634,33 @@ final class WhenFirstTests: XCTestCase {
             let promises = promisesAndExpectations.map({ $0.0 })
             expectations = promisesAndExpectations.map({ $0.1 })
             promise = when(first: promises)
+        }
+        promise.requestCancel()
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testWhenCancelPropagationCancelRemaining() {
+        let sema = DispatchSemaphore(value: 1)
+        sema.wait()
+        let promise: Promise<Int,String>
+        let expectations: [XCTestExpectation]
+        do {
+            let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
+                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate, { (resolver) in
+                        resolver.cancel()
+                    })
+                    sema.wait()
+                    sema.signal()
+                    resolver.reject(with: "foo")
+                })
+                let expectation = XCTestExpectation(onCancel: promise)
+                return (promise, expectation)
+            })
+            let promises = promisesAndExpectations.map({ $0.0 })
+            expectations = promisesAndExpectations.map({ $0.1 })
+            promise = when(first: promises, cancelRemaining: true)
         }
         promise.requestCancel()
         sema.signal()

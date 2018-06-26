@@ -355,6 +355,9 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ### Development
 
 - Add initializer `Promise.init(result:)` for creating a `Promise` from a `PromiseResult`.
+- Fix cancellation propagation issue with `when(resolved: …, cancelOnFailure: true)` and `when(first: …, cancelRemaining: true)` ([#20][]).
+
+[#20]: https://github.com/kballard/Tomorrowland/issues/20 "when does not work as expected when using `cancelOnFailure: true`"
 
 ### v0.3.2
 
