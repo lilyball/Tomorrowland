@@ -819,12 +819,14 @@
 
 - (void)testRequestCancelOnDealloc {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    __auto_type promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+    __auto_type promise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
             [resolver cancel];
         }];
-        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-        [resolver fulfillWithValue:@42];
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        });
     }];
     XCTAssertFalse([promise getValue:NULL error:NULL]);
     @autoreleasepool {
