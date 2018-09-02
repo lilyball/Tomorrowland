@@ -410,6 +410,23 @@
     [self waitForExpectations:expectations timeout:1];
 }
 
+- (void)testInvalidationTokenRequestCancelOnInvalidate {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }];
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTestExpectation *expectation = TWLExpectationCancel(promise);
+    TWLInvalidationToken *token = [TWLInvalidationToken new];
+    [token requestCancelOnInvalidate:promise];
+    [token invalidate];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 - (void)testInvalidationTokenNoInvalidateOnDealloc {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
@@ -442,6 +459,24 @@
         TWLInvalidationToken *token = [TWLInvalidationToken new];
         [token requestCancelOnInvalidate:promise];
     }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testInvalidationTokenCancelWithoutInvalidating {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise cancelled"];
+    [[[TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }];
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }] whenCancelledOnContext:TWLContext.utility handler:^{
+        [expectation fulfill];
+    }] requestCancelOnInvalidate:token];
+    [token cancelWithoutInvalidating];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
 }

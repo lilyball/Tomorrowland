@@ -587,6 +587,23 @@ final class PromiseTests: XCTestCase {
         wait(for: expectations + [expectation], timeout: 1)
     }
     
+    func testInvalidationTokenRequestCancelOnInvalidate() {
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                resolver.cancel()
+            })
+            sema.wait()
+            resolver.fulfill(with: 42)
+        })
+        let expectation = XCTestExpectation(onCancel: promise)
+        let token = PromiseInvalidationToken()
+        token.requestCancelOnInvalidate(promise)
+        token.invalidate()
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
     func testInvalidationTokenNoInvalidateOnDeinit() {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
@@ -619,6 +636,24 @@ final class PromiseTests: XCTestCase {
             let token = PromiseInvalidationToken()
             token.requestCancelOnInvalidate(promise)
         }
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testInvalidationTokenCancelWithoutInvalidating() {
+        let sema = DispatchSemaphore(value: 0)
+        let token = PromiseInvalidationToken(invalidateOnDeinit: false)
+        let expectation = XCTestExpectation(description: "promise cancelled")
+        Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.onRequestCancel(on: .immediate, { (resolver) in
+                resolver.cancel()
+            })
+            sema.wait()
+            resolver.fulfill(with: 42)
+        }).onCancel(on: .utility, token: token, {
+            expectation.fulfill()
+        }).requestCancelOnInvalidate(token)
+        token.cancelWithoutInvalidating()
         sema.signal()
         wait(for: [expectation], timeout: 1)
     }

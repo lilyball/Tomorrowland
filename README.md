@@ -204,7 +204,8 @@ class URLImageView: UIImageView {
 `PromiseInvalidationToken` also has a method `.requestCancelOnInvalidate(_:)` that can register any number of `Promise`s to be automatically
 requested to cancel (using `.requestCancel()`) the next time the token is invalidated. `Promise` also has the same method (except it takes a token as the
 argument) as a convenience for calling `.requestCancelOnInvalidate(_:)` on the token. This can be used to terminate a promise chain without ever assigning
-the promise to a local variable.
+the promise to a local variable. `PromiseInvalidationToken` also has a method `.cancelWithoutInvalidating()` which cancels any associated promises
+without invalidating the token.
 
 By default `PromiseInvalidationToken`s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with
 `requestCancelOnInvalidate(_:)` as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
@@ -351,6 +352,13 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Add `PromiseInvalidationToken.cancelWithoutInvalidating()`. This method cancels any associated promises without invalidating the token, thus
+  allowing for any `onCancel` and `always` handlers on the promises to fire ([#23][]).
+
+[#23]: https://github.com/kballard/Tomorrowland/issues/23 "Add PromiseInvalidationToken.cancelWithoutInvalidation()"
 
 ### v0.3.3
 

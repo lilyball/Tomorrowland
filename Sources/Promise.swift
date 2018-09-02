@@ -1423,6 +1423,8 @@ public struct PromiseInvalidationToken {
         _inner = Inner(invalidateOnDeinit: invalidateOnDeinit)
     }
     
+    /// Invalidates the token and cancels any associated promises.
+    ///
     /// After invoking this method, all `Promise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
     /// `then(on:token:_:)`) will result in a cancelled promise instead if the callback would
@@ -1432,6 +1434,14 @@ public struct PromiseInvalidationToken {
     /// will be requested to cancel.
     public func invalidate() {
         _inner.box.invalidate()
+    }
+    
+    /// Cancels any associated promises without invalidating the token.
+    ///
+    /// After invoking this method, any promises that have been registered with
+    /// `requestCancelOnInvalidate(_:)` will be requested to cancel.
+    public func cancelWithoutInvalidating() {
+        _inner.box.cancelWithoutInvalidating()
     }
     
     /// Registers a `Promise` to be requested to cancel automatically when the token is invalidated.
@@ -1582,18 +1592,11 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
     }
     
     func invalidate() {
-        let rawPtr = resetCallbackLinkedList { (ptr) -> UInt in
-            return CallbackNode.generation(from: ptr) &+ 1
-        }
-        if var nodePtr = CallbackNode.castPointer(rawPtr) {
-            nodePtr = CallbackNode.reverseList(nodePtr)
-            defer {
-                CallbackNode.destroyPointer(nodePtr)
-            }
-            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                nodePtr.pointee.cancellable.requestCancel()
-            }
-        }
+        resetCallbacks(andIncrementGenerationBy: 1)
+    }
+    
+    func cancelWithoutInvalidating() {
+        resetCallbacks(andIncrementGenerationBy: 0)
     }
     
     func requestCancelOnInvalidate(_ cancellable: PromiseCancellable) {
@@ -1612,6 +1615,21 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
     
     internal var generation: UInt {
         return CallbackNode.generation(from: callbackLinkedList)
+    }
+    
+    private func resetCallbacks(andIncrementGenerationBy increment: UInt) {
+        let rawPtr = resetCallbackLinkedList { (ptr) -> UInt in
+            return CallbackNode.generation(from: ptr) &+ increment
+        }
+        if var nodePtr = CallbackNode.castPointer(rawPtr) {
+            nodePtr = CallbackNode.reverseList(nodePtr)
+            defer {
+                CallbackNode.destroyPointer(nodePtr)
+            }
+            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
+                nodePtr.pointee.cancellable.requestCancel()
+            }
+        }
     }
     
     override var description: String {

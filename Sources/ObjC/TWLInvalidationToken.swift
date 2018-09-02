@@ -57,6 +57,8 @@ public final class ObjCPromiseInvalidationToken: NSObject {
         super.init()
     }
     
+    /// Invalidates the token and cancels any associated promises.
+    ///
     /// After invoking this method, all `TWLPromise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
     /// `-thenOnContext:token:handler:`) will result in a cancelled promise instead if the callback
@@ -66,6 +68,14 @@ public final class ObjCPromiseInvalidationToken: NSObject {
     /// be requested to cancel.
     public func invalidate() {
         _token.invalidate()
+    }
+    
+    /// Cancels any associated promises without invalidating the token.
+    ///
+    /// After invoking this method, any promises that have been registered with
+    /// `requestCancelOnInvalidate(_:)` will be requested to cancel.
+    public func cancelWithoutInvalidating() {
+        _token.cancelWithoutInvalidating()
     }
     
     /// Registers a `TWLPromise` to be requested to cancel automatically when the token is
