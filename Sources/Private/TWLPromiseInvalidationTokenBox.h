@@ -34,7 +34,7 @@
 
 /// Resets the callback linked list pointer to the integral value returned by the given block.
 ///
-/// The returned value is adjusted using <code>(x << 1) | 1</code> to turn it into a tagged pointer.
+/// The returned value is adjusted using <code>(x << 1) | 1</code> to turn it into a tagged integer.
 ///
 /// \param block A block that is called with the old value of the list to return the new value. This
 ///              block may be invoked multiple times if the list changes concurrently.

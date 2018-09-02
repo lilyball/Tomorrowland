@@ -1566,11 +1566,11 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
             if let nodePtr = castPointer(pointer) {
                 return nodePtr.pointee.generation
             } else {
-                return interpretTaggedPointer(pointer)
+                return interpretTaggedInteger(pointer)
             }
         }
         
-        static func interpretTaggedPointer(_ pointer: UnsafeMutableRawPointer) -> UInt {
+        static func interpretTaggedInteger(_ pointer: UnsafeMutableRawPointer) -> UInt {
             return UInt(bitPattern: pointer) >> 1
         }
     }
@@ -1604,7 +1604,7 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
                 nodePtr.pointee.generation = nextPtr.pointee.generation
                 nodePtr.pointee.next = nextPtr
             } else {
-                nodePtr.pointee.generation = CallbackNode.interpretTaggedPointer(rawPtr)
+                nodePtr.pointee.generation = CallbackNode.interpretTaggedInteger(rawPtr)
                 nodePtr.pointee.next = nil
             }
         }
@@ -1625,7 +1625,7 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
                 let count = sequence(first: nodePtr, next: { $0.pointee.next }).reduce(0, { (x, _) in x + 1 })
                 callbackCount = "\(count) node\(count == 1 ? "" : "s")"
             } else {
-                generation = CallbackNode.interpretTaggedPointer(rawPtr)
+                generation = CallbackNode.interpretTaggedInteger(rawPtr)
                 callbackCount = "0 nodes"
             }
         }
