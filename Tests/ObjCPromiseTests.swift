@@ -161,6 +161,20 @@ final class ObjCPromiseTests: XCTestCase {
             }
             wait(for: [expectation], timeout: 1)
         }
+        
+        do { // bridge where Value: AnyObject, Error == Swift.Error
+            let promise = Promise<NSNumber,Error>(on: .utility, { (resolver) in
+                resolver.reject(with: StringError(message: "wat"))
+            })
+            let objcPromise = promise.objc()
+            let _: ObjCPromise<NSNumber,NSError> = objcPromise // compile-time type assertion
+            let expectation = XCTestExpectation(description: "objcPromise rejected")
+            objcPromise.catch { (error) in
+                XCTAssertTrue(error as Error is StringError)
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 1)
+        }
     }
     
     func testFromObjC() {
@@ -245,6 +259,26 @@ final class ObjCPromiseTests: XCTestCase {
                 resolver.reject(with: "error")
             }), mapValue: { $0.intValue }, mapError: { _ in throw DummyError() })
             let _: Promise<Int,Error> = promise // compile-time type assertion
+            let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+                XCTAssert(error is DummyError)
+            })
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // bridge where Value: AnyObject, Error == Swift.Error fulfilled
+            let promise = Promise(bridging: ObjCPromise<NSNumber,NSError>(on: .utility, { (resolver) in
+                resolver.fulfill(with: 42)
+            }))
+            let _: Promise<NSNumber,Error> = promise // compile-time type assertion
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        do { // bridge where Value: AnyObject, Error == Swift.Error rejected
+            let promise = Promise(bridging: ObjCPromise<NSNumber,NSError>(on: .utility, { (resolver) in
+                resolver.reject(with: DummyError() as NSError)
+            }))
+            let _: Promise<NSNumber,Error> = promise // compile-time type assertion
             let expectation = XCTestExpectation(onError: promise, handler: { (error) in
                 XCTAssert(error is DummyError)
             })

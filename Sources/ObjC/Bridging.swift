@@ -241,3 +241,37 @@ extension Promise where Error == Swift.Error {
         }
     }
 }
+
+extension Promise where Value: AnyObject, Error == Swift.Error {
+    public init(bridging promise: ObjCPromise<Value,NSError>) {
+        self.init(on: .immediate) { (resolver) in
+            promise.inspect(on: .immediate, { (value, error) in
+                if let value = value {
+                    resolver.fulfill(with: value)
+                } else if let error = error {
+                    resolver.reject(with: error)
+                } else {
+                    resolver.cancel()
+                }
+            })
+            resolver.onRequestCancel(on: .immediate, { [weak promise] (_) in
+                promise?.requestCancel()
+            })
+        }
+    }
+    
+    public func objc() -> ObjCPromise<Value,NSError> {
+        return ObjCPromise<Value,NSError>(on: .immediate) { [cancellable] (resolver) in
+            self.always(on: .immediate, { (result) in
+                switch result {
+                case .value(let value): resolver.fulfill(with: value)
+                case .error(let error): resolver.reject(with: error as NSError)
+                case .cancelled: resolver.cancel()
+                }
+            })
+            resolver.onRequestCancel(on: .immediate, { (_) in
+                cancellable.requestCancel()
+            })
+        }
+    }
+}

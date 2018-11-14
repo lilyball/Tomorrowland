@@ -357,8 +357,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Add `PromiseInvalidationToken.cancelWithoutInvalidating()`. This method cancels any associated promises without invalidating the token, thus
   allowing for any `onCancel` and `always` handlers on the promises to fire ([#23][]).
+- Add missing `Promise`↔`ObjCPromise` bridging methods for the case of `Value: AnyObject, Error == Swift.Error` ([#24][]).
 
 [#23]: https://github.com/kballard/Tomorrowland/issues/23 "Add PromiseInvalidationToken.cancelWithoutInvalidation()"
+[#24]: https://github.com/kballard/Tomorrowland/issues/24 "Add Swift<->ObjC bridging methods for Value: AnyObject, Error == Swift.Error"
 
 ### v0.3.3
 
