@@ -5,7 +5,10 @@ help:
 .PHONY: help
 
 # FIXME: Add --objc when realm/jazzy#976 is fixed
-docs: build/ObjC/Tomorrowland
+docs:
+	@rm -rf build
+	@mkdir -p build/ObjC
+	@ln -s ../../Sources/ObjC build/ObjC/Tomorrowland
 	jazzy \
 		--clean \
 		--author "Lily Ballard" \
@@ -15,8 +18,3 @@ docs: build/ObjC/Tomorrowland
 		--framework-root build/ObjC \
 		--exclude /*/Sources/ObjC/*,/*/Sources/Private/*
 .PHONY: docs
-
-build/ObjC/Tomorrowland:
-	mkdir -p build/ObjC
-	ln -s ../../Sources/ObjC build/ObjC/Tomorrowland
-.INTERMEDIATE: build/ObjC/Tomorrowland
