@@ -51,25 +51,25 @@
             <a href="Functions.html">Functions</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyxq_GSayAEG5first_Sb15cancelRemainingtr0_lF">when(first:cancelRemaining:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when5first15cancelRemainingAA7PromiseVyxq_GSayAGG_Sbtr0_lF">when(first:cancelRemaining:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_q3_tq4_GADyxq4_G9fulfilled_ADyq_q4_GADyq0_q4_GADyq1_q4_GADyq2_q4_GADyq3_q4_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr5_lF">when(fulfilled:_:_:_:_:_:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled_____3qos15cancelOnFailureAA7PromiseVyx_q_q0_q1_q2_q3_tq4_GAGyxq4_G_AGyq_q4_GAGyq0_q4_GAGyq1_q4_GAGyq2_q4_GAGyq3_q4_G8Dispatch0I3QoSV0J6SClassOSbtr5_lF">when(fulfilled:_:_:_:_:_:qos:cancelOnFailure:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_q2_tq3_GADyxq3_G9fulfilled_ADyq_q3_GADyq0_q3_GADyq1_q3_GADyq2_q3_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr4_lF">when(fulfilled:_:_:_:_:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled____3qos15cancelOnFailureAA7PromiseVyx_q_q0_q1_q2_tq3_GAGyxq3_G_AGyq_q3_GAGyq0_q3_GAGyq1_q3_GAGyq2_q3_G8Dispatch0I3QoSV0J6SClassOSbtr4_lF">when(fulfilled:_:_:_:_:qos:cancelOnFailure:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_q1_tq2_GADyxq2_G9fulfilled_ADyq_q2_GADyq0_q2_GADyq1_q2_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr3_lF">when(fulfilled:_:_:_:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled___3qos15cancelOnFailureAA7PromiseVyx_q_q0_q1_tq2_GAGyxq2_G_AGyq_q2_GAGyq0_q2_GAGyq1_q2_G8Dispatch0I3QoSV0J6SClassOSbtr3_lF">when(fulfilled:_:_:_:qos:cancelOnFailure:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_q0_tq1_GADyxq1_G9fulfilled_ADyq_q1_GADyq0_q1_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr2_lF">when(fulfilled:_:_:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled__3qos15cancelOnFailureAA7PromiseVyx_q_q0_tq1_GAGyxq1_G_AGyq_q1_GAGyq0_q1_G8Dispatch0I3QoSV0J6SClassOSbtr2_lF">when(fulfilled:_:_:qos:cancelOnFailure:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVyx_q_tq0_GADyxq0_G9fulfilled_ADyq_q0_G8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr1_lF">when(fulfilled:_:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled_3qos15cancelOnFailureAA7PromiseVyx_q_tq0_GAGyxq0_G_AGyq_q0_G8Dispatch0I3QoSV0J6SClassOSbtr1_lF">when(fulfilled:_:qos:cancelOnFailure:)</a>
               </li>
               <li class="nav-group-task">
-                <a href="Functions.html#/s:12Tomorrowland4whenAA7PromiseVySayxGq_GSayADyxq_GG9fulfilled_8Dispatch0E3QoSV0F6SClassO3qosSb15cancelOnFailuretr0_lF">when(fulfilled:qos:cancelOnFailure:)</a>
+                <a href="Functions.html#/s:12Tomorrowland4when9fulfilled3qos15cancelOnFailureAA7PromiseVySayxGq_GSayAGyxq_GG_8Dispatch0I3QoSV0J6SClassOSbtr0_lF">when(fulfilled:qos:cancelOnFailure:)</a>
               </li>
             </ul>
           </li>
@@ -291,7 +291,8 @@ cancellation. This may look like</p>
 <p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.requestCancelOnInvalidate(_:)</code> that can register any number of <code><a href="Structs/Promise.html">Promise</a></code>s to be automatically
 requested to cancel (using <code>.requestCancel()</code>) the next time the token is invalidated. <code><a href="Structs/Promise.html">Promise</a></code> also has the same method (except it takes a token as the
 argument) as a convenience for calling <code>.requestCancelOnInvalidate(_:)</code> on the token. This can be used to terminate a promise chain without ever assigning
-the promise to a local variable.</p>
+the promise to a local variable. <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.cancelWithoutInvalidating()</code> which cancels any associated promises
+without invalidating the token.</p>
 
 <p>By default <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with
 <code>requestCancelOnInvalidate(_:)</code> as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
@@ -330,7 +331,7 @@ the token invalidates, but can be used if the token would otherwise not be expli
 <h4 id='code-tokenpromise-code' class='heading'><code><a href="Structs/TokenPromise.html">TokenPromise</a></code></h4>
 
 <p>In order to avoid the repetition of passing a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to multiple <code><a href="Structs/Promise.html">Promise</a></code> methods as well as cancelling the resulting promise, a type
-<code><a href="Structs/TokenPromise.html">TokenPromise</a></code> exists that handles this for you. You can create a <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> with the <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code> method. This allows you to take code like
+<code><a href="Structs/TokenPromise.html">TokenPromise</a></code> exists that handles this for you. You can create a <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> with the <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenyAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code> method. This allows you to take code like
 the following:</p>
 <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">loadModel</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">promiseToken</span><span class="o">.</span><span class="nf">invalidate</span><span class="p">()</span>
@@ -393,13 +394,13 @@ promise will be cancelled as well.</p>
 
 <p>This function has an optional parameter <code>cancelRemaining:</code> that, if provided as <code>true</code>, will cancel the remaining input promises as soon as one of them is fulfilled
 or rejected.</p>
-<h4 id='code-promise-timeout-on-delay-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeoutACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO2on_Sd5delaytF">Promise.timeout(on:delay:)</a></code></h4>
+<h4 id='code-promise-timeout-on-delay-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code></h4>
 
-<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeoutACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO2on_Sd5delaytF">Promise.timeout(on:delay:)</a></code> is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn&rsquo;t
+<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn&rsquo;t
 resolved within the given interval.</p>
-<h4 id='code-promise-delay-on-_-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delayACyxq_GAA0B7ContextO2on_SdtF">Promise.delay(on:_:)</a></code></h4>
+<h4 id='code-promise-delay-on-_-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">Promise.delay(on:_:)</a></code></h4>
 
-<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delayACyxq_GAA0B7ContextO2on_SdtF">Promise.delay(on:_:)</a></code> is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for
+<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">Promise.delay(on:_:)</a></code> is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for
 testing purposes.</p>
 <h3 id='objective-c' class='heading'>Objective-C</h3>
 
@@ -423,10 +424,17 @@ generic over its types, the return values of callback registration methods that 
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='development' class='heading'>Development</h3>
+
+<ul>
+<li>Add <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25cancelWithoutInvalidatingyyF">PromiseInvalidationToken.cancelWithoutInvalidating()</a></code>. This method cancels any associated promises without invalidating the token, thus
+allowing for any <code>onCancel</code> and <code>always</code> handlers on the promises to fire (<a href="https://github.com/kballard/Tomorrowland/issues/23" title="Add PromiseInvalidationToken.cancelWithoutInvalidation()">#23</a>).</li>
+<li>Add missing <code>Promise</code>↔<code>ObjCPromise</code> bridging methods for the case of <code>Value: AnyObject, Error == Swift.Error</code> (<a href="https://github.com/kballard/Tomorrowland/issues/24" title="Add Swift&lt;-&gt;ObjC bridging methods for Value: AnyObject, Error == Swift.Error">#24</a>).</li>
+</ul>
 <h3 id='v0-3-3' class='heading'>v0.3.3</h3>
 
 <ul>
-<li>Add initializer <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseVACyxq_GAA0B6ResultOyxq_G6result_tcfc">Promise.init(result:)</a></code> for creating a <code><a href="Structs/Promise.html">Promise</a></code> from a <code><a href="Enums/PromiseResult.html">PromiseResult</a></code>.</li>
+<li>Add initializer <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV6resultACyxq_GAA0B6ResultOyxq_G_tcfc">Promise.init(result:)</a></code> for creating a <code><a href="Structs/Promise.html">Promise</a></code> from a <code><a href="Enums/PromiseResult.html">PromiseResult</a></code>.</li>
 <li>Fix cancellation propagation issue with <code>when(resolved: …, cancelOnFailure: true)</code> and <code>when(first: …, cancelRemaining: true)</code> (<a href="https://github.com/kballard/Tomorrowland/issues/20" title="when does not work as expected when using `cancelOnFailure: true`">#20</a>).</li>
 <li>Update some documentation.</li>
 <li>Enable <code>APPLICATION_EXTENSION_API_ONLY</code>.</li>
@@ -442,15 +450,15 @@ generic over its types, the return values of callback registration methods that 
 <ul>
 <li>Add a missing Swift-&gt;ObjC convenience bridging method.</li>
 <li>Add <code>Decodable</code> conformance to <code><a href="Enums/NoError.html">NoError</a></code>.</li>
-<li>Add method <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV4forkACyxq_GyAEKcKF">Promise.fork(_:)</a></code>.</li>
+<li>Add method <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV4forkyACyxq_GyAEKXEKF">Promise.fork(_:)</a></code>.</li>
 <li>Fix compilation failure when targeting 32-bit iOS 9 simulator in Xcode 9.3.</li>
 <li>Fix cancellation propagation test cases on iOS 9 simulators.</li>
 </ul>
 <h3 id='v0-3' class='heading'>v0.3</h3>
 
 <ul>
-<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV25requestCancelOnInvalidateACyxq_GAA0B17InvalidationTokenVF">Promise.requestCancelOnInvalidate(_:)</a></code> as a convenience for <code>token.requestCancelOnInvalidate(_:)</code>.</li>
-<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV21requestCancelOnDeinitACyxq_GyXlF">Promise.requestCancelOnDeinit(_:)</a></code> as a convenience for adding a token property to an object that invalites on deinit.</li>
+<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV25requestCancelOnInvalidateyACyxq_GAA0B17InvalidationTokenVF">Promise.requestCancelOnInvalidate(_:)</a></code> as a convenience for <code>token.requestCancelOnInvalidate(_:)</code>.</li>
+<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV21requestCancelOnDeinityACyxq_GyXlF">Promise.requestCancelOnDeinit(_:)</a></code> as a convenience for adding a token property to an object that invalites on deinit.</li>
 <li>Better support for <code>OperationQueue</code> with <code>delay</code>/<code>timeout</code>. Instead of using the <code>OperationQueue</code>&rsquo;s underlying queue, we instead use a <code>.userInitiated</code>
 queue for the timer and hop onto the <code>OperationQueue</code> to resolve the promise.</li>
 </ul>
@@ -468,8 +476,8 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Kevin Ballard</a>. All rights reserved. (Last updated: 2018-06-26)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2018-11-14)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
