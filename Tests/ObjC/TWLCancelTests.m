@@ -2,8 +2,8 @@
 //  TWLCancelTests.m
 //  TomorrowlandTests
 //
-//  Created by Ballard, Kevin on 1/21/18.
-//  Copyright © 2018 Kevin Ballard. All rights reserved.
+//  Created by Lily Ballard on 1/21/18.
+//  Copyright © 2018 Lily Ballard. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 //  http://www.apache.org/licenses/LICENSE-2.0> or the MIT license

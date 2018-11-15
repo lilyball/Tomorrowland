@@ -8,7 +8,7 @@ help:
 docs: build/ObjC/Tomorrowland
 	jazzy \
 		--clean \
-		--author "Kevin Ballard" \
+		--author "Lily Ballard" \
 		--github_url https://github.com/kballard/Tomorrowland \
 		--module Tomorrowland \
 		--umbrella-header build/ObjC/Tomorrowland/Tomorrowland.h \

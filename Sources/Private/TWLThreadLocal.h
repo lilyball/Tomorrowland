@@ -2,8 +2,8 @@
 //  TWLThreadLocal.h
 //  Tomorrowland
 //
-//  Created by Kevin Ballard on 1/2/18.
-//  Copyright © 2018 Kevin Ballard. All rights reserved.
+//  Created by Lily Ballard on 1/2/18.
+//  Copyright © 2018 Lily Ballard. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

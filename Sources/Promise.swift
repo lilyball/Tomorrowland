@@ -2,8 +2,8 @@
 //  Promise.swift
 //  Tomorrowland
 //
-//  Created by Kevin Ballard on 12/12/17.
-//  Copyright © 2017 Kevin Ballard. All rights reserved.
+//  Created by Lily Ballard on 12/12/17.
+//  Copyright © 2017 Lily Ballard. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 //  http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
