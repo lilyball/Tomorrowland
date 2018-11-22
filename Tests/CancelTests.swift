@@ -421,24 +421,28 @@ final class CancelTests: XCTestCase {
 private extension Promise {
     static func makeCancellablePromise(value: Value) -> (Promise, DispatchSemaphore) {
         let sema = DispatchSemaphore(value: 0)
-        let promise = Promise<Value,Error>(on: .utility, { (resolver) in
+        let promise = Promise<Value,Error>(on: .immediate, { (resolver) in
             resolver.onRequestCancel(on: .immediate, { (resolver) in
                 resolver.cancel()
             })
-            sema.wait()
-            resolver.fulfill(with: value)
+            DispatchQueue.global(qos: .utility).async {
+                sema.wait()
+                resolver.fulfill(with: value)
+            }
         })
         return (promise, sema)
     }
     
     static func makeCancellablePromise(error: Error) -> (Promise, DispatchSemaphore) {
         let sema = DispatchSemaphore(value: 0)
-        let promise = Promise<Value,Error>(on: .utility, { (resolver) in
+        let promise = Promise<Value,Error>(on: .immediate, { (resolver) in
             resolver.onRequestCancel(on: .immediate, { (resolver) in
                 resolver.cancel()
             })
-            sema.wait()
-            resolver.reject(with: error)
+            DispatchQueue.global(qos: .utility).async {
+                sema.wait()
+                resolver.reject(with: error)
+            }
         })
         return (promise, sema)
     }

@@ -104,12 +104,14 @@ final class UtilityTests: XCTestCase {
         let promise: Promise<Int,String>
         let sema = DispatchSemaphore(value: 0)
         do {
-            let origPromise = Promise<Int,String>(on: .utility, { (resolver) in
+            let origPromise = Promise<Int,String>(on: .immediate, { (resolver) in
                 resolver.onRequestCancel(on: .immediate, { (resolver) in
                     resolver.cancel()
                 })
-                sema.wait()
-                resolver.fulfill(with: 42)
+                DispatchQueue.global(qos: .utility).async {
+                    sema.wait()
+                    resolver.fulfill(with: 42)
+                }
             })
             expectation = XCTestExpectation(onCancel: origPromise)
             promise = origPromise.delay(on: .immediate, 0.05)

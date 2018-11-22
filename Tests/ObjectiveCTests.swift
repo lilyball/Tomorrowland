@@ -18,12 +18,14 @@ import Tomorrowland
 final class ObjectiveCTests: XCTestCase {
     func testRequestCancelOnDeinit() {
         let sema = DispatchSemaphore(value: 0)
-        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
             resolver.onRequestCancel(on: .immediate, { (resolver) in
                 resolver.cancel()
             })
-            sema.wait()
-            resolver.fulfill(with: 42)
+            DispatchQueue.global(qos: .utility).async {
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }
         })
         XCTAssertNil(promise.result)
         autoreleasepool {

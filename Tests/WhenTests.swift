@@ -86,9 +86,8 @@ final class WhenArrayTests: XCTestCase {
         let expectations = promisesAndExpectations.map({ $0.1 })
         let promise = when(fulfilled: promises, cancelOnFailure: true)
         let expectation = XCTestExpectation(onError: promise, expectedError: "error")
-        wait(for: [expectation], timeout: 1)
+        wait(for: expectations + [expectation], timeout: 1)
         sema.signal() // let the promises empty out
-        wait(for: expectations, timeout: 1)
     }
     
     func testWhenCancelledWithCancelOnFailureCancelsInput() {
@@ -118,9 +117,8 @@ final class WhenArrayTests: XCTestCase {
         let expectations = promisesAndExpectations.map({ $0.1 })
         let promise = when(fulfilled: promises, cancelOnFailure: true)
         let expectation = XCTestExpectation(onCancel: promise)
-        wait(for: [expectation], timeout: 1)
+        wait(for: expectations + [expectation], timeout: 1)
         sema.signal() // let the promises empty out
-        wait(for: expectations, timeout: 1)
     }
     
     func testWhenCancelledByDefaultDoesntCancelInput() {
@@ -179,13 +177,15 @@ final class WhenArrayTests: XCTestCase {
         let expectations: [XCTestExpectation]
         do {
             let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         resolver.cancel()
                     })
-                    sema.wait()
-                    sema.signal()
-                    resolver.reject(with: "foo")
+                    DispatchQueue.global(qos: .utility).async {
+                        sema.wait()
+                        sema.signal()
+                        resolver.reject(with: "foo")
+                    }
                 })
                 let expectation = XCTestExpectation(onCancel: promise)
                 return (promise, expectation)
@@ -206,13 +206,15 @@ final class WhenArrayTests: XCTestCase {
         let expectations: [XCTestExpectation]
         do {
             let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         resolver.cancel()
                     })
-                    sema.wait()
-                    sema.signal()
-                    resolver.reject(with: "foo")
+                    DispatchQueue.global(qos: .utility).async {
+                        sema.wait()
+                        sema.signal()
+                        resolver.reject(with: "foo")
+                    }
                 })
                 let expectation = XCTestExpectation(onCancel: promise)
                 return (promise, expectation)
@@ -322,9 +324,8 @@ final class WhenTupleTests: XCTestCase {
             let promise = when(promises)
             let expectation = XCTestExpectation(description: "promise resolved")
             promise.always(on: .utility, { _ in expectation.fulfill() })
-            wait(for: [expectation], timeout: 1)
+            wait(for: expectations + [expectation], timeout: 1)
             sema.signal() // let the promises empty out
-            wait(for: expectations, timeout: 1)
         }
         helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], cancelOnFailure: true) })
         helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], cancelOnFailure: true) })
@@ -362,9 +363,8 @@ final class WhenTupleTests: XCTestCase {
             let promise = when(promises)
             let expectation = XCTestExpectation(description: "promise resolved")
             promise.always(on: .utility, { _ in expectation.fulfill() })
-            wait(for: [expectation], timeout: 1)
+            wait(for: expectations + [expectation], timeout: 1)
             sema.signal() // let the promises empty out
-            wait(for: expectations, timeout: 1)
         }
         helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], cancelOnFailure: true) })
         helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], cancelOnFailure: true) })
@@ -439,13 +439,15 @@ final class WhenTupleTests: XCTestCase {
             let expectations: [XCTestExpectation]
             do {
                 let promisesAndExpectations = (1...n).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                    let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                    let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                         resolver.onRequestCancel(on: .immediate, { (resolver) in
                             resolver.cancel()
                         })
-                        sema.wait()
-                        sema.signal()
-                        resolver.reject(with: "foo")
+                        DispatchQueue.global(qos: .utility).async {
+                            sema.wait()
+                            sema.signal()
+                            resolver.reject(with: "foo")
+                        }
                     })
                     let expectation = XCTestExpectation(onCancel: promise)
                     return (promise, expectation)
@@ -473,13 +475,15 @@ final class WhenTupleTests: XCTestCase {
             let expectations: [XCTestExpectation]
             do {
                 let promisesAndExpectations = (1...n).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                    let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                    let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                         resolver.onRequestCancel(on: .immediate, { (resolver) in
                             resolver.cancel()
                         })
-                        sema.wait()
-                        sema.signal()
-                        resolver.reject(with: "foo")
+                        DispatchQueue.global(qos: .utility).async {
+                            sema.wait()
+                            sema.signal()
+                            resolver.reject(with: "foo")
+                        }
                     })
                     let expectation = XCTestExpectation(onCancel: promise)
                     return (promise, expectation)
@@ -581,7 +585,6 @@ final class WhenFirstTests: XCTestCase {
                     expectation.fulfill()
                 } else {
                     resolver.onRequestCancel(on: .immediate) { (resolver) in
-                        expectation.fulfill()
                         resolver.cancel()
                     }
                     sema.wait()
@@ -589,15 +592,17 @@ final class WhenFirstTests: XCTestCase {
                     resolver.fulfill(with: x * 2)
                 }
             })
+            if x != 3 {
+                expectation.fulfill(onCancel: promise)
+            }
             return (promise,expectation)
         })
         let promises = promisesAndExpectations.map({ $0.0 })
         let expectations = promisesAndExpectations.map({ $0.1 })
         let promise = when(first: promises, cancelRemaining: true)
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 6)
-        wait(for: [expectation], timeout: 1)
+        wait(for: expectations + [expectation], timeout: 1)
         sema.signal()
-        wait(for: expectations, timeout: 1)
     }
     
     func testWhenEmptyInput() {
@@ -620,13 +625,15 @@ final class WhenFirstTests: XCTestCase {
         let expectations: [XCTestExpectation]
         do {
             let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         resolver.cancel()
                     })
-                    sema.wait()
-                    sema.signal()
-                    resolver.reject(with: "foo")
+                    DispatchQueue.global(qos: .utility).async {
+                        sema.wait()
+                        sema.signal()
+                        resolver.reject(with: "foo")
+                    }
                 })
                 let expectation = XCTestExpectation(onCancel: promise)
                 return (promise, expectation)
@@ -647,13 +654,15 @@ final class WhenFirstTests: XCTestCase {
         let expectations: [XCTestExpectation]
         do {
             let promisesAndExpectations = (1...3).map({ (_) -> (Promise<Int,String>, XCTestExpectation) in
-                let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                let promise = Promise<Int,String>(on: .immediate, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         resolver.cancel()
                     })
-                    sema.wait()
-                    sema.signal()
-                    resolver.reject(with: "foo")
+                    DispatchQueue.global(qos: .utility).async {
+                        sema.wait()
+                        sema.signal()
+                        resolver.reject(with: "foo")
+                    }
                 })
                 let expectation = XCTestExpectation(onCancel: promise)
                 return (promise, expectation)
