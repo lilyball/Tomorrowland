@@ -40,8 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// \param context The context to resolve the new promise on. This is generally only important when
 /// using callbacks registered with <tt>.immediate</tt>. If provided as \c .immediate it behaves the
 /// same as <tt>.automatic</tt>.
-/// If provided as \c +operationQueue: it uses the <tt>NSOperationQueue</tt>'s underlying queue, or
-/// \c .defaultQoS if there is no underlying queue.
+/// If provided as \c +operationQueue: it enqueues an operation on the operation queue immediately
+/// that becomes ready once the delay has elapsed.
 /// \param delay The number of seconds to delay the resulting promise by.
 /// \returns A \c TWLPromise that adopts the same result as the receiver after a delay.
 - (TWLPromise<ValueType,ErrorType> *)delay:(NSTimeInterval)delay onContext:(TWLContext *)context TWL_WARN_UNUSED_RESULT;
@@ -74,8 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// the same as <tt>.automatic</tt>.
 /// If the promise times out, the returned promise will be rejected using the same context. In this
 /// event, \c .immediate is treated the same as <tt>.automatic</tt>. If provided as \c
-/// +operationQueue: it uses the <tt>NSOperationQueue</tt>'s underlying queue, or \c .defaultQoS if
-/// there is no underlying queue.
+/// +operationQueue: it enqueues an operation on the operation queue immediately that becomes ready
+/// once the promise times out.
 /// \param delay The delay before the returned promise times out. If less than or equal to zero, the
 /// returned promise will be timed out at once unless the receiver is already resolved.
 /// \returns A new <tt>TWLPromise</tt>.
