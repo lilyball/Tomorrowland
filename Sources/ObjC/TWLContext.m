@@ -195,6 +195,18 @@
     }
 }
 
+- (void)getDestinationQueue:(dispatch_queue_t __strong _Nullable *)outQueue operationQueue:(NSOperationQueue * __strong _Nullable *)outOperationQueue {
+    if (_queue) {
+        *outQueue = _queue;
+        *outOperationQueue = nil;
+    } else if (_operationQueue) {
+        *outQueue = nil;
+        *outOperationQueue = _operationQueue;
+    } else {
+        [TWLContext.automatic getDestinationQueue:outQueue operationQueue:outOperationQueue];
+    }
+}
+
 - (BOOL)isEqual:(id)object {
     if (![object isKindOfClass:[TWLContext class]]) return NO;
     TWLContext *other = object;

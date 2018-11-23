@@ -156,6 +156,27 @@ public enum PromiseContext: Equatable, Hashable {
         }
     }
     
+    internal enum Destination {
+        case queue(DispatchQueue)
+        case operationQueue(OperationQueue)
+    }
+    
+    /// Returns the destination of the context. If the context is `.immediate` it behaves like
+    /// `.auto`.
+    internal func getDestination() -> Destination {
+        switch self {
+        case .main: return .queue(.main)
+        case .background: return .queue(.global(qos: .background))
+        case .utility: return .queue(.global(qos: .utility))
+        case .default: return .queue(.global(qos: .default))
+        case .userInitiated: return .queue(.global(qos: .userInitiated))
+        case .userInteractive: return .queue(.global(qos: .userInteractive))
+        case .queue(let queue): return.queue(queue)
+        case .operationQueue(let queue): return .operationQueue(queue)
+        case .immediate: return PromiseContext.auto.getDestination()
+        }
+    }
+    
     /// Returns the `DispatchQueue` corresponding to the context, if any. If the context is
     /// `.immediate`, it behaves like `.auto`.
     internal func getQueue() -> DispatchQueue? {

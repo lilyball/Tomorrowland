@@ -14,6 +14,7 @@
 
 import Dispatch
 import Foundation
+import Tomorrowland.Private
 
 extension Promise {
     /// Returns a new `Promise` that adopts the receiver's result after a delay.
@@ -22,24 +23,30 @@ extension Promise {
     ///   important when using callbacks registered with `.immediate`. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     ///   If provided as `.immediate`, behaves the same as `.auto`. If provided as `.operationQueue`
-    ///   it uses the `OperationQueue`'s underlying queue, or `.default` if there is no underlying
-    ///   queue.
+    ///   it enqueues an operation on the operation queue immediately that becomes ready once the
+    ///   delay has elapsed.
     /// - Parameter delay: The number of seconds to delay the resulting promise by.
     /// - Returns: A `Promise` that adopts the same result as the receiver after a delay.
     public func delay(on context: PromiseContext = .auto, _ delay: TimeInterval) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [queue=context.getQueue()] (result) in
-            if let queue = queue {
+        switch context.getDestination() {
+        case .queue(let queue):
+            _seal.enqueue { (result) in
                 queue.asyncAfter(deadline: .now() + delay) {
                     resolver.resolve(with: result)
                 }
-            } else {
+            }
+        case .operationQueue(let queue):
+            let operation = TWLBlockOperation()
+            _seal.enqueue { (result) in
+                operation.addExecutionBlock {
+                    resolver.resolve(with: result)
+                }
                 DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-                    context.execute {
-                        resolver.resolve(with: result)
-                    }
+                    operation.markReady()
                 }
             }
+            queue.addOperation(operation)
         }
         resolver.onRequestCancel(on: .immediate) { [weak _box] (_) in
             _box?.propagateCancel()

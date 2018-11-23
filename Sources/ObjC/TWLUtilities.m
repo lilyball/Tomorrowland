@@ -16,6 +16,7 @@
 #import "TWLPromisePrivate.h"
 #import "TWLContextPrivate.h"
 #import "TWLOneshotBlock.h"
+#import "TWLBlockOperation.h"
 
 @implementation TWLPromise (Utilities)
 
@@ -26,18 +27,27 @@
 - (TWLPromise *)delay:(NSTimeInterval)delay onContext:(TWLContext *)context {
     TWLResolver *resolver;
     TWLPromise *promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    dispatch_queue_t queue = [context getQueue];
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue ?: dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            if (queue) {
+    dispatch_queue_t queue;
+    NSOperationQueue *operationQueue;
+    [context getDestinationQueue:&queue operationQueue:&operationQueue];
+    if (queue) {
+        [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, ^{
                 [resolver resolveWithValue:value error:error];
-            } else {
-                [context executeBlock:^{
-                    [resolver resolveWithValue:value error:error];
-                }];
-            }
-        });
-    } willPropagateCancel:YES];
+            });
+        } willPropagateCancel:YES];
+    } else {
+        __auto_type operation = [TWLBlockOperation new];
+        [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+            [operation addExecutionBlock:^{
+                [resolver resolveWithValue:value error:error];
+            }];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                [operation markReady];
+            });
+        } willPropagateCancel:YES];
+        [operationQueue addOperation:operation];
+    }
     __weak TWLObjCPromiseBox *box = _box;
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
         [box propagateCancel];

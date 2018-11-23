@@ -7,5 +7,6 @@ explicit module Tomorrowland.Private {
     header "TWLPromiseInvalidationTokenBox.h"
     header "TWLOneshotBlock.h"
     header "TWLThreadLocal.h"
+    header "TWLBlockOperation.h"
     export *
 }

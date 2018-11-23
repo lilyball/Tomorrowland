@@ -131,15 +131,55 @@
 }
 
 - (void)testDelayUsingOperationQueue {
+    // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
     __auto_type queue = [NSOperationQueue new];
+    __auto_type sema = dispatch_semaphore_create(0);
     __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         [resolver fulfillWithValue:@42];
     }] delay:0.05 onContext:[TWLContext operationQueue:queue]];
-    __auto_type expectation = TWLExpectationSuccessWithHandlerOnContext(TWLContext.immediate, promise, ^(NSNumber * _Nonnull value) {
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];
+    __block uint64_t invoked = 0;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        invoked = getCurrentUptime();
         XCTAssertEqualObjects(value, @42);
         XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
-    });
+        [expectation fulfill];
+    }];
+    uint64_t deadline = getCurrentUptime() + 50 * NSEC_PER_MSEC;
+    dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
+    if (invoked > 0) {
+        XCTAssert(invoked > deadline);
+    } else {
+        XCTFail("Didn't retrieve invoked value");
+    }
+}
+
+- (void)testDelayUsingOperationQueueHeadOfLine {
+    // This test ensures that when we delay on an operation queue, we add the operation immediately,
+    // and thus it will have priority over later operations on the same queue.
+    __auto_type queue = [NSOperationQueue new];
+    queue.maxConcurrentOperationCount = 1;
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.userInitiated withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }] delay:0.01 onContext:[TWLContext operationQueue:queue]];
+    __auto_type expectation = TWLExpectationSuccessWithValue(promise, @42);
+    [queue addOperationWithBlock:^{
+        // block the queue for 50ms
+        // This way the delay should be ready by the time we finish, which will allow it to run
+        // before the next block.
+        [NSThread sleepForTimeInterval:0.05];
+    }];
+    [queue addOperationWithBlock:^{
+        // block the queue for 1 second. This ensures the test will fail if the delay operation is
+        // behind us.
+        [NSThread sleepForTimeInterval:1];
+    }];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:0.5];
 }
 
 // MARK: -

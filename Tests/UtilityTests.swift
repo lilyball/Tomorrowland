@@ -123,15 +123,55 @@ final class UtilityTests: XCTestCase {
     }
     
     func testDelayUsingOperationQueue() {
+        // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
         let queue = OperationQueue()
+        let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
             resolver.fulfill(with: 42)
         }).delay(on: .operationQueue(queue), 0.05)
-        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (x) in
-            XCTAssertEqual(x, 42)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .immediate, { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .value(42))
             XCTAssertEqual(OperationQueue.current, queue)
-        }
+            expectation.fulfill()
+        })
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        sema.signal()
         wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testDelayUsingOperationQueueHeadOfLine() {
+        // This test ensures that when we delay on an operation queue, we add the operation
+        // immediately, and thus it will have priority over later operations on the same queue.
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .userInitiated, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        }).delay(on: .operationQueue(queue), 0.01)
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        queue.addOperation {
+            // block the queue for 50ms
+            // This way the delay should be ready by the time we finish, which will allow it to run
+            // before the next block.
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        queue.addOperation {
+            // block the queue for 1 second. This ensures the test will fail if the delay operation
+            // is behind us.
+            Thread.sleep(forTimeInterval: 1)
+        }
+        sema.signal()
+        wait(for: [expectation], timeout: 0.5)
     }
     
     // MARK: -
