@@ -357,6 +357,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Improve the behavior of `.delay(on:_:)` and `.timeout(on:delay:)` when using `PromiseContext.operationQueue`. The relevant operation is now added
   to the queue immediately and only becomes ready once the delay/timeout has elapsed.
+- Add `-[TWLPromise initCancelled]` to construct a pre-cancelled promise.
 
 ### v0.3.4
 

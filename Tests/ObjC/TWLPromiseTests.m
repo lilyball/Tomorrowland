@@ -72,8 +72,33 @@
 
 - (void)testAlreadyFulfilled {
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
+    NSNumber *value;
+    XCTAssertTrue([promise getValue:&value error:NULL]);
+    XCTAssertEqualObjects(value, @42);
     __block BOOL invoked = NO;
     [promise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {
+        invoked = YES;
+    }];
+    XCTAssertTrue(invoked);
+}
+
+- (void)testAlreadyRejected {
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"];
+    NSString *error;
+    XCTAssertTrue([promise getValue:NULL error:&error]);
+    XCTAssertEqualObjects(error, @"foo");
+    __block BOOL invoked = NO;
+    [promise catchOnContext:TWLContext.immediate handler:^(NSString * _Nonnull error) {
+        invoked = YES;
+    }];
+    XCTAssertTrue(invoked);
+}
+
+- (void)testAlreadyCancelled {
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newCancelled];
+    XCTAssertTrue([promise getValue:NULL error:NULL]);
+    __block BOOL invoked = NO;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
         invoked = YES;
     }];
     XCTAssertTrue(invoked);

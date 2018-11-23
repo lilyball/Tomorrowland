@@ -56,6 +56,10 @@
     return [[self alloc] initRejectedWithError:error];
 }
 
++ (instancetype)newCancelled {
+    return [[self alloc] initCancelled];
+}
+
 + (std::pair<TWLPromise<id,id> *, TWLResolver<id,id> *>)makePromiseWithResolver {
     TWLResolver *resolver;
     TWLPromise *promise = [[TWLPromise alloc] initWithResolver:&resolver];
@@ -85,6 +89,13 @@
     if ((self = [super init])) {
         _box = [[TWLObjCPromiseBox alloc] initWithState:TWLPromiseBoxStateResolved];
         _box->_error = error;
+    }
+    return self;
+}
+
+- (instancetype)initCancelled {
+    if ((self = [super init])) {
+        _box = [[TWLObjCPromiseBox alloc] initWithState:TWLPromiseBoxStateCancelled];
     }
     return self;
 }

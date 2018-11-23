@@ -82,6 +82,8 @@ NS_SWIFT_NAME(ObjCPromise)
 + (instancetype)newFulfilledWithValue:(ValueType)value NS_SWIFT_UNAVAILABLE("Use init(fulfilled:)");
 /// Returns a new \c TWLPromise that is already rejected with the given error.
 + (instancetype)newRejectedWithError:(ErrorType)error NS_SWIFT_UNAVAILABLE("Use init(rejected:)");
+/// Returns a new \c TWLPromise that is already cancelled.
++ (instancetype)newCancelled NS_SWIFT_NAME(makeCancelled());
 
 #if __cplusplus
 /// Returns a new \c TWLPromise along with a \c TWLPromiseResolver that can be used to fulfill that
@@ -101,6 +103,8 @@ NS_SWIFT_NAME(ObjCPromise)
 - (instancetype)initFulfilledWithValue:(ValueType)value NS_SWIFT_NAME(init(fulfilled:)) NS_DESIGNATED_INITIALIZER;
 /// Returns a new \c TWLPromise that is already rejected with the given error.
 - (instancetype)initRejectedWithError:(ErrorType)error NS_SWIFT_NAME(init(rejected:)) NS_DESIGNATED_INITIALIZER;
+/// Returns a new \c TWLPromise that is already cancelled.
+- (instancetype)initCancelled NS_SWIFT_UNAVAILABLE("Use .makeCancelled()") NS_DESIGNATED_INITIALIZER;
 
 /// Returns a new \c TWLPromise along with a \c TWLPromiseResolver that can be used to fulfill that
 /// promise.
