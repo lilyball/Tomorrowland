@@ -96,9 +96,9 @@
     }
     TWLPromise *promise = [TWLPromise whenFulfilled:promises cancelOnFailure:YES];
     XCTestExpectation *expectation = TWLExpectationErrorWithError(promise, @"error");
+    [expectations addObject:expectation];
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema); // let the promises empty out
-    [self waitForExpectations:expectations timeout:1];
 }
 
 - (void)testWhenCancelledWithCancelOnFailureCancelsInput {
@@ -131,9 +131,9 @@
     }
     TWLPromise *promise = [TWLPromise whenFulfilled:promises cancelOnFailure:YES];
     XCTestExpectation *expectation = TWLExpectationCancel(promise);
+    [expectations addObject:expectation];
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema); // let the promises empty out
-    [self waitForExpectations:expectations timeout:1];
 }
 
 - (void)testWhenCancelledByDefaultDoesntCancelInput {
@@ -193,13 +193,15 @@
     @autoreleasepool {
         NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
         for (NSUInteger i = 0; i < 3; ++i) {
-            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
                 [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
                     [resolver cancel];
                 }];
-                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-                dispatch_semaphore_signal(sema);
-                [resolver rejectWithError:@"foo"];
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                    dispatch_semaphore_signal(sema);
+                    [resolver rejectWithError:@"foo"];
+                });
             }];
             XCTestExpectation *expectation = TWLExpectationCancel(promise);
             [promises addObject:promise];
@@ -308,14 +310,20 @@
                 [resolver fulfillWithValue:@(i*2)];
             }
         }];
+        if (i != 3) {
+            [promise inspect:^(id _Nullable value, id  _Nullable error) {
+                XCTAssert(value == nil && error == nil, @"expected promise cancellation");
+                [expectation fulfill];
+            }];
+        }
         [promises addObject:promise];
         [expectations addObject:expectation];
     }
     TWLPromise *promise = [TWLPromise race:promises cancelRemaining:YES];
     XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @6);
+    [expectations addObject:expectation];
     [self waitForExpectations:@[expectation] timeout:1];
     dispatch_semaphore_signal(sema);
-    [self waitForExpectations:expectations timeout:1];
 }
 
 - (void)testRaceEmptyInput {
@@ -339,13 +347,15 @@
     @autoreleasepool {
         NSMutableArray<TWLPromise*> *promises = [NSMutableArray new];
         for (NSUInteger i = 0; i < 3; ++i) {
-            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+            TWLPromise *promise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
                 [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
                     [resolver cancel];
                 }];
-                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-                dispatch_semaphore_signal(sema);
-                [resolver rejectWithError:@"foo"];
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                    dispatch_semaphore_signal(sema);
+                    [resolver rejectWithError:@"foo"];
+                });
             }];
             XCTestExpectation *expectation = TWLExpectationCancel(promise);
             [promises addObject:promise];

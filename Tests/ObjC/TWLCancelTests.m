@@ -284,12 +284,14 @@
 
 static TWLPromise * _Nonnull makeCancellablePromiseWithValue(id _Nonnull value, dispatch_semaphore_t _Nullable * _Nonnull outSema) {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
             [resolver cancel];
         }];
-        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-        [resolver fulfillWithValue:value];
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:value];
+        });
     }];
     *outSema = sema;
     return promise;
@@ -297,12 +299,14 @@ static TWLPromise * _Nonnull makeCancellablePromiseWithValue(id _Nonnull value, 
 
 static TWLPromise * _Nonnull makeCancellablePromiseWithError(id _Nonnull error, dispatch_semaphore_t _Nullable * _Nonnull outSema) {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
         [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
             [resolver cancel];
         }];
-        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-        [resolver rejectWithError:error];
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver rejectWithError:error];
+        });
     }];
     *outSema = sema;
     return promise;

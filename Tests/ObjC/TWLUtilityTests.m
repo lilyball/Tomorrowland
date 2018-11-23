@@ -107,17 +107,19 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
-- (void)testDelayCancelPropagation {
+- (void)testDelayPropagateCancel {
     XCTestExpectation *expectation;
     TWLPromise *promise;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     @autoreleasepool {
-        TWLPromise * NS_VALID_UNTIL_END_OF_SCOPE origPromise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        TWLPromise * NS_VALID_UNTIL_END_OF_SCOPE origPromise = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
             [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
                 [resolver cancel];
             }];
-            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-            [resolver fulfillWithValue:@42];
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                [resolver fulfillWithValue:@42];
+            });
         }];
         expectation = TWLExpectationCancel(origPromise);
         promise = [origPromise delay:0.05 onContext:TWLContext.immediate];
