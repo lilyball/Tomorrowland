@@ -358,6 +358,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Improve the behavior of `.delay(on:_:)` and `.timeout(on:delay:)` when using `PromiseContext.operationQueue`. The relevant operation is now added
   to the queue immediately and only becomes ready once the delay/timeout has elapsed.
 - Add `-[TWLPromise initCancelled]` to construct a pre-cancelled promise.
+- Add `Promise.init(on:fulfilled:after:)`, `Promise.init(on:rejected:after:)`, and `Promise.init(on:result:after:)`. These initializers produce
+  something akin to `Promise(fulfilled: value).delay(after)` except they respond to cancellation immediately. This makes them more suitable for use as
+  cancellable timers, as opposed to `.delay(_:)` which is more intended for debugging ([#27][]).
+
+[#27]: https://github.com/kballard/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
+
 
 ### v0.3.4
 

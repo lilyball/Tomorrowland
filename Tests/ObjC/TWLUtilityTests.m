@@ -17,8 +17,13 @@
 #include <mach/mach_time.h>
 @import Tomorrowland;
 
-@interface TWLUtilityTests : XCTestCase
+@interface TWLUtilityTestsDeallocSpy : NSObject
+- (nonnull instancetype)initWithExpectation:(nonnull XCTestExpectation *)expectation NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)init NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
+@end
 
+@interface TWLUtilityTests : XCTestCase
 @end
 
 @implementation TWLUtilityTests
@@ -335,6 +340,129 @@
 
 // MARK: -
 
+- (void)testInitFulfilledAfter {
+    // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+    __auto_type deadline = getCurrentUptime() + 50 * NSEC_PER_MSEC;
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newFulfilledOnContext:TWLContext.userInteractive withValue:@42 afterDelay:0.05];
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];
+    __block uint64_t invoked = 0;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        invoked = getCurrentUptime();
+        XCTAssertEqualObjects(value, @42);
+        [expectation fulfill];
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+    if (invoked > 0) {
+        XCTAssert(invoked > deadline);
+    } else {
+        XCTFail("Didn't retrieve invoked value");
+    }
+}
+
+- (void)testInitRejectedAfter {
+    // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+    __auto_type deadline = getCurrentUptime() + 50 * NSEC_PER_MSEC;
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newRejectedOnContext:TWLContext.userInteractive withError:@"foo" afterDelay:0.05];
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];
+    __block uint64_t invoked = 0;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        invoked = getCurrentUptime();
+        XCTAssertEqualObjects(error, @"foo");
+        [expectation fulfill];
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+    if (invoked > 0) {
+        XCTAssert(invoked > deadline);
+    } else {
+        XCTFail("Didn't retrieve invoked value");
+    }
+}
+
+- (void)testInitCancelledAfter {
+    // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+    __auto_type deadline = getCurrentUptime() + 50 * NSEC_PER_MSEC;
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newCancelledOnContext:TWLContext.userInteractive afterDelay:0.05];
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];
+    __block uint64_t invoked = 0;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        invoked = getCurrentUptime();
+        XCTAssertNil(value);
+        XCTAssertNil(error);
+        [expectation fulfill];
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+    if (invoked > 0) {
+        XCTAssert(invoked > deadline);
+    } else {
+        XCTFail("Didn't retrieve invoked value");
+    }
+}
+
+- (void)testInitFulfilledAfterCancelledCancelsImmediately {
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newFulfilledOnContext:TWLContext.utility withValue:@42 afterDelay:1];
+    XCTAssertFalse([promise getValue:NULL error:NULL]);
+    [promise requestCancel];
+    // Cancellation of the promise is synchronous
+    id value, error;
+    XCTAssertTrue([promise getValue:&value error:&error]);
+    XCTAssertNil(value);
+    XCTAssertNil(error);
+}
+
+- (void)testInitFulfilledAfterCancelledReleasesResultBeforeDelay {
+    // Cancellation is synchronous but we can't rely on the result itself being dropped
+    // synchronously as it's held by a dispatch timer. So we'll instead just make sure it's dropped
+    // before the delay.
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"spy dealloced"];
+    __auto_type promise = [TWLPromise<TWLUtilityTestsDeallocSpy*,NSString*> newFulfilledOnContext:TWLContext.utility withValue:[[TWLUtilityTestsDeallocSpy alloc] initWithExpectation:expectation] afterDelay:1];
+    [promise requestCancel];
+    [self waitForExpectations:@[expectation] timeout:0.5];
+}
+
+- (void)testInitFulfilledAfterUsingOperationQueue {
+    // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+    __auto_type queue = [NSOperationQueue new];
+    __auto_type deadline = getCurrentUptime() + 50 * NSEC_PER_MSEC;
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newFulfilledOnContext:[TWLContext operationQueue:queue] withValue:@42 afterDelay:0.05];
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"promise"];
+    __block uint64_t invoked = 0;
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        invoked = getCurrentUptime();
+        XCTAssertEqualObjects(value, @42);
+        XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
+        [expectation fulfill];
+    }];
+    [self waitForExpectations:@[expectation] timeout:1];
+    if (invoked > 0) {
+        XCTAssert(invoked > deadline);
+    } else {
+        XCTFail("Didn't retrieve invoked value");
+    }
+}
+
+- (void)testInitFulfilledAfterUsingOperationQueueHeadOfLine {
+    // This test ensures that when we delay on an operation queue, we add the operation
+    // immediately, and thus it will have priority over later operations on the same queue.
+    __auto_type queue = [NSOperationQueue new];
+    queue.maxConcurrentOperationCount = 1;
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newFulfilledOnContext:[TWLContext operationQueue:queue] withValue:@42 afterDelay:0.05];
+    __auto_type expectation = TWLExpectationSuccessWithValue(promise, @42);
+    [queue addOperationWithBlock:^{
+        // block the queue for 50ms
+        // This way the delay should be ready by the time we finish, which will allow it to run
+        // before the next block.
+        [NSThread sleepForTimeInterval:0.1];
+    }];
+    [queue addOperationWithBlock:^{
+        // block the queue for 1 second. This ensures the test will fail if the delay operation is
+        // behind us.
+        [NSThread sleepForTimeInterval:1];
+    }];
+    [self waitForExpectations:@[expectation] timeout:0.5];
+}
+
+// MARK: -
+
 static uint64_t getCurrentUptime() {
     // see https://developer.apple.com/library/content/qa/qa1398/_index.html
     uint64_t time = mach_absolute_time();
@@ -346,4 +474,19 @@ static uint64_t getCurrentUptime() {
     return time * timebase.numer / timebase.denom;
 }
 
+@end
+
+@implementation TWLUtilityTestsDeallocSpy {
+    XCTestExpectation * _Nonnull _expectation;
+}
+- (instancetype)initWithExpectation:(XCTestExpectation *)expectation {
+    if ((self = [super init])) {
+        _expectation = expectation;
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [_expectation fulfill];
+}
 @end

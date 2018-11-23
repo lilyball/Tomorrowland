@@ -17,6 +17,92 @@ import Foundation
 import Tomorrowland.Private
 
 extension Promise {
+    /// Returns a `Promise` that fulfills with the given value after a delay.
+    ///
+    /// Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+    /// promise.
+    ///
+    /// This can be used as a sort of cancellable timer. It can also be used in conjunction with
+    /// `when(first:cancelRemaining:)` to implement a timeout that fulfills with a given value on
+    /// timeout instead of rejecting with a `PromiseTimeoutError`.
+    ///
+    /// - Parameter context: The context to resolve the `Promise` on. This is generally only
+    ///   important when using callbacks registered with `.immediate`. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///   If provided as `.immediate`, behaves the same as `.auto`. If provided as `.operationQueue`
+    ///   it enqueues an operation on the operation queue immediately that becomes ready once the
+    ///   delay has elapsed.
+    /// - Parameter value: The value the promise will be fulfilled with.
+    /// - Parameter delay: The number of seconds to delay the promise by.
+    public init(on context: PromiseContext = .auto, fulfilled value: Value, after delay: TimeInterval) {
+        self.init(on: context, result: .value(value), after: delay)
+    }
+    
+    /// Returns a `Promise` that rejects with the given error after a delay.
+    ///
+    /// Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+    /// promise.
+    ///
+    /// - Parameter context: The context to resolve the `Promise` on. This is generally only
+    ///   important when using callbacks registered with `.immediate`. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///   If provided as `.immediate`, behaves the same as `.auto`. If provided as `.operationQueue`
+    ///   it enqueues an operation on the operation queue immediately that becomes ready once the
+    ///   delay has elapsed.
+    /// - Parameter error: The error the promise will be rejected with.
+    /// - Parameter delay: The number of seconds to delay the promise by.
+    public init(on context: PromiseContext = .auto, rejected error: Error, after delay: TimeInterval) {
+        self.init(on: context, result: .error(error), after: delay)
+    }
+    
+    /// Returns a `Promise` that resolves with the given result after a delay.
+    ///
+    /// Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+    /// promise.
+    ///
+    /// - Parameter context: The context to resolve the `Promise` on. This is generally only
+    ///   important when using callbacks registered with `.immediate`. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///   If provided as `.immediate`, behaves the same as `.auto`. If provided as `.operationQueue`
+    ///   it enqueues an operation on the operation queue immediately that becomes ready once the
+    ///   delay has elapsed.
+    /// - Parameter result: The result the promise will be resolved with.
+    /// - Parameter delay: The number of seconds to delay the promise by.
+    public init(on context: PromiseContext = .auto, result: PromiseResult<Value,Error>, after delay: TimeInterval) {
+        _seal = PromiseSeal()
+        let resolver = Resolver(box: _box)
+        let timer: DispatchSourceTimer
+        switch context.getDestination() {
+        case .queue(let queue):
+            timer = DispatchSource.makeTimerSource(queue: queue)
+            timer.setEventHandler {
+                resolver.resolve(with: result)
+            }
+        case .operationQueue(let queue):
+            timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .userInitiated))
+            let operation = TWLBlockOperation {
+                resolver.resolve(with: result)
+            }
+            timer.setEventHandler {
+                operation.markReady()
+            }
+            timer.setCancelHandler {
+                // Clean up the operation
+                operation.cancel()
+                operation.markReady()
+            }
+            queue.addOperation(operation)
+        }
+        resolver.onRequestCancel(on: .immediate) { (resolver) in
+            timer.cancel() // NB: This reference also keeps the timer alive
+            resolver.cancel()
+        }
+        timer.schedule(deadline: .now() + delay)
+        timer.resume()
+    }
+    
+    // MARK: -
+    
     /// Returns a new `Promise` that adopts the receiver's result after a delay.
     ///
     /// - Parameter context: The context to resolve the new `Promise` on. This is generally only

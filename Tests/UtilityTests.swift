@@ -535,4 +535,132 @@ final class UtilityTests: XCTestCase {
         })
         wait(for: [expectation], timeout: 0.5)
     }
+    
+    // MARK: -
+    
+    func testInitFulfilledAfter() {
+        // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        let promise = Promise<Int,String>(on: .userInteractive, fulfilled: 42, after: 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .immediate) { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .value(42))
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testInitRejectedAfter() {
+        // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        let promise = Promise<Int,String>(on: .userInteractive, rejected: "foo", after: 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .immediate) { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .error("foo"))
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testInitResultAfter() {
+        // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        let promise = Promise<Int,String>(on: .userInteractive, result: .cancelled, after: 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .immediate) { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .cancelled)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testInitResultAfterCancelledCancelsImmediately() {
+        let promise = Promise<Int,String>(on: .utility, result: .value(42), after: 1)
+        XCTAssertNil(promise.result)
+        promise.requestCancel()
+        // Cancellation of the promise is synchronous
+        XCTAssertEqual(promise.result, .cancelled)
+    }
+    
+    func testInitResultAfterCancelledReleasesResultBeforeDelay() {
+        // Cancellation is synchronous but we can't rely on the result itself being dropped
+        // synchronously as it's held by a dispatch timer. So we'll instead just make sure it's
+        // dropped before the delay.
+        let expectation = XCTestExpectation(description: "spy deinited")
+        class Spy {
+            let expectation: XCTestExpectation
+            init(expectation: XCTestExpectation) {
+                self.expectation = expectation
+            }
+            deinit {
+                expectation.fulfill()
+            }
+        }
+        let promise = Promise<Spy,String>(on: .utility, result: .value(Spy(expectation: expectation)), after: 1)
+        promise.requestCancel()
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
+    func testInitResultAfterUsingOperationQueue() {
+        // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
+        let queue = OperationQueue()
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        let promise = Promise<Int,String>(on: .operationQueue(queue), result: .value(42), after: 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .immediate) { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .value(42))
+            XCTAssertEqual(OperationQueue.current, queue)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testInitResultAfterUsingOperationQueueHeadOfLine() {
+        // This test ensures that when we delay on an operation queue, we add the operation
+        // immediately, and thus it will have priority over later operations on the same queue.
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        let promise = Promise<Int,String>(on: .operationQueue(queue), result: .value(42), after: 0.05)
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        queue.addOperation {
+            // block the queue for 50ms
+            // This way the delay should be ready by the time we finish, which will allow it to run
+            // before the next block.
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        queue.addOperation {
+            // block the queue for 1 second. This ensures the test will fail if the delay operation
+            // is behind us.
+            Thread.sleep(forTimeInterval: 1)
+        }
+        wait(for: [expectation], timeout: 0.5)
+    }
 }

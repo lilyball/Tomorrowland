@@ -20,6 +20,103 @@
 
 @implementation TWLPromise (Utilities)
 
++ (instancetype)newFulfilledWithValue:(id)value afterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initFulfilledOnContext:TWLContext.automatic withValue:value afterDelay:delay];
+}
+
++ (instancetype)newFulfilledOnContext:(TWLContext *)context withValue:(id)value afterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initFulfilledOnContext:context withValue:value afterDelay:delay];
+}
+
++ (instancetype)newRejectedWithError:(id)error afterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initRejectedOnContext:TWLContext.automatic withError:error afterDelay:delay];
+}
+
++ (instancetype)newRejectedOnContext:(TWLContext *)context withError:(id)error afterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initRejectedOnContext:context withError:error afterDelay:delay];
+}
+
++ (instancetype)newCancelledAfterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initCancelledOnContext:TWLContext.automatic afterDelay:delay];
+}
+
++ (instancetype)newCancelledOnContext:(TWLContext *)context afterDelay:(NSTimeInterval)delay {
+    return [[self alloc] initCancelledOnContext:context afterDelay:delay];
+}
+
+- (instancetype)initFulfilledWithValue:(id)value afterDelay:(NSTimeInterval)delay {
+    return [self initFulfilledOnContext:TWLContext.automatic withValue:value afterDelay:delay];
+}
+
+- (instancetype)initFulfilledOnContext:(TWLContext *)context withValue:(id)value afterDelay:(NSTimeInterval)delay {
+    TWLResolver *resolver;
+    if ((self = [self initWithResolver:&resolver])) {
+        resolveAfterDelay(resolver, context, value, nil, delay);
+    }
+    return self;
+}
+
+- (instancetype)initRejectedWithError:(id)error afterDelay:(NSTimeInterval)delay {
+    return [self initRejectedOnContext:TWLContext.automatic withError:error afterDelay:delay];
+}
+
+- (instancetype)initRejectedOnContext:(TWLContext *)context withError:(id)error afterDelay:(NSTimeInterval)delay {
+    TWLResolver *resolver;
+    if ((self = [self initWithResolver:&resolver])) {
+        resolveAfterDelay(resolver, context, nil, error, delay);
+    }
+    return self;
+}
+
+- (instancetype)initCancelledAfterDelay:(NSTimeInterval)delay {
+    return [self initCancelledOnContext:TWLContext.automatic afterDelay:delay];
+}
+
+- (instancetype)initCancelledOnContext:(TWLContext *)context afterDelay:(NSTimeInterval)delay {
+    TWLResolver *resolver;
+    if ((self = [self initWithResolver:&resolver])) {
+        resolveAfterDelay(resolver, context, nil, nil, delay);
+    }
+    return self;
+}
+
+static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Nonnull context, id _Nullable value, id _Nullable error, NSTimeInterval delay) {
+    dispatch_source_t timer;
+    dispatch_queue_t queue;
+    NSOperationQueue *operationQueue;
+    [context getDestinationQueue:&queue operationQueue:&operationQueue];
+    if (queue) {
+        timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+        dispatch_source_set_event_handler(timer, ^{
+            [resolver resolveWithValue:value error:error];
+        });
+    } else {
+        timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0));
+        __auto_type operation = [TWLBlockOperation blockOperationWithBlock:^{
+            [resolver resolveWithValue:value error:error];
+        }];
+        dispatch_source_set_event_handler(timer, ^{
+            [operation markReady];
+        });
+        dispatch_source_set_cancel_handler(timer, ^{
+            // Clean up the operation
+            [operation cancel];
+            [operation markReady];
+        });
+        [operationQueue addOperation:operation];
+    }
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        dispatch_source_cancel(timer); // NB: This reference also keeps the timer alive
+        [resolver cancel];
+    }];
+    // Using ~0 as the interval is the same trick the Swift Dispatch overlay uses for oneshot timers.
+    // The timer will clean itself up when all references to it go away.
+    dispatch_source_set_timer(timer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), ~0, 0);
+    dispatch_resume(timer);
+}
+
+// MARK: -
+
 - (TWLPromise *)delay:(NSTimeInterval)delay {
     return [self delay:delay onContext:TWLContext.automatic];
 }

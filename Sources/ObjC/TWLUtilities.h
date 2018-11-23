@@ -26,6 +26,164 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TWLPromise<ValueType,ErrorType> (Utilities)
 
+/// Returns a new \c TWLPromise that fulfills with the given value after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// This can be used as a sort of cancellable timer. It can also be used in conjunction with \c
+/// +race:cancelRemaining: to implement a timeout that fulfills with a given value on timeout
+/// instead of rejecting with a \c TWLTimeoutError.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// +newFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param value The value the promise will be fulfilled with.
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newFulfilledWithValue:(ValueType)value afterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use init(fulfilled:after:)") TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that fulfills with the given value after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// This can be used as a sort of cancellable timer. It can also be used in conjunction with \c
+/// +race:cancelRemaining: to implement a timeout that fulfills with a given value on timeout
+/// instead of rejecting with a <tt>TWLTimeoutError</tt>.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param value The value the promise will be fulfilled with.
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newFulfilledOnContext:(TWLContext *)context withValue:(ValueType)value afterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use init(on:fulfilled:after:)") TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that rejects with the given error after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// +newFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param error The error the promise will be rejected with.
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newRejectedWithError:(ErrorType)error afterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use init(rejected:after:)") TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that rejects with the given error after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param error The error the promise will be rejected with.
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newRejectedOnContext:(TWLContext *)context withError:(ErrorType)error afterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use init(on:rejected:after:)") TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that cancels after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// +newFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newCancelledAfterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(makeCancelled(after:)) TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that cancels after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param delay The number of seconds to delay the promise by.
++ (instancetype)newCancelledOnContext:(TWLContext *)context afterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(makeCancelled(on:after:)) TWL_WARN_UNUSED_RESULT;
+
+/// Returns a new \c TWLPromise that fulfills with the given value after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// This can be used as a sort of cancellable timer. It can also be used in conjunction with \c
+/// +race:cancelRemaining: to implement a timeout that fulfills with a given value on timeout
+/// instead of rejecting with a \c TWLTimeoutError.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// -initFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param value The value the promise will be fulfilled with.
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initFulfilledWithValue:(ValueType)value afterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(init(fulfilled:after:));
+
+/// Returns a new \c TWLPromise that fulfills with the given value after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// This can be used as a sort of cancellable timer. It can also be used in conjunction with \c
+/// +race:cancelRemaining: to implement a timeout that fulfills with a given value on timeout
+/// instead of rejecting with a <tt>TWLTimeoutError</tt>.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param value The value the promise will be fulfilled with.
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initFulfilledOnContext:(TWLContext *)context withValue:(ValueType)value afterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(init(on:fulfilled:after:));
+
+/// Returns a new \c TWLPromise that rejects with the given error after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// -initFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param error The error the promise will be rejected with.
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initRejectedWithError:(ErrorType)error afterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(init(rejected:after:));
+
+/// Returns a new \c TWLPromise that rejects with the given error after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param error The error the promise will be rejected with.
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initRejectedOnContext:(TWLContext *)context withError:(ErrorType)error afterDelay:(NSTimeInterval)delay NS_SWIFT_NAME(init(on:rejected:after:));
+
+/// Returns a new \c TWLPromise that cancels after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \note The promise will be resolved using the \c .automatic context, which evaluates to \c .main
+/// when invoked on the main thread, otherwise <tt>.default</tt>. See \c
+/// +newFulfilledOnContext:withValue:afterDelay: to specify a different context.
+///
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initCancelledAfterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use makeCancelled(after:)");
+
+/// Returns a new \c TWLPromise that cancels after a delay.
+///
+/// Requesting that the promise be cancelled prior to it resolving will immediately cancel the promise.
+///
+/// \param context The context to resolve the \c TWLPromise on. This is generally only important
+/// when using callbacks registered with <tt>.immediate</tt>. If provided as \c +operationQueue: it
+/// enqueues an operation on the operation queue immediately that becomes ready once the delay has
+/// elapsed.
+/// \param delay The number of seconds to delay the promise by.
+- (instancetype)initCancelledOnContext:(TWLContext *)context afterDelay:(NSTimeInterval)delay NS_SWIFT_UNAVAILABLE("Use makeCancelled(on:after:)");
+
+// MARK: -
+
 /// Returns a new \c TWLPromise that adopts the receiver's result after a delay.
 ///
 /// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
