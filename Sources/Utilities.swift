@@ -67,8 +67,8 @@ extension Promise {
     ///
     ///   If the promise times out, the returned promise will be rejected using the same context. In
     ///   this event, `.immediate` is treated the same as `.auto`. If provided as `.operationQueue`
-    ///   it uses the `OperationQueue`'s underlying queue, or `.default` if there is no underlying
-    ///   queue.
+    ///   it enqueues an operation on the operation queue immediately that becomes ready when the
+    ///   promise times out.
     /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
@@ -90,23 +90,39 @@ extension Promise {
             }
             propagateCancelBlock.invoke()
         }
+        let destination: TimeoutDestination
+        switch context.getDestination() {
+        case .queue(let queue): destination = .queue(queue)
+        case .operationQueue(let operationQueue):
+            let operation = TWLBlockOperation {
+                timeoutBlock.perform()
+            }
+            destination = .operationQueue(operation, operationQueue)
+        }
         _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
             }
+            switch destination {
+            case .queue: break
+            case .operationQueue(let operation, _):
+                // Clean up the operation early
+                operation.cancel()
+                operation.markReady()
+            }
         }
         resolver.onRequestCancel(on: .immediate) { (resolver) in
             propagateCancelBlock.invoke()
         }
-        if let queue = context.getQueue() {
+        switch destination {
+        case .queue(let queue):
             queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
-        } else {
+        case let .operationQueue(operation, queue):
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-                context.execute {
-                    timeoutBlock.perform()
-                }
+                operation.markReady()
             }
+            queue.addOperation(operation)
         }
         return promise
     }
@@ -126,8 +142,8 @@ extension Promise where Error == Swift.Error {
     ///
     ///   If the promise times out, the returned promise will be rejected using the same context. In
     ///   this event, `.immediate` is treated the same as `.auto`. If provided as `.operationQueue`
-    ///   it uses the `OperationQueue`'s underlying queue, or `.default` if there is no underlying
-    ///   queue.
+    ///   it enqueues an operation on the operation queue immediately that becomes ready when the
+    ///   promise times out.
     /// - Parameter delay: The delay before the returned promise times out. If less than or equal to
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
@@ -149,25 +165,40 @@ extension Promise where Error == Swift.Error {
             }
             propagateCancelBlock.invoke()
         }
+        let destination: TimeoutDestination
+        switch context.getDestination() {
+        case .queue(let queue): destination = .queue(queue)
+        case .operationQueue(let operationQueue):
+            let operation = TWLBlockOperation {
+                timeoutBlock.perform()
+            }
+            destination = .operationQueue(operation, operationQueue)
+        }
         _seal.enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result)
             }
+            switch destination {
+            case .queue: break
+            case .operationQueue(let operation, _):
+                // Clean up the operation early
+                operation.cancel()
+                operation.markReady()
+            }
         }
         resolver.onRequestCancel(on: .immediate) { (resolver) in
             propagateCancelBlock.invoke()
         }
-        if let queue = context.getQueue() {
+        switch destination {
+        case .queue(let queue):
             queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
-        } else {
+        case let .operationQueue(operation, queue):
             DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
-                context.execute {
-                    timeoutBlock.perform()
-                }
+                operation.markReady()
             }
+            queue.addOperation(operation)
         }
-
         return promise
     }
 }
@@ -249,3 +280,10 @@ extension PromiseTimeoutError where Error: Equatable {
         }
     }
 #endif
+
+// MARK: -
+
+private enum TimeoutDestination {
+    case queue(DispatchQueue)
+    case operationQueue(TWLBlockOperation, OperationQueue)
+}

@@ -176,22 +176,6 @@ public enum PromiseContext: Equatable, Hashable {
         case .immediate: return PromiseContext.auto.getDestination()
         }
     }
-    
-    /// Returns the `DispatchQueue` corresponding to the context, if any. If the context is
-    /// `.immediate`, it behaves like `.auto`.
-    internal func getQueue() -> DispatchQueue? {
-        switch self {
-        case .main: return .main
-        case .background: return .global(qos: .background)
-        case .utility: return .global(qos: .utility)
-        case .default: return .global(qos: .default)
-        case .userInitiated: return .global(qos: .userInitiated)
-        case .userInteractive: return .global(qos: .userInteractive)
-        case .queue(let queue): return queue
-        case .operationQueue: return nil
-        case .immediate: return PromiseContext.auto.getQueue()
-        }
-    }
 }
 
 /// `StdPromise` is an alias for a `Promise` whose error type is `Swift.Error`.

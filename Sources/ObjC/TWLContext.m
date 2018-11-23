@@ -185,16 +185,6 @@
     }
 }
 
-- (nullable dispatch_queue_t)getQueue {
-    if (_queue) {
-        return _queue;
-    } else if (_operationQueue) {
-        return nil;
-    } else {
-        return TWLContext.automatic.getQueue;
-    }
-}
-
 - (void)getDestinationQueue:(dispatch_queue_t __strong _Nullable *)outQueue operationQueue:(NSOperationQueue * __strong _Nullable *)outOperationQueue {
     if (_queue) {
         *outQueue = _queue;

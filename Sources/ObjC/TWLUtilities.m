@@ -85,6 +85,13 @@
         }
         [propagateCancelBlock invoke];
     });
+    dispatch_queue_t queue;
+    NSOperationQueue *operationQueue;
+    TWLBlockOperation *operation;
+    [context getDestinationQueue:&queue operationQueue:&operationQueue];
+    if (operationQueue) {
+        operation = [TWLBlockOperation blockOperationWithBlock:timeoutBlock];
+    }
     [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
         dispatch_block_cancel(timeoutBlock);
         if (error) {
@@ -93,17 +100,19 @@
         [context executeBlock:^{
             [resolver resolveWithValue:value error:error];
         }];
+        [operation cancel]; // Clean up the operation early
+        [operation markReady];
     } willPropagateCancel:YES];
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
         [propagateCancelBlock invoke];
     }];
-    dispatch_queue_t queue = [context getQueue];
     if (queue) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, timeoutBlock);
     } else {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            [context executeBlock:timeoutBlock];
+            [operation markReady];
         });
+        [operationQueue addOperation:operation];
     }
     return promise;
 }

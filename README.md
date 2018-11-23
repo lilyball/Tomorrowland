@@ -353,6 +353,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Improve the behavior of `.delay(on:_:)` and `.timeout(on:delay:)` when using `PromiseContext.operationQueue`. The relevant operation is now added
+  to the queue immediately and only becomes ready once the delay/timeout has elapsed.
+
 ### v0.3.4
 
 - Add `PromiseInvalidationToken.cancelWithoutInvalidating()`. This method cancels any associated promises without invalidating the token, thus

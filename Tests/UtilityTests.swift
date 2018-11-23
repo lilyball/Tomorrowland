@@ -320,6 +320,37 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testTimeoutUsingOperationQueueHeadOfLine() {
+        // This test ensures that when we timeout on an operation queue, we add the operation
+        // immediately, and thus it will have priority over later operations on the same queue.
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .operationQueue(queue), delay: 0.01)
+        queue.addOperation {
+            // block the queue for 50ms
+            // This way the delay should be ready by the time we finish, which will allow it to run
+            // before the next block.
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        queue.addOperation {
+            // block the queue for 1 second. This ensures the test will fail if the delay operation
+            // is behind us.
+            Thread.sleep(forTimeInterval: 1)
+        }
+        let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (error) in
+            switch error {
+            case .timedOut: break
+            default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+            }
+        })
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
     // MARK: Error variant
     
     func testErrorTimeout() {
@@ -471,5 +502,37 @@ final class UtilityTests: XCTestCase {
             XCTAssertEqual(OperationQueue.current, queue)
         })
         wait(for: [expectation], timeout: 1)
+    }
+    
+    func testErrorTimeoutUsingOperationQueueHeadOfLine() {
+        // This test ensures that when we timeout on an operation queue, we add the operation
+        // immediately, and thus it will have priority over later operations on the same queue.
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        
+        let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .operationQueue(queue), delay: 0.01)
+        let _: Promise<Int,Error> = promise // type assertion
+        queue.addOperation {
+            // block the queue for 50ms
+            // This way the delay should be ready by the time we finish, which will allow it to run
+            // before the next block.
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+        queue.addOperation {
+            // block the queue for 1 second. This ensures the test will fail if the delay operation
+            // is behind us.
+            Thread.sleep(forTimeInterval: 1)
+        }
+        let expectation = XCTestExpectation(on: .immediate, onError: promise, handler: { (error) in
+            switch error {
+            case PromiseTimeoutError<Error>.timedOut: break
+            default: XCTFail("Expected PromiseTimeoutError.timedOut, found \(error)")
+            }
+        })
+        wait(for: [expectation], timeout: 0.5)
     }
 }

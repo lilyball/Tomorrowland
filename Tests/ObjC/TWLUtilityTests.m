@@ -294,7 +294,7 @@
     __auto_type queue = [NSOperationQueue new];
     
     __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1000 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             [resolver fulfillWithValue:@42];
         });
     }] timeoutOnContext:[TWLContext operationQueue:queue] withDelay:0.01];
@@ -303,7 +303,34 @@
         XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
     });
     [self waitForExpectations:@[expectation] timeout:1];
+}
 
+- (void)testTimeoutUsingOperationQueueHeadOfLine {
+    // This test ensures that when we timeout on an operation queue, we add the operation
+    // immediately, and thus it will have priority over later operations on the same queue.
+    __auto_type queue = [NSOperationQueue new];
+    queue.maxConcurrentOperationCount = 1;
+    
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            [resolver fulfillWithValue:@42];
+        });
+    }] timeoutOnContext:[TWLContext operationQueue:queue] withDelay:0.01];
+    [queue addOperationWithBlock:^{
+        // block the queue for 50ms
+        // This way the delay should be ready by the time we finish, which will allow it to run
+        // before the next block.
+        [NSThread sleepForTimeInterval:0.05];
+    }];
+    [queue addOperationWithBlock:^{
+        // block the queue for 1 second. This ensures the test will fail if the delay operation is
+        // behind us.
+        [NSThread sleepForTimeInterval:1];
+    }];
+    __auto_type expectation = TWLExpectationErrorWithHandlerOnContext(TWLContext.immediate, promise, ^(NSError * _Nonnull error) {
+        XCTAssertEqualObjects(error, [TWLTimeoutError newTimedOut]);
+    });
+    [self waitForExpectations:@[expectation] timeout:0.5];
 }
 
 // MARK: -
