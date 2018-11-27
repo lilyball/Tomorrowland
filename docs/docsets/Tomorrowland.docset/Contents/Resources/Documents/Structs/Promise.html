@@ -2371,6 +2371,248 @@ receiver using the returned <code><a href="../Structs/TokenPromise.html">TokenPr
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:12Tomorrowland7PromiseV2on9fulfilled5afterACyxq_GAA0B7ContextO_xSdtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(on:fulfilled:after:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV2on9fulfilled5afterACyxq_GAA0B7ContextO_xSdtcfc">init(on:fulfilled:after:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns a <code>Promise</code> that fulfills with the given value after a delay.</p>
+
+<p>Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+promise.</p>
+
+<p>This can be used as a sort of cancellable timer. It can also be used in conjunction with
+<code><a href="../Functions.html#/s:12Tomorrowland4when5first15cancelRemainingAA7PromiseVyxq_GSayAGG_Sbtr0_lF">when(first:cancelRemaining:)</a></code> to implement a timeout that fulfills with a given value on
+timeout instead of rejecting with a <code><a href="../Enums/PromiseTimeoutError.html">PromiseTimeoutError</a></code>.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">fulfilled</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">Value</span><span class="p">,</span> <span class="n">after</span> <span class="nv">delay</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to resolve the <code>Promise</code> on. This is generally only
+important when using callbacks registered with <code>.immediate</code>. If not provided, defaults to
+<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.
+If provided as <code>.immediate</code>, behaves the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
+it enqueues an operation on the operation queue immediately that becomes ready once the
+delay has elapsed.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>value</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The value the promise will be fulfilled with.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>delay</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The number of seconds to delay the promise by.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV2on8rejected5afterACyxq_GAA0B7ContextO_q_Sdtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(on:rejected:after:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV2on8rejected5afterACyxq_GAA0B7ContextO_q_Sdtcfc">init(on:rejected:after:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns a <code>Promise</code> that rejects with the given error after a delay.</p>
+
+<p>Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+promise.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">rejected</span> <span class="nv">error</span><span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="n">after</span> <span class="nv">delay</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to resolve the <code>Promise</code> on. This is generally only
+important when using callbacks registered with <code>.immediate</code>. If not provided, defaults to
+<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.
+If provided as <code>.immediate</code>, behaves the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
+it enqueues an operation on the operation queue immediately that becomes ready once the
+delay has elapsed.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>error</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The error the promise will be rejected with.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>delay</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The number of seconds to delay the promise by.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(on:result:after:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">init(on:result:after:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns a <code>Promise</code> that resolves with the given result after a delay.</p>
+
+<p>Requesting that the promise be cancelled prior to it resolving will immediately cancel the
+promise.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">result</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">after</span> <span class="nv">delay</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to resolve the <code>Promise</code> on. This is generally only
+important when using callbacks registered with <code>.immediate</code>. If not provided, defaults to
+<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.
+If provided as <code>.immediate</code>, behaves the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
+it enqueues an operation on the operation queue immediately that becomes ready once the
+delay has elapsed.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>result</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The result the promise will be resolved with.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>delay</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The number of seconds to delay the promise by.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF"></a>
                     <a name="//apple_ref/swift/Method/delay(on:_:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">delay(on:_:)</a>
@@ -2408,8 +2650,8 @@ receiver using the returned <code><a href="../Structs/TokenPromise.html">TokenPr
 important when using callbacks registered with <code>.immediate</code>. If not provided, defaults to
 <code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.
 If provided as <code>.immediate</code>, behaves the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
-it uses the <code>OperationQueue</code>&lsquo;s underlying queue, or <code>.default</code> if there is no underlying
-queue.</p>
+it enqueues an operation on the operation queue immediately that becomes ready once the
+delay has elapsed.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2458,8 +2700,8 @@ the receiver is rejected, the returned promise will be rejected with
 
 <p>If the promise times out, the returned promise will be rejected using the same context. In
   this event, <code>.immediate</code> is treated the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
-  it uses the <code>OperationQueue</code>&lsquo;s underlying queue, or <code>.default</code> if there is no underlying
-  queue.</p>
+  it enqueues an operation on the operation queue immediately that becomes ready when the
+  promise times out.</p>
 
                       </div>
                       <div class="declaration">
@@ -2538,8 +2780,8 @@ will be rejected with the same error.</p>
 
 <p>If the promise times out, the returned promise will be rejected using the same context. In
   this event, <code>.immediate</code> is treated the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
-  it uses the <code>OperationQueue</code>&lsquo;s underlying queue, or <code>.default</code> if there is no underlying
-  queue.</p>
+  it enqueues an operation on the operation queue immediately that becomes ready when the
+  promise times out.</p>
 
                       </div>
                       <div class="declaration">
@@ -2596,7 +2838,7 @@ resolved.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2018-11-14)</p>
+          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2018-11-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
