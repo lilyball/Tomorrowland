@@ -658,6 +658,64 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testInvalidationTokenNodeCleanup() throws {
+        // This test depends on the formatting of the token's debug description
+        func nodeCount(from token: PromiseInvalidationToken) throws -> Int {
+            let desc = String(reflecting: token)
+            guard let prefixRange = desc.range(of: "callbackLinkedList=("),
+                let spaceIdx = desc[prefixRange.upperBound...].unicodeScalars.firstIndex(of: " "),
+                let nodeCount = Int(desc[prefixRange.upperBound..<spaceIdx])
+                else {
+                    struct CantGetNodeCount: Error {}
+                    throw CantGetNodeCount()
+            }
+            return nodeCount
+        }
+        
+        do {
+            let token = PromiseInvalidationToken()
+            for _ in 0..<100 {
+                _ = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+            }
+            // 1 node for the final promise
+            XCTAssertEqual(try nodeCount(from: token), 1)
+        }
+        
+        do {
+            // This time hold onto a node in the middle
+            let token = PromiseInvalidationToken()
+            for _ in 0..<50 {
+                _ = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+            }
+            let middlePromise = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+            for _ in 0..<50 {
+                _ = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+            }
+            try withExtendedLifetime(middlePromise) {
+                // 1 node for middlePromise, 1 node for the final promise
+                XCTAssertEqual(try nodeCount(from: token), 2)
+            }
+        }
+        
+        do {
+            // This time keep each previous promise alive when we make the new one
+            let token = PromiseInvalidationToken()
+            var lastPromise: Promise<Int,String>?
+            for _ in 0..<100 {
+                let nextPromise = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+                lastPromise = nextPromise
+            }
+            _ = lastPromise // suppress "never read" warning
+            lastPromise = nil
+            // 100 nodes because nothing could be cleaned up as each new promise was pushed on
+            XCTAssertEqual(try nodeCount(from: token), 100)
+            // Now that we've let the final promise die, try pushing one more on and it should clean them all up
+            _ = Promise<Int,String>(fulfilled: 42).requestCancelOnInvalidate(token)
+            // 1 node for the brand new promise, everything else was cleaned up
+            XCTAssertEqual(try nodeCount(from: token), 1)
+        }
+    }
+    
     func testResolvingFulfilledPromise() {
         // Resolving a promise that has already been fulfilled does nothing
         let expectation = XCTestExpectation(description: "promise")

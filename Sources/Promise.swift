@@ -1346,7 +1346,7 @@ extension Promise {
 ///
 /// This is returned from `Promise.cancellable`.
 public struct PromiseCancellable {
-    private weak var cancellable: TWLCancellable?
+    private(set) fileprivate weak var cancellable: TWLCancellable?
     
     fileprivate init(_ cancellable: TWLCancellable) {
         self.cancellable = cancellable
@@ -1414,7 +1414,7 @@ extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
 // MARK: -
 
 /// An invalidation token that can be used to cancel callbacks registered to a `Promise`.
-public struct PromiseInvalidationToken {
+public struct PromiseInvalidationToken: CustomStringConvertible, CustomDebugStringConvertible {
     private let _inner: Inner
     
     /// Creates and returns a new `PromiseInvalidationToken`.
@@ -1478,6 +1478,14 @@ public struct PromiseInvalidationToken {
                 box.invalidate()
             }
         }
+    }
+    
+    public var description: String {
+        return "<PromiseInvalidationToken: \(String(UInt(bitPattern: Unmanaged.passUnretained(_inner).toOpaque()), radix: 16))>"
+    }
+    
+    public var debugDescription: String {
+        return "<PromiseInvalidationToken: \(String(UInt(bitPattern: Unmanaged.passUnretained(_inner).toOpaque()), radix: 16)); box=\(_inner.box)>"
     }
 }
 
@@ -1610,7 +1618,14 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
         pushNodeOntoCallbackLinkedList(nodePtr) { (rawPtr) in
             if let nextPtr = CallbackNode.castPointer(rawPtr) {
                 nodePtr.pointee.generation = nextPtr.pointee.generation
-                nodePtr.pointee.next = nextPtr
+                // Prune nil promises off the top of the list.
+                // This is safe to do because we aren't modifying any shared data structures, only
+                // tweaking the `next` pointer of our brand new node.
+                var next = Optional.some(nextPtr)
+                while let nextPtr = next, nextPtr.pointee.cancellable.cancellable == nil {
+                    next = nextPtr.pointee.next
+                }
+                nodePtr.pointee.next = next
             } else {
                 nodePtr.pointee.generation = CallbackNode.interpretTaggedInteger(rawPtr)
                 nodePtr.pointee.next = nil

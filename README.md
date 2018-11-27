@@ -361,8 +361,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Add `Promise.init(on:fulfilled:after:)`, `Promise.init(on:rejected:after:)`, and `Promise.init(on:result:after:)`. These initializers produce
   something akin to `Promise(fulfilled: value).delay(after)` except they respond to cancellation immediately. This makes them more suitable for use as
   cancellable timers, as opposed to `.delay(_:)` which is more intended for debugging ([#27][]).
+- Try to clean up the callback list when calling `PromiseInvalidationToken.requestCancelOnInvalidate(_:)`. Any deallocated promises at the head of the
+  callback list will be removed. This will help keep the callback list from growing uncontrollably when a token is used merely to cancel all promises when the owner
+  deallocates as opposed to being periodically invalidated during its lifetime ([#25][]).
 
 [#27]: https://github.com/kballard/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
+[#25]: https://github.com/kballard/Tomorrowland/issues/25 "PromiseInvalidationTokenBox should clean up the callback list when possible"
 
 
 ### v0.3.4
