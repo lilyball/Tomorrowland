@@ -118,9 +118,19 @@ extension Promise {
         switch context.getDestination() {
         case .queue(let queue):
             _seal.enqueue { (result) in
-                queue.asyncAfter(deadline: .now() + delay) {
+                let timer = DispatchSource.makeTimerSource(queue: queue)
+                timer.setEventHandler {
                     resolver.resolve(with: result)
+                    timer.cancel()
                 }
+                timer.schedule(deadline: .now() + delay)
+                if case .cancelled = result {
+                    resolver.onRequestCancel(on: .immediate, { (resolver) in
+                        timer.cancel()
+                        resolver.cancel()
+                    })
+                }
+                timer.resume()
             }
         case .operationQueue(let queue):
             let operation = TWLBlockOperation()
@@ -128,9 +138,19 @@ extension Promise {
                 operation.addExecutionBlock {
                     resolver.resolve(with: result)
                 }
-                DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + delay) {
+                let timer = DispatchSource.makeTimerSource(queue: .global(qos: .userInitiated))
+                timer.setEventHandler {
                     operation.markReady()
+                    timer.cancel()
                 }
+                timer.schedule(deadline: .now() + delay)
+                if case .cancelled = result {
+                    resolver.onRequestCancel(on: .immediate, { (resolver) in
+                        timer.cancel()
+                        resolver.cancel()
+                    })
+                }
+                timer.resume()
             }
             queue.addOperation(operation)
         }

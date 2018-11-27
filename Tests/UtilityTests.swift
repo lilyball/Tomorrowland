@@ -174,6 +174,94 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
+    func testDelayRequestCancelBeforeFulfilled() {
+        // Requesting cancel doesn't kill the timer if the upstream promise doesn't cancel
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        }).delay(on: .utility, 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .userInteractive, { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .value(42))
+            expectation.fulfill()
+        })
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        promise.requestCancel()
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testDelayRequestCancelAfterFulfilled() {
+        // Requesting cancel doesn't kill the timer if the upstream promise doesn't cancel
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+            sema.signal()
+        }).delay(on: .utility, 0.05)
+        let expectation = XCTestExpectation(description: "promise")
+        var invoked: DispatchTime?
+        promise.always(on: .userInteractive, { (result) in
+            invoked = .now()
+            XCTAssertEqual(result, .value(42))
+            expectation.fulfill()
+        })
+        let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
+        sema.signal()
+        sema.wait()
+        promise.requestCancel()
+        wait(for: [expectation], timeout: 1)
+        if let invoked = invoked {
+            XCTAssert(invoked > deadline)
+        } else {
+            XCTFail("Didn't retrieve invoked value")
+        }
+    }
+    
+    func testDelayRequestCancelBeforeCancelled() {
+        // Requesting cancel kills the timer if the upstream promise cancels
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.cancel()
+        }).delay(on: .utility, 1)
+        let expectation = XCTestExpectation(description: "promise")
+        promise.always(on: .userInteractive, { (result) in
+            XCTAssertEqual(result, .cancelled)
+            expectation.fulfill()
+        })
+        promise.requestCancel()
+        sema.signal()
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
+    func testDelayRequestCancelAfterCancelled() {
+        // Requesting cancel kills the timer if the upstream promise cancels
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.cancel()
+            sema.signal()
+        }).delay(on: .utility, 1)
+        let expectation = XCTestExpectation(description: "promise")
+        promise.always(on: .userInteractive, { (result) in
+            XCTAssertEqual(result, .cancelled)
+            expectation.fulfill()
+        })
+        sema.signal()
+        sema.wait()
+        promise.requestCancel()
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
     // MARK: -
     
     func testTimeout() {

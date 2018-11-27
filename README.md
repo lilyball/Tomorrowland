@@ -364,9 +364,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Try to clean up the callback list when calling `PromiseInvalidationToken.requestCancelOnInvalidate(_:)`. Any deallocated promises at the head of the
   callback list will be removed. This will help keep the callback list from growing uncontrollably when a token is used merely to cancel all promises when the owner
   deallocates as opposed to being periodically invalidated during its lifetime ([#25][]).
+- Cancel the `.delay(_:)` timer if `.requestCancel()` is invoked and the upstream promise cancelled. This way requested cancels will skip the delay, but
+  unexpected cancels will still delay the result ([#26][]).
 
-[#27]: https://github.com/kballard/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
 [#25]: https://github.com/kballard/Tomorrowland/issues/25 "PromiseInvalidationTokenBox should clean up the callback list when possible"
+[#26]: https://github.com/kballard/Tomorrowland/issues/26 "Make delay cancelable"
+[#27]: https://github.com/kballard/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
 
 
 ### v0.3.4
