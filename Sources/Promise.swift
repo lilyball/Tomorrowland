@@ -1353,7 +1353,7 @@ public struct PromiseCancellable {
     }
     
     /// Requests cancellation of the promise this `PromiseCancellable` was created from.
-    func requestCancel() {
+    public func requestCancel() {
         cancellable?.requestCancel()
     }
 }

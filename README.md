@@ -353,6 +353,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Mark `PromiseCancellable.requestCancel()` as `public` ([#29][]).
+
+[#29]: https://github.com/kballard/Tomorrowland/issues/29 "PromiseCancellable.requestCancel() isn't public"
+
 ### v0.4
 
 - Improve the behavior of `.delay(on:_:)` and `.timeout(on:delay:)` when using `PromiseContext.operationQueue`. The relevant operation is now added
