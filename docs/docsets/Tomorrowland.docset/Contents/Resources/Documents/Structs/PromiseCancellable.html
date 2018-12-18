@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>NoError Enumeration Reference</title>
+    <title>PromiseCancellable Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -10,8 +10,8 @@
     
   </head>
   <body>
-    <a name="//apple_ref/swift/Enum/NoError" class="dashAnchor"></a>
-    <a title="NoError Enumeration Reference"></a>
+    <a name="//apple_ref/swift/Struct/PromiseCancellable" class="dashAnchor"></a>
+    <a title="PromiseCancellable Structure Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html">Tomorrowland Docs</a> (100% documented)</p>
@@ -22,7 +22,7 @@
       <p id="breadcrumbs">
         <a href="../index.html">Tomorrowland Reference</a>
         <img id="carat" src="../img/carat.png" />
-        NoError Enumeration Reference
+        PromiseCancellable Structure Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -113,18 +113,22 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>NoError</h1>
+            <h1>PromiseCancellable</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">NoError</span> <span class="p">:</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Codable</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">PromiseCancellable</span></code></pre>
 
                 </div>
               </div>
-            <p><code>NoError</code> is a type that cannot be constructed.</p>
+            <p>A type that can be used to cancel a promise without holding onto the full promise.</p>
 
-<p>It&rsquo;s intended to be used as the error type for promises that cannot return an error. It is
-similar to <code>Never</code> except it conforms to some protocols in order to make working with types
-containing it easier.</p>
+<p>In particular, this acts like a weak reference, allowing for cancelling the promise without
+creating a retain cycle. Promise retain cycles normally break themselves anyway when the promise
+is resolved, but a misbehaving promise body may drop the resolver without ever resolving the
+promise. If the <code><a href="../Structs/Promise.html">Promise</a></code> has no more references to it this automatically cancels the
+promise, but a retain cycle prevents this.</p>
+
+<p>This is returned from <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV11cancellableAA0B11CancellableVvp">Promise.cancellable</a></code>.</p>
 
           </section>
           <section class="section task-group-section">
@@ -133,9 +137,9 @@ containing it easier.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7NoErrorO2eeoiySbAC_ACtFZ"></a>
-                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7NoErrorO2eeoiySbAC_ACtFZ">==(_:_:)</a>
+                    <a name="/s:12Tomorrowland18PromiseCancellableV13requestCancelyyF"></a>
+                    <a name="//apple_ref/swift/Method/requestCancel()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland18PromiseCancellableV13requestCancelyyF">requestCancel()</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -143,100 +147,14 @@ containing it easier.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Returns a Boolean value indicating whether two values are equal.</p>
-
-<p>Equality is the inverse of inequality. For any values <code>a</code> and <code>b</code>,
-<code>a == b</code> implies that <code>a != b</code> is <code>false</code>.</p>
+                        <p>Requests cancellation of the promise this <code>PromiseCancellable</code> was created from.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">NoError</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">NoError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>lhs</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>A value to compare.</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>rhs</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>Another value to compare.</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:SH9hashValueSivp"></a>
-                    <a name="//apple_ref/swift/Property/hashValue" class="dashAnchor"></a>
-                    <a class="token" href="#/s:SH9hashValueSivp">hashValue</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hashValue</span><span class="p">:</span> <span class="kt">Int</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:SE6encode2toys7Encoder_p_tKF"></a>
-                    <a name="//apple_ref/swift/Method/encode(to:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:SE6encode2toys7Encoder_p_tKF">encode(to:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">encode</span><span class="p">(</span><span class="n">to</span> <span class="nv">encoder</span><span class="p">:</span> <span class="kt">Encoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">requestCancel</span><span class="p">()</span></code></pre>
 
                         </div>
                       </div>
