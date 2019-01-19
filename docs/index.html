@@ -14,7 +14,7 @@
     <header>
       <div class="content-wrapper">
         <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
-        <p class="header-right"><a href="https://github.com/kballard/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
+        <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
     <div class="content-wrapper">
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/kballard/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.4.1-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.4.1-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -156,7 +156,7 @@ implemented in a non-thread-safe manner.</li>
 
 <p>You can add Tomorrowland to your workspace manually like any other project and add the resulting <code>Tomorrowland.framework</code> to your application&rsquo;s frameworks.</p>
 <h3 id='carthage' class='heading'>Carthage</h3>
-<pre class="highlight plaintext"><code>github "kballard/Tomorrowland" ~&gt; 0.3.0
+<pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 0.3.0
 </code></pre>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
 <pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 0.3.0'</span>
@@ -427,7 +427,7 @@ generic over its types, the return values of callback registration methods that 
 <h3 id='v0-4-1' class='heading'>v0.4.1</h3>
 
 <ul>
-<li>Mark <code><a href="Structs/PromiseCancellable.html#/s:12Tomorrowland18PromiseCancellableV13requestCancelyyF">PromiseCancellable.requestCancel()</a></code> as <code>public</code> (<a href="https://github.com/kballard/Tomorrowland/issues/29" title="PromiseCancellable.requestCancel() isn&#39;t public">#29</a>).</li>
+<li>Mark <code><a href="Structs/PromiseCancellable.html#/s:12Tomorrowland18PromiseCancellableV13requestCancelyyF">PromiseCancellable.requestCancel()</a></code> as <code>public</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/29" title="PromiseCancellable.requestCancel() isn&#39;t public">#29</a>).</li>
 </ul>
 <h3 id='v0-4' class='heading'>v0.4</h3>
 
@@ -437,25 +437,25 @@ to the queue immediately and only becomes ready once the delay/timeout has elaps
 <li>Add <code>-[TWLPromise initCancelled]</code> to construct a pre-cancelled promise.</li>
 <li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on9fulfilled5afterACyxq_GAA0B7ContextO_xSdtcfc">Promise.init(on:fulfilled:after:)</a></code>, <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on8rejected5afterACyxq_GAA0B7ContextO_q_Sdtcfc">Promise.init(on:rejected:after:)</a></code>, and <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">Promise.init(on:result:after:)</a></code>. These initializers produce
 something akin to <code>Promise(fulfilled: value).delay(after)</code> except they respond to cancellation immediately. This makes them more suitable for use as
-cancellable timers, as opposed to <code>.delay(_:)</code> which is more intended for debugging (<a href="https://github.com/kballard/Tomorrowland/issues/27" title="Add Promise(fulfilled:after:) and Promise(rejected:after:)">#27</a>).</li>
+cancellable timers, as opposed to <code>.delay(_:)</code> which is more intended for debugging (<a href="https://github.com/lilyball/Tomorrowland/issues/27" title="Add Promise(fulfilled:after:) and Promise(rejected:after:)">#27</a>).</li>
 <li>Try to clean up the callback list when calling <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code>. Any deallocated promises at the head of the
 callback list will be removed. This will help keep the callback list from growing uncontrollably when a token is used merely to cancel all promises when the owner
-deallocates as opposed to being periodically invalidated during its lifetime (<a href="https://github.com/kballard/Tomorrowland/issues/25" title="PromiseInvalidationTokenBox should clean up the callback list when possible">#25</a>).</li>
+deallocates as opposed to being periodically invalidated during its lifetime (<a href="https://github.com/lilyball/Tomorrowland/issues/25" title="PromiseInvalidationTokenBox should clean up the callback list when possible">#25</a>).</li>
 <li>Cancel the <code>.delay(_:)</code> timer if <code>.requestCancel()</code> is invoked and the upstream promise cancelled. This way requested cancels will skip the delay, but
-unexpected cancels will still delay the result (<a href="https://github.com/kballard/Tomorrowland/issues/26" title="Make delay cancelable">#26</a>).</li>
+unexpected cancels will still delay the result (<a href="https://github.com/lilyball/Tomorrowland/issues/26" title="Make delay cancelable">#26</a>).</li>
 </ul>
 <h3 id='v0-3-4' class='heading'>v0.3.4</h3>
 
 <ul>
 <li>Add <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25cancelWithoutInvalidatingyyF">PromiseInvalidationToken.cancelWithoutInvalidating()</a></code>. This method cancels any associated promises without invalidating the token, thus
-allowing for any <code>onCancel</code> and <code>always</code> handlers on the promises to fire (<a href="https://github.com/kballard/Tomorrowland/issues/23" title="Add PromiseInvalidationToken.cancelWithoutInvalidation()">#23</a>).</li>
-<li>Add missing <code>Promise</code>↔<code>ObjCPromise</code> bridging methods for the case of <code>Value: AnyObject, Error == Swift.Error</code> (<a href="https://github.com/kballard/Tomorrowland/issues/24" title="Add Swift&lt;-&gt;ObjC bridging methods for Value: AnyObject, Error == Swift.Error">#24</a>).</li>
+allowing for any <code>onCancel</code> and <code>always</code> handlers on the promises to fire (<a href="https://github.com/lilyball/Tomorrowland/issues/23" title="Add PromiseInvalidationToken.cancelWithoutInvalidation()">#23</a>).</li>
+<li>Add missing <code>Promise</code>↔<code>ObjCPromise</code> bridging methods for the case of <code>Value: AnyObject, Error == Swift.Error</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/24" title="Add Swift&lt;-&gt;ObjC bridging methods for Value: AnyObject, Error == Swift.Error">#24</a>).</li>
 </ul>
 <h3 id='v0-3-3' class='heading'>v0.3.3</h3>
 
 <ul>
 <li>Add initializer <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV6resultACyxq_GAA0B6ResultOyxq_G_tcfc">Promise.init(result:)</a></code> for creating a <code><a href="Structs/Promise.html">Promise</a></code> from a <code><a href="Enums/PromiseResult.html">PromiseResult</a></code>.</li>
-<li>Fix cancellation propagation issue with <code>when(resolved: …, cancelOnFailure: true)</code> and <code>when(first: …, cancelRemaining: true)</code> (<a href="https://github.com/kballard/Tomorrowland/issues/20" title="when does not work as expected when using `cancelOnFailure: true`">#20</a>).</li>
+<li>Fix cancellation propagation issue with <code>when(resolved: …, cancelOnFailure: true)</code> and <code>when(first: …, cancelRemaining: true)</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/20" title="when does not work as expected when using `cancelOnFailure: true`">#20</a>).</li>
 <li>Update some documentation.</li>
 <li>Enable <code>APPLICATION_EXTENSION_API_ONLY</code>.</li>
 </ul>
@@ -496,7 +496,7 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2018 <a class="link" href="https://github.com/kballard/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2018-12-17)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-01-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

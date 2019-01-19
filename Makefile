@@ -12,7 +12,7 @@ docs:
 	jazzy \
 		--clean \
 		--author "Lily Ballard" \
-		--github_url https://github.com/kballard/Tomorrowland \
+		--github_url https://github.com/lilyball/Tomorrowland \
 		--module Tomorrowland \
 		--umbrella-header build/ObjC/Tomorrowland/Tomorrowland.h \
 		--framework-root build/ObjC \

@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.4.1-blue.svg)](https://github.com/kballard/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v0.4.1-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -51,7 +51,7 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "kballard/Tomorrowland" ~> 0.3.0
+github "lilyball/Tomorrowland" ~> 0.3.0
 ```
 
 ### CocoaPods
@@ -357,7 +357,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 - Mark `PromiseCancellable.requestCancel()` as `public` ([#29][]).
 
-[#29]: https://github.com/kballard/Tomorrowland/issues/29 "PromiseCancellable.requestCancel() isn't public"
+[#29]: https://github.com/lilyball/Tomorrowland/issues/29 "PromiseCancellable.requestCancel() isn't public"
 
 ### v0.4
 
@@ -373,9 +373,9 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Cancel the `.delay(_:)` timer if `.requestCancel()` is invoked and the upstream promise cancelled. This way requested cancels will skip the delay, but
   unexpected cancels will still delay the result ([#26][]).
 
-[#25]: https://github.com/kballard/Tomorrowland/issues/25 "PromiseInvalidationTokenBox should clean up the callback list when possible"
-[#26]: https://github.com/kballard/Tomorrowland/issues/26 "Make delay cancelable"
-[#27]: https://github.com/kballard/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
+[#25]: https://github.com/lilyball/Tomorrowland/issues/25 "PromiseInvalidationTokenBox should clean up the callback list when possible"
+[#26]: https://github.com/lilyball/Tomorrowland/issues/26 "Make delay cancelable"
+[#27]: https://github.com/lilyball/Tomorrowland/issues/27 "Add Promise(fulfilled:after:) and Promise(rejected:after:)"
 
 
 ### v0.3.4
@@ -384,8 +384,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   allowing for any `onCancel` and `always` handlers on the promises to fire ([#23][]).
 - Add missing `Promise`↔`ObjCPromise` bridging methods for the case of `Value: AnyObject, Error == Swift.Error` ([#24][]).
 
-[#23]: https://github.com/kballard/Tomorrowland/issues/23 "Add PromiseInvalidationToken.cancelWithoutInvalidation()"
-[#24]: https://github.com/kballard/Tomorrowland/issues/24 "Add Swift<->ObjC bridging methods for Value: AnyObject, Error == Swift.Error"
+[#23]: https://github.com/lilyball/Tomorrowland/issues/23 "Add PromiseInvalidationToken.cancelWithoutInvalidation()"
+[#24]: https://github.com/lilyball/Tomorrowland/issues/24 "Add Swift<->ObjC bridging methods for Value: AnyObject, Error == Swift.Error"
 
 ### v0.3.3
 
@@ -394,7 +394,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Update some documentation.
 - Enable `APPLICATION_EXTENSION_API_ONLY`.
 
-[#20]: https://github.com/kballard/Tomorrowland/issues/20 "when does not work as expected when using `cancelOnFailure: true`"
+[#20]: https://github.com/lilyball/Tomorrowland/issues/20 "when does not work as expected when using `cancelOnFailure: true`"
 
 ### v0.3.2
 

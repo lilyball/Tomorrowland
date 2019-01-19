@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
                    Tomorrowland is a lightweight Promise implementation for Swift and Obj-C that supports cancellation and strongly-typed errors.
                    DESC
 
-  s.homepage     = "https://github.com/kballard/Tomorrowland"
+  s.homepage     = "https://github.com/lilyball/Tomorrowland"
   s.license      = { :type => "MIT", :file => "LICENSE-MIT" }
 
   s.author             = "Lily Ballard"
@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
   s.swift_version = '4.0'
 
-  s.source       = { :git => "https://github.com/kballard/Tomorrowland.git", :tag => "v#{s.version}" }
+  s.source       = { :git => "https://github.com/lilyball/Tomorrowland.git", :tag => "v#{s.version}" }
 
   project_headers = Dir['Sources/ObjC/*Private.h'] + ['Sources/ObjC/objc_cast.h']
   s.source_files  = Dir['Sources/**/*.{h,m,mm,swift}'] - project_headers
