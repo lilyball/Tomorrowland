@@ -107,6 +107,27 @@
     [self waitForExpectations:@[expectation] timeout:0];
 }
 
+- (void)testResolveWithPromiseCancelPropagation {
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type innerCancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"inner promise cancelled"];
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        [resolver resolveWithPromise:[TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+                [resolver cancel];
+                [innerCancelExpectation fulfill];
+            }];
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }]];
+    }];
+    __auto_type outerCancelExpectation = TWLExpectationCancel(promise);
+    XCTAssertFalse([promise getValue:NULL error:NULL]);
+    [promise requestCancel];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[innerCancelExpectation, outerCancelExpectation] timeout:1];
+    TWLAssertPromiseCancelled(promise);
+}
+
 - (void)testAlreadyFulfilled {
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
     NSNumber *value;

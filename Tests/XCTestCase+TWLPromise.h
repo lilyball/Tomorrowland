@@ -131,4 +131,49 @@ NS_ASSUME_NONNULL_BEGIN
     expectation; \
 })
 
+// MARK: -
+
+#define TWLAssertPromiseFulfilledWithValue(promise, expectedValue) do { \
+    id _value, _error; \
+    if ([promise getValue:&_value error:&_error]) { \
+        if (_value) { \
+            XCTAssertEqualObjects(_value, expectedValue, @"promise fulfilled value"); \
+        } else if (_error) { \
+            XCTFail(@"promise - expected fulfilled with %@, but was rejected with %@", expectedValue, _error); \
+        } else { \
+            XCTFail(@"promise - expected fulfilled with %@, but was cancelled", expectedValue); \
+        } \
+    } else { \
+        XCTFail(@"promise - expected fulfilled with %@, but was not resolved", expectedValue); \
+    } \
+} while (0)
+
+#define TWLAssertPromiseRejectedWithError(promise, expectedError) do { \
+    id _value, _error; \
+    if ([promise getValue:&_value error:&_error]) { \
+        if (_value) { \
+            XCTFail(@"promise - expected rejected with %@, but was fulfilled with %@", expectedError, _value); \
+        } else if (_error) { \
+            XCTAssertEqualObjects(_error, expectedError, @"promise rejected error"); \
+        } else { \
+            XCTFail(@"promise - expected rejected with %@, but was cancelled", expectedError); \
+        } \
+    } else { \
+        XCTFail(@"promise - expected rejected with %@, but was not resolved", expectedError); \
+    } \
+} while (0)
+
+#define TWLAssertPromiseCancelled(promise) do { \
+    id _value, _error; \
+    if ([promise getValue:&_value error:&_error]) { \
+        if (_value) { \
+            XCTFail(@"promise - expected cancelled, but was fulfilled with %@", _value); \
+        } else if (_error) { \
+            XCTFail(@"promise - expected cancelled, but was rejected with %@", _error); \
+        } \
+    } else { \
+        XCTFail(@"promise - expected cancelled, but was not resolved"); \
+    } \
+} while (0)
+
 NS_ASSUME_NONNULL_END
