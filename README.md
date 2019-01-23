@@ -51,13 +51,13 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "lilyball/Tomorrowland" ~> 0.3.0
+github "lilyball/Tomorrowland" ~> 0.4.0
 ```
 
 ### CocoaPods
 
 ```ruby
-pod 'Tomorrowland', '~> 0.3.0'
+pod 'Tomorrowland', '~> 0.4.0'
 ```
 
 ### SwiftPM
