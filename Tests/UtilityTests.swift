@@ -201,11 +201,11 @@ final class UtilityTests: XCTestCase {
     
     func testDelayRequestCancelAfterFulfilled() {
         // Requesting cancel doesn't kill the timer if the upstream promise doesn't cancel
-        let sema = DispatchSemaphore(value: 0)
+        let semas = (DispatchSemaphore(value: 0), DispatchSemaphore(value: 0))
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            sema.wait()
+            semas.0.wait()
             resolver.fulfill(with: 42)
-            sema.signal()
+            semas.1.signal()
         }).delay(on: .utility, 0.05)
         let expectation = XCTestExpectation(description: "promise")
         var invoked: DispatchTime?
@@ -215,8 +215,8 @@ final class UtilityTests: XCTestCase {
             expectation.fulfill()
         })
         let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
-        sema.signal()
-        sema.wait()
+        semas.0.signal()
+        semas.1.wait()
         promise.requestCancel()
         wait(for: [expectation], timeout: 1)
         if let invoked = invoked {
@@ -245,19 +245,19 @@ final class UtilityTests: XCTestCase {
     
     func testDelayRequestCancelAfterCancelled() {
         // Requesting cancel kills the timer if the upstream promise cancels
-        let sema = DispatchSemaphore(value: 0)
+        let semas = (DispatchSemaphore(value: 0), DispatchSemaphore(value: 0))
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
-            sema.wait()
+            semas.0.wait()
             resolver.cancel()
-            sema.signal()
+            semas.1.signal()
         }).delay(on: .utility, 1)
         let expectation = XCTestExpectation(description: "promise")
         promise.always(on: .userInteractive, { (result) in
             XCTAssertEqual(result, .cancelled)
             expectation.fulfill()
         })
-        sema.signal()
-        sema.wait()
+        semas.0.signal()
+        semas.1.wait()
         promise.requestCancel()
         wait(for: [expectation], timeout: 0.5)
     }
