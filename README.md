@@ -353,6 +353,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add new method `Promise.Resolver.resolve(with: somePromise)` that resolves the receiver using another promise ([#30][]).
+
+[#30]: https://github.com/lilyball/Tomorrowland/issues/30 "Add Promise.Resolver.resolve(with: somePromise)"
+
 ### v0.4.1
 
 - Mark `PromiseCancellable.requestCancel()` as `public` ([#29][]).

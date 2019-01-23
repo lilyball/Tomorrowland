@@ -243,6 +243,19 @@ public struct Promise<Value,Error> {
             }
         }
         
+        /// Resolves the promise with another promise.
+        ///
+        /// If `promise` has already been resolved, the receiver will be resolved immediately.
+        /// Otherwise the receiver will wait until `promise` is resolved and resolve to the same
+        /// result.
+        ///
+        /// If the receiver is cancelled, it will also propagate the cancellation to `promise`. If
+        /// this is not desired, then either use `resolve(with: promise.ignoringCancel())` or
+        /// `promise.always(on: .immediate, resolver.resolve(with:))`.
+        public func resolve(with promise: Promise<Value,Error>) {
+            promise.pipe(to: self)
+        }
+        
         /// Registers a block that will be invoked if `requestCancel()` is invoked on the promise
         /// before the promise is resolved.
         ///

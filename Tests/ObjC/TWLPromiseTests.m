@@ -70,6 +70,43 @@
     [self waitForExpectations:@[expectation1, expectation2, expectation3, expectation4] timeout:1];
 }
 
+- (void)testResolveWithPromise {
+    TWLPromise *promise1 = [TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithPromise:[TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+            [resolver fulfillWithValue:@42];
+        }]];
+    }];
+    TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithPromise:[TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+            [resolver rejectWithError:@"foo"];
+        }]];
+    }];
+    TWLPromise *promise3 = [TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+        [resolver resolveWithPromise:[TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+            [resolver cancel];
+        }]];
+    }];
+    NSArray *expectations = @[TWLExpectationSuccessWithValue(promise1, @42),
+                              TWLExpectationErrorWithError(promise2, @"foo"),
+                              TWLExpectationCancel(promise3)];
+    [self waitForExpectations:expectations timeout:1];
+}
+
+- (void)testResolveWithPromiseAlreadyResolved {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    NSThread *currentThread = NSThread.currentThread;
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolution"];
+    [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+        XCTAssert([currentThread isEqual:NSThread.currentThread], @"Promise resolved on another thread");
+        XCTAssertEqualObjects(value, @42);
+        XCTAssertNil(error);
+        [expectation fulfill];
+    }];
+    [resolver resolveWithPromise:[TWLPromise newFulfilledWithValue:@42]];
+    [self waitForExpectations:@[expectation] timeout:0];
+}
+
 - (void)testAlreadyFulfilled {
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
     NSNumber *value;

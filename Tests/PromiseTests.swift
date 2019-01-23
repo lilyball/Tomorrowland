@@ -65,6 +65,61 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation1, expectation2, expectation3], timeout: 1)
     }
     
+    func testResolveWithPromise() {
+        let expectations = [
+            XCTestExpectation(onSuccess: Promise<Int,String>(on: .utility, { (resolver) in
+                resolver.resolve(with: Promise(on: .utility, { (resolver) in
+                    resolver.fulfill(with: 42)
+                }))
+            }), expectedValue: 42),
+            XCTestExpectation(onError: Promise<Int,String>(on: .default, { (resolver) in
+                resolver.resolve(with: Promise(on: .default, { (resolver) in
+                    resolver.reject(with: "foo")
+                }))
+            }), expectedError: "foo"),
+            XCTestExpectation(onCancel: Promise<Int,String>(on: .default, { (resolver) in
+                resolver.resolve(with: Promise(on: .default, { (resolver) in
+                    resolver.cancel()
+                }))
+            }))
+        ]
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testResolveWithPromiseAlreadyResolved() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        let currentThread = Thread.current
+        let expectation = XCTestExpectation(description: "promise resolution")
+        promise.always(on: .immediate, { (result) in
+            XCTAssert(Thread.current == currentThread, "Promise resolved on another thread")
+            XCTAssertEqual(result, .value(42))
+            expectation.fulfill()
+        })
+        resolver.resolve(with: Promise(fulfilled: 42))
+        wait(for: [expectation], timeout: 0)
+    }
+    
+    func testResolveWithPromiseCancelPropagation() {
+        let sema = DispatchSemaphore(value: 0)
+        let innerCancelExpectation = XCTestExpectation(description: "inner promise cancelled")
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            resolver.resolve(with: Promise(on: .default, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    resolver.cancel()
+                    innerCancelExpectation.fulfill()
+                })
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }))
+        })
+        let outerCancelExpectation = XCTestExpectation(onCancel: promise)
+        XCTAssertNil(promise.result)
+        promise.requestCancel()
+        sema.signal()
+        wait(for: [innerCancelExpectation, outerCancelExpectation], timeout: 1)
+        XCTAssertEqual(promise.result, .cancelled)
+    }
+    
     func testAlreadyFulfilled() {
         let promise = Promise<Int,String>(fulfilled: 42)
         XCTAssertEqual(promise.result, .value(42))

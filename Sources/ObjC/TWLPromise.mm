@@ -576,6 +576,10 @@ namespace {
     [_box resolveOrCancelWithValue:value error:error];
 }
 
+- (void)resolveWithPromise:(TWLPromise *)promise {
+    [promise pipeToResolver:self];
+}
+
 - (void)whenCancelRequestedOnContext:(TWLContext *)context handler:(void (^)(TWLResolver<id,id> * _Nonnull))handler {
     auto nodePtr = new RequestCancelNode(context, handler);
     if ([_box swapRequestCancelLinkedListWith:nodePtr linkBlock:^(void * _Nullable nextNode) {

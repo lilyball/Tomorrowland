@@ -551,6 +551,16 @@ NS_SWIFT_NAME(ObjCPromise)
 /// If the promise has already been resolved or cancelled, this does nothing.
 - (void)resolveWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
 
+/// Resolves the promise with another promise.
+///
+/// If \a promise has already been resolved, the receiver will be resolved immediately. Otherwise
+/// the receiver will wait until \a promise is resolved and resolve to the same result.
+///
+/// If the receiver is cancelled, it will also propagate the cancellation to \a promise. If this is
+/// not desired, then either use <code>[resolver resolveWithPromise:[promise ignoringCancel]]</code>
+/// or add an \c -inspect: observer and resolve manually.
+- (void)resolveWithPromise:(nonnull TWLPromise<ValueType,ErrorType> *)promise;
+
 /// Registers a block that will be invoked if \c -requestCancel is invoked on the promise before the
 /// promise is resolved.
 ///
