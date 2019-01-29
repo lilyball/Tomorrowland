@@ -602,7 +602,7 @@ public struct Promise<Value,Error> {
                 }
                 do {
                     let nextPromise = try onComplete(result)
-                    nextPromise.pipe(to: resolver)
+                    nextPromise.pipe(toStd: resolver)
                 } catch {
                     resolver.reject(with: error)
                 }
@@ -830,11 +830,11 @@ extension Promise where Error: Swift.Error {
     /// an error, it's upcast to `Swift.Error`.
     public var upcast: Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        pipe(to: resolver)
+        pipe(toStd: resolver)
         return promise
     }
     
-    private func pipe(to resolver: Promise<Value,Swift.Error>.Resolver) {
+    private func pipe(toStd resolver: Promise<Value,Swift.Error>.Resolver) {
         _seal.enqueue { (result) in
             resolver.resolve(with: result)
         }
@@ -990,7 +990,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onSuccess(value)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(toStd: resolver)
                     } catch {
                         resolver.reject(with: error)
                     }
@@ -1111,7 +1111,7 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         let nextPromise = try onError(error)
-                        nextPromise.pipe(to: resolver)
+                        nextPromise.pipe(toStd: resolver)
                     } catch {
                         resolver.reject(with: error)
                     }

@@ -353,6 +353,13 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Fix compatibility with Xcode 10.2 / Swift 5 compiler ([#31][], [SR-9753][]).
+
+[#31]: https://github.com/lilyball/Tomorrowland/issues/31 "\"Ambiguous use of Promise.pipe(to:)\" error building with Xcode 10.2 Beta 1 in Swift 4 mode"
+[SR-9753]: https://bugs.swift.org/browse/SR-9753 "REGRESSION: Ambiguity involving overloads and generics constrained by Error"
+
 ### v0.4.2
 
 - Add new method `Promise.Resolver.resolve(with: somePromise)` that resolves the receiver using another promise ([#30][]).
