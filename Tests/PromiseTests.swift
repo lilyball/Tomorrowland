@@ -15,12 +15,10 @@
 import XCTest
 import Tomorrowland
 
-#if swift(>=4.1)
 // For Codable test
 import class Foundation.JSONEncoder
 import class Foundation.JSONDecoder
 import struct Foundation.Data
-#endif
 
 final class PromiseTests: XCTestCase {
     func testBasicFulfill() {
@@ -1228,7 +1226,6 @@ final class PromiseResultTests: XCTestCase {
         XCTAssertEqual(PromiseResult<Int,String>.cancelled.flatMapError({ PromiseResult<Int,Int>.error($0.count) }), .cancelled)
     }
     
-    #if swift(>=4.1)
     func testCodable() throws {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
@@ -1251,7 +1248,6 @@ final class PromiseResultTests: XCTestCase {
             XCTAssertEqual(decoded, result)
         }
     }
-    #endif
 }
 
 private let testQueueKey = DispatchSpecificKey<String>()

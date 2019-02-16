@@ -1260,7 +1260,7 @@ public enum PromiseResult<Value,Error> {
     }
 }
 
-extension PromiseResult where Value: Equatable, Error: Equatable {
+extension PromiseResult: Equatable where Value: Equatable, Error: Equatable {
     /// Returns a Boolean value indicating whether two values are equal.
     ///
     /// Equality is the inverse of inequality. For any values `a` and `b`,
@@ -1293,44 +1293,6 @@ extension PromiseResult where Value: Equatable, Error: Equatable {
         return !(lhs == rhs)
     }
 }
-#if swift(>=4.1)
-    extension PromiseResult: Equatable where Value: Equatable, Error: Equatable {}
-#else
-    /// Returns a Boolean value indicating whether two values are equal.
-    ///
-    /// Equality is the inverse of inequality. For any values `a` and `b`,
-    /// `a == b` implies that `a != b` is `false`.
-    ///
-    /// - Parameters:
-    ///   - lhs: A value to compare.
-    ///   - rhs: Another value to compare.
-    public func ==<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
-        where T: Equatable, E: Equatable
-    {
-        switch (lhs, rhs) {
-        case let (a?, b?): return a == b
-        case (nil, _?), (_?, nil): return false
-        case (nil, nil): return true
-        }
-    }
-    
-    /// Returns a Boolean value indicating whether two values are not equal.
-    ///
-    /// Inequality is the inverse of equality. For any values `a` and `b`, `a != b`
-    /// implies that `a == b` is `false`.
-    ///
-    /// This is the default implementation of the not-equal-to operator (`!=`)
-    /// for any type that conforms to `Equatable`.
-    ///
-    /// - Parameters:
-    ///   - lhs: A value to compare.
-    ///   - rhs: Another value to compare.
-    public func !=<T,E>(lhs: PromiseResult<T,E>?, rhs: PromiseResult<T,E>?) -> Bool
-        where T: Equatable, E: Equatable
-    {
-        return !(lhs == rhs)
-    }
-#endif
 
 // MARK: -
 
@@ -1371,7 +1333,7 @@ public struct PromiseCancellable {
     }
 }
 
-extension PromiseResult where Value: Hashable, Error: Hashable {
+extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {
     public var hashValue: Int {
         switch self {
         case .value(let value):
@@ -1383,8 +1345,6 @@ extension PromiseResult where Value: Hashable, Error: Hashable {
         }
     }
 }
-#if swift(>=4.1)
-extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {}
 
 extension PromiseResult {
     enum CodingKeys: CodingKey {
@@ -1422,7 +1382,6 @@ extension PromiseResult: Decodable where Value: Decodable, Error: Decodable {
         }
     }
 }
-#endif
 
 // MARK: -
 

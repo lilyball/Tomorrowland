@@ -374,18 +374,16 @@ extension PromiseTimeoutError where Error: Equatable {
     }
 }
 
-#if swift(>=4.1)
-    extension PromiseTimeoutError: Equatable where Error: Equatable {}
+extension PromiseTimeoutError: Equatable where Error: Equatable {}
 
-    extension PromiseTimeoutError: Hashable where Error: Hashable {
-        public var hashValue: Int {
-            switch self {
-            case .timedOut: return 0
-            case .rejected(let error): return error.hashValue << 1 | 1
-            }
+extension PromiseTimeoutError: Hashable where Error: Hashable {
+    public var hashValue: Int {
+        switch self {
+        case .timedOut: return 0
+        case .rejected(let error): return error.hashValue << 1 | 1
         }
     }
-#endif
+}
 
 // MARK: -
 

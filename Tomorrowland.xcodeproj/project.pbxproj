@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0A14B5712027BB310081C4C8 /* ObjectiveCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */; };
-		0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1777D41FF614EA003920C7 /* Compatibility.swift */; };
 		0A2C6ADA21A7BB350088C802 /* TWLBlockOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A2C6AD821A7BB350088C802 /* TWLBlockOperation.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0A2C6ADB21A7BB350088C802 /* TWLBlockOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A2C6AD921A7BB350088C802 /* TWLBlockOperation.m */; };
 		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
@@ -71,7 +70,6 @@
 
 /* Begin PBXFileReference section */
 		0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectiveCTests.swift; sourceTree = "<group>"; };
-		0A1777D41FF614EA003920C7 /* Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compatibility.swift; sourceTree = "<group>"; };
 		0A2C6AD821A7BB350088C802 /* TWLBlockOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLBlockOperation.h; sourceTree = "<group>"; };
 		0A2C6AD921A7BB350088C802 /* TWLBlockOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLBlockOperation.m; sourceTree = "<group>"; };
 		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
@@ -216,7 +214,6 @@
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
 				0A362AA32027B50600807361 /* ObjectiveC.swift */,
-				0A1777D41FF614EA003920C7 /* Compatibility.swift */,
 				0AFD1B621FFD790500AB2029 /* ObjC */,
 				0AFF27711FE0E4D70006D95A /* Private */,
 				0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */,
@@ -338,10 +335,11 @@
 				TargetAttributes = {
 					0AFF27541FE0E3F40006D95A = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 0920;
+						LastSwiftMigration = 1010;
 					};
 					0AFF275D1FE0E3F40006D95A = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1010;
 					};
 				};
 			};
@@ -386,7 +384,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */,
-				0A1777D51FF614EA003920C7 /* Compatibility.swift in Sources */,
 				0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				0ACA1F792000B3EB00A65481 /* TWLUtilities.m in Sources */,
@@ -597,7 +594,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -622,7 +619,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.Tomorrowland;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -643,7 +640,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -664,7 +661,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
