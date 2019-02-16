@@ -362,13 +362,43 @@ public struct Promise<Value,Error> {
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will resolve to the same value as the receiver. You may safely
+    ///   ignore this value.
+    public func then(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    if generation == token?.generation {
+                        onSuccess(value)
+                    }
+                    resolver.fulfill(with: value)
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
+    public func map<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -401,7 +431,7 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
-    public func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
+    public func flatMap<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -493,6 +523,39 @@ public struct Promise<Value,Error> {
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be rejected with the return value of `onError`. If the
+    ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
+    ///   cancelled.
+    public func mapError<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> E) -> Promise<Value,E> {
+        let (promise, resolver) = Promise<Value,E>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation else {
+                        resolver.cancel()
+                        return
+                    }
+                    resolver.reject(with: onError(error))
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
@@ -505,7 +568,7 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`. If the receiver is fulfilled or cancelled, the returned promise will also be
     ///   fulfilled or cancelled.
-    public func recover<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
+    public func flatMapError<E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -527,6 +590,162 @@ public struct Promise<Value,Error> {
         resolver.propagateCancellation(to: self)
         return promise
     }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be rejected with the return value of `onError`, or is
+    ///   rejected if `onError` throws an error. If the receiver is fulfilled or cancelled, the
+    ///   returned promise will also be fulfilled or cancelled.
+    public func tryMapError<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> E) -> Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        resolver.reject(with: try onError(error))
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`, or is rejected if `onError` throws an error. If the receiver is fulfilled or
+    ///   cancelled, the returned promise will also be fulfilled or cancelled.
+    public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onError(error)
+                        nextPromise.pipe(toStd: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    #if !compiler(>=5) // Swift 5 compiler makes the Swift.Error existential conform to itself
+    /// Registers a callback that is invoked when the promise is rejected.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be rejected with the return value of `onError`, or is
+    ///   rejected if `onError` throws an error. If the receiver is fulfilled or cancelled, the
+    ///   returned promise will also be fulfilled or cancelled.
+    public func tryMapError(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Swift.Error) -> Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        resolver.reject(with: try onError(error))
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is rejected.
+    ///
+    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
+    //
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
+    ///   rejected and the token is invalidated, the returned promise will be cancelled.
+    /// - Parameter onError: The callback that is invoked with the rejected error.
+    /// - Returns: A new promise that will be eventually resolved using the promise returned from
+    ///   `onError`, or is rejected if `onError` throws an error. If the receiver is fulfilled or
+    ///   cancelled, the returned promise will also be fulfilled or cancelled.
+    public func tryFlatMapError(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Swift.Error>) -> Promise<Value,Swift.Error> {
+        let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                resolver.fulfill(with: value)
+            case .error(let error):
+                context.execute {
+                    guard generation == token?.generation else {
+                        resolver.cancel()
+                        return
+                    }
+                    do {
+                        let nextPromise = try onError(error)
+                        nextPromise.pipe(to: resolver)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    #endif
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is.
     ///
@@ -553,6 +772,32 @@ public struct Promise<Value,Error> {
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new result.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new result, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the result returned by `onComplete`.
+    public func mapResult<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> PromiseResult<T,E>) -> Promise<T,E> {
+        let (promise, resolver) = Promise<T,E>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                resolver.resolve(with: onComplete(result))
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
@@ -564,7 +809,7 @@ public struct Promise<Value,Error> {
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does.
-    public func always<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
+    public func flatMapResult<T,E>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -574,6 +819,37 @@ public struct Promise<Value,Error> {
                 }
                 let nextPromise = onComplete(result)
                 nextPromise.pipe(to: resolver)
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new result.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new result, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the result returned by `onComplete`, or is rejected
+    ///   if `onComplete` throws an error.
+    public func tryMapResult<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,E>) -> Promise<T,Swift.Error> {
+        let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    resolver.resolve(with: try onComplete(result))
+                } catch {
+                    resolver.reject(with: error)
+                }
             }
         }
         resolver.propagateCancellation(to: self)
@@ -592,7 +868,7 @@ public struct Promise<Value,Error> {
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
-    public func tryAlways<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
+    public func tryFlatMapResult<T,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -612,6 +888,38 @@ public struct Promise<Value,Error> {
         return promise
     }
     
+    #if !compiler(>=5) // Swift 5 compiler makes the Swift.Error existential conform to itself
+    /// Registers a callback that will be invoked with the promise result, no matter what it is, and
+    /// returns a new result.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onComplete` from being invoked and will cause
+    ///   the returned `Promise` to be cancelled.
+    /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
+    ///   returns a new result, which the returned promise will adopt the value of.
+    /// - Returns: A new `Promise` that adopts the result returned by `onComplete`, or is rejected
+    ///   if `onComplete` throws an error.
+    public func tryMapResult<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,Swift.Error>) -> Promise<T,Swift.Error> {
+        let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            context.execute {
+                guard generation == token?.generation else {
+                    resolver.cancel()
+                    return
+                }
+                do {
+                    resolver.resolve(with: try onComplete(result))
+                } catch {
+                    resolver.reject(with: error)
+                }
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
@@ -624,7 +932,7 @@ public struct Promise<Value,Error> {
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `Promise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
-    public func tryAlways<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
+    public func tryFlatMapResult<T>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             context.execute {
@@ -643,6 +951,7 @@ public struct Promise<Value,Error> {
         resolver.propagateCancellation(to: self)
         return promise
     }
+    #endif
     
     /// Registers a callback that will be invoked when the promise is resolved without affecting behavior.
     ///
@@ -656,7 +965,8 @@ public struct Promise<Value,Error> {
     /// - Note: This method is intended for inserting into the middle of a promise chain without
     ///   affecting existing behavior (in particular, cancellation propagation). If you are not
     ///   inserting this into the middle of a promise chain, you probably want to use
-    ///   `then(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)` instead.
+    ///   `then(on:token:_:)`, `map(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)`
+    ///   instead.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
@@ -691,7 +1001,8 @@ public struct Promise<Value,Error> {
     /// - Note: This method is intended for inserting into the middle of a promise chain without
     ///   affecting existing behavior (in particular, cancellation propagation). If you are not
     ///   inserting this into the middle of a promise chain, you probably want to use
-    ///   `then(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)` instead.
+    ///   `then(on:token:_:)`, `map(on:token:_:)`, `catch(on:token:_:)`, or `always(on:token:_:)`
+    ///   instead.
     ///
     /// - Returns: A new `Promise` that adopts the same result as the receiver. Requesting this new
     ///   promise to cancel does nothing.
@@ -752,7 +1063,7 @@ public struct Promise<Value,Error> {
     ///
     ///     return urlSession.dataTaskAsPromise(for: url)
     ///         .fork({ $0.tap().then(on: .main, { analytics.recordNetworkLoad($0.response, for: url) }) })
-    ///         .tryThen(on: .utility, { try JSONDecoder().decode(Model.self, from: $0.data) })
+    ///         .tryMap(on: .utility, { try JSONDecoder().decode(Model.self, from: $0.data) })
     public func fork(_ handler: (Promise) throws -> Void) rethrows -> Promise {
         try handler(self)
         return self
@@ -897,13 +1208,48 @@ extension Promise where Error == Swift.Error {
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
+    ///   `invalidate()` on the token will prevent `onSuccess` from being invoked.
+    /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
+    /// - Returns: A new promise that will resolve to the same value as the receiver, or rejected if
+    ///   `onSuccess` throws an error. If the receiver is rejected or cancelled, the returned
+    ///   promise will also be rejected or cancelled.
+    public func tryThen(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _seal.enqueue { [generation=token?.generation] (result) in
+            switch result {
+            case .value(let value):
+                context.execute {
+                    do {
+                        if generation == token?.generation {
+                            try onSuccess(value)
+                        }
+                        resolver.fulfill(with: value)
+                    } catch {
+                        resolver.reject(with: error)
+                    }
+                }
+            case .error(let error):
+                resolver.reject(with: error)
+            case .cancelled:
+                resolver.cancel()
+            }
+        }
+        resolver.propagateCancellation(to: self)
+        return promise
+    }
+    
+    /// Registers a callback that is invoked when the promise is fulfilled.
+    ///
+    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
+    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onSuccess` from being invoked. If the promise is
     ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`, or
     ///   rejected if `onSuccess` throws an error. If the receiver is rejected or cancelled, the
     ///   returned promise will also be rejected or cancelled.
-    public func tryThen<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
+    public func tryMap<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -929,6 +1275,7 @@ extension Promise where Error == Swift.Error {
         return promise
     }
     
+    #if !compiler(>=5) // Swift 5 compiler makes the Swift.Error existential conform to itself
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
@@ -940,7 +1287,7 @@ extension Promise where Error == Swift.Error {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func tryThen<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
+    public func tryFlatMap<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -966,6 +1313,7 @@ extension Promise where Error == Swift.Error {
         resolver.propagateCancellation(to: self)
         return promise
     }
+    #endif
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
@@ -978,7 +1326,7 @@ extension Promise where Error == Swift.Error {
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func tryThen<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
+    public func tryFlatMap<U,E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         _seal.enqueue { [generation=token?.generation] (result) in
             switch result {
@@ -1032,86 +1380,6 @@ extension Promise where Error == Swift.Error {
                     }
                     do {
                         resolver.fulfill(with: try onError(error))
-                    } catch {
-                        resolver.reject(with: error)
-                    }
-                }
-            case .cancelled:
-                resolver.cancel()
-            }
-        }
-        resolver.propagateCancellation(to: self)
-        return promise
-    }
-    
-    /// Registers a callback that is invoked when the promise is rejected.
-    ///
-    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
-    //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
-    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
-    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
-    /// - Parameter onError: The callback that is invoked with the rejected error.
-    /// - Returns: A new promise that will be eventually resolved using the promise returned from
-    ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
-    ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func tryRecover(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> Promise<Value,Error> {
-        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(with: value)
-            case .error(let error):
-                context.execute {
-                    guard generation == token?.generation else {
-                        resolver.cancel()
-                        return
-                    }
-                    do {
-                        let nextPromise = try onError(error)
-                        nextPromise.pipe(to: resolver)
-                    } catch {
-                        resolver.reject(with: error)
-                    }
-                }
-            case .cancelled:
-                resolver.cancel()
-            }
-        }
-        resolver.propagateCancellation(to: self)
-        return promise
-    }
-    
-    /// Registers a callback that is invoked when the promise is rejected.
-    ///
-    /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
-    //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
-    /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
-    ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
-    ///   fulfilled and the token is invalidated, the returned promise will be cancelled.
-    /// - Parameter onError: The callback that is invoked with the rejected error.
-    /// - Returns: A new promise that will be eventually resolved using the promise returned from
-    ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
-    ///   cancelled, the returned promise will also be rejected or cancelled.
-    public func tryRecover<E: Swift.Error>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Error> {
-        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
-            switch result {
-            case .value(let value):
-                resolver.fulfill(with: value)
-            case .error(let error):
-                context.execute {
-                    guard generation == token?.generation else {
-                        resolver.cancel()
-                        return
-                    }
-                    do {
-                        let nextPromise = try onError(error)
-                        nextPromise.pipe(toStd: resolver)
                     } catch {
                         resolver.reject(with: error)
                     }
@@ -1404,7 +1672,7 @@ public struct PromiseInvalidationToken: CustomStringConvertible, CustomDebugStri
     ///
     /// After invoking this method, all `Promise` callbacks registered with this token will be
     /// suppressed. Any callbacks whose return value is used for a subsequent promise (e.g. with
-    /// `then(on:token:_:)`) will result in a cancelled promise instead if the callback would
+    /// `map(on:token:_:)`) will result in a cancelled promise instead if the callback would
     /// otherwise have been executed.
     ///
     /// In addition, any promises that have been registered with `requestCancelOnInvalidate(_:)`

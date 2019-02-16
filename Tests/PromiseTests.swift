@@ -168,19 +168,37 @@ final class PromiseTests: XCTestCase {
         XCTAssertTrue(invoked)
     }
     
-    func testThenResult() {
+    func testThen() {
+        let thenExpectation = XCTestExpectation(description: "then handler invoked")
         let promise = Promise<Int,String>(fulfilled: 42).then(on: .utility) { (x) in
+            XCTAssertEqual(x, 42)
+            thenExpectation.fulfill()
+        }
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        wait(for: [thenExpectation, expectation], timeout: 1)
+    }
+    
+    func testThenReturnsDistinctPromise() {
+        // Ensure then always returns a distinct promise. This is important so cancelling the result
+        // of `then` doesn't necessarily cancel the original promise.
+        let promise = Promise<Int,String>(fulfilled: 42)
+        let promise2 = promise.then(on: .immediate, { _ in })
+        XCTAssertNotEqual(promise, promise2)
+    }
+    
+    func testMap() {
+        let promise = Promise<Int,String>(fulfilled: 42).map(on: .utility) { (x) in
             return x + 1
         }
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 43)
         wait(for: [expectation], timeout: 1)
     }
     
-    func testThenReturningFulfilledPromise() {
+    func testFlatMapReturningFulfilled() {
         let innerExpectation = XCTestExpectation(description: "Inner promise success")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.fulfill(with: 42)
-        }).then(on: .utility) { (x) -> Promise<String,String> in
+        }).flatMap(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 resolver.fulfill(with: "\(x+1)")
             }
@@ -191,11 +209,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [innerExpectation, outerExpectation], timeout: 1)
     }
     
-    func testThenReturningRejectedPromise() {
+    func testFlatMapReturningRejected() {
         let innerExpectation = XCTestExpectation(description: "Inner promise error")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.fulfill(with: 42)
-        }).then(on: .utility) { (x) -> Promise<String,String> in
+        }).flatMap(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 resolver.reject(with: "foo")
             }
@@ -206,11 +224,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [innerExpectation, outerExpectation], timeout: 1)
     }
     
-    func testThenReturningCancelledPromise() {
+    func testFlatMapReturningCancelled() {
         let innerExpectation = XCTestExpectation(description: "Inner promise cancelled")
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             resolver.fulfill(with: 42)
-        }).then(on: .utility) { (x) -> Promise<String,String> in
+        }).flatMap(on: .utility) { (x) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 resolver.cancel()
             }
@@ -240,8 +258,8 @@ final class PromiseTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testThenReturningPreFulfilledPromise() {
-        let promise = Promise<Int,String>(fulfilled: 42).then(on: .immediate) { (x) in
+    func testFlatMapReturningPreFulfilled() {
+        let promise = Promise<Int,String>(fulfilled: 42).flatMap(on: .immediate) { (x) in
             return Promise(fulfilled: "\(x)")
         }
         XCTAssertEqual(promise.result, .value("42"))
@@ -269,11 +287,32 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testRecoverReturningPromise() {
-        let promise = Promise<Int,String>(rejected: "foo").recover(on:. utility, { (x) in
+    func testMapError() {
+        let promise = Promise<Int,String>(rejected: "foo").mapError(on: .default, { (x) in
+            return 123
+        })
+        let expectation = XCTestExpectation(onError: promise, expectedError: 123)
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testFlatMapError() {
+        let promise = Promise<Int,String>(rejected: "foo").flatMapError(on: .utility, { (x) in
             return Promise(rejected: true)
         })
         let expectation = XCTestExpectation(onError: promise, expectedError: true)
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testTryMapErrorThrowing() {
+        struct DummyError: Error {}
+        let promise = Promise<Int,Int>(on: .utility, { (resolver) in
+            resolver.reject(with: 42)
+        }).tryMapError(on: .default, { (x) -> Error in
+            throw DummyError()
+        })
+        let expectation = XCTestExpectation(onError: promise, handler: { (error) in
+            XCTAssert(error is DummyError)
+        })
         wait(for: [expectation], timeout: 1)
     }
     
@@ -306,11 +345,25 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testAlwaysReturningThrowingPromise() {
+    func testMapResult() {
+        let promise = Promise<Int,String>(on: .default, { (resolver) in
+            resolver.reject(with: "foo")
+        }).mapResult(on: .default, { (result) -> PromiseResult<String,Int> in
+            switch result {
+            case .value(let x): return .error(x+1)
+            case .error(let x): return .value("\(x)bar")
+            case .cancelled: return .value("cancel")
+            }
+        })
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: "foobar")
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testTryFlatMapResultThrowing() {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
             resolver.reject(with: 42)
-        }).tryAlways(on: .utility, { (result) -> Promise<String,DummyError> in
+        }).tryFlatMapResult(on: .utility, { (result) -> Promise<String,DummyError> in
             throw DummyError()
         })
         let expectation = XCTestExpectation(onError: promise, handler: { (error) in
@@ -319,11 +372,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testAlwaysReturningSwiftErrorThrowingPromise() {
+    func testTryFlatMapResultWithSwiftErrorThrowing() {
         struct DummyError: Error {}
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
             resolver.reject(with: 42)
-        }).tryAlways(on: .utility, { (result) -> Promise<String,Swift.Error> in
+        }).tryFlatMapResult(on: .utility, { (result) -> Promise<String,Swift.Error> in
             throw DummyError()
         })
         let expectation = XCTestExpectation(onError: promise, handler: { (error) in
@@ -332,11 +385,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testAlwaysReturningPromise() {
+    func testFlatMapResult() {
         let innerExpectation = XCTestExpectation(description: "Inner promise success")
         let promise = Promise<Int,Int>(on: .utility, { (resolver) in
             resolver.reject(with: 42)
-        }).always(on: .utility, { (result) -> Promise<String,String> in
+        }).flatMapResult(on: .utility, { (result) -> Promise<String,String> in
             let newPromise = Promise<String,String>(on: .utility) { resolver in
                 switch result {
                 case .value(let x), .error(let x):
@@ -375,8 +428,8 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiseThenThrowingError() {
-        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) -> Int in
+    func testTryMapThrowing() {
+        let promise = Promise<Int,Error>(fulfilled: 42).tryMap(on: .utility, { (x) -> Int in
             throw TestError()
         })
         let expectation = XCTestExpectation(onError: promise) { (error) in
@@ -385,11 +438,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiesThenThrowableReturningPromise() {
+    func testTryFlatMapWithSwiftError() {
         func handler(_ x: Int) throws -> Promise<String,Error> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) in
+        let promise = Promise<Int,Error>(fulfilled: 42).tryFlatMap(on: .utility, { (x) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(x)
@@ -400,11 +453,11 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiesThenThrowableReturningErrorCompatiblePromise() {
+    func testTryFlatMap() {
         func handler(_ x: Int) throws -> Promise<String,TestError> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) in
+        let promise = Promise<Int,Error>(fulfilled: 42).tryFlatMap(on: .utility, { (x) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(x)
@@ -415,7 +468,7 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiseRecoverThrowingError() {
+    func testTryRecoverThrowing() {
         struct DummyError: Error {}
         let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) -> Int in
             throw TestError()
@@ -426,12 +479,12 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiseRecoverThrowableReturningPromise() {
+    func testTryFlatMapErrorWithSwiftError() {
         struct DummyError: Error {}
         func handler(_ error: Error) throws -> Promise<Int,Error> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) in
+        let promise = Promise<Int,Error>(rejected: DummyError()).tryFlatMapError(on: .utility, { (error) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(error)
@@ -442,12 +495,12 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPromiseRecoverThrowableReturningErrorCompatiblePromise() {
+    func testTryFlatMapError() {
         struct DummyError: Error {}
         func handler(_ error: Error) throws -> Promise<Int,TestError> {
             return Promise(rejected: TestError())
         }
-        let promise = Promise<Int,Error>(rejected: DummyError()).tryRecover(on: .utility, { (error) in
+        let promise = Promise<Int,Error>(rejected: DummyError()).tryFlatMapError(on: .utility, { (error) in
             // Don't replace this block literal with handler directly, this tests to make sure we
             // can infer the call without specifying a return type
             return try handler(error)
@@ -588,7 +641,7 @@ final class PromiseTests: XCTestCase {
             resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
-        let chainPromise = promise.then(on: .utility, token: token, { (x) in
+        let chainPromise = promise.map(on: .utility, token: token, { (x) in
             XCTFail("invalidated callback invoked")
         })
         let expectation = XCTestExpectation(onCancel: chainPromise)
@@ -604,7 +657,7 @@ final class PromiseTests: XCTestCase {
             resolver.reject(with: "foo")
         })
         let token = PromiseInvalidationToken()
-        let chainPromise = promise.then(on: .utility, token: token, { (x) in
+        let chainPromise = promise.map(on: .utility, token: token, { (x) in
             XCTFail("invalidated callback invoked")
         })
         let expectation = XCTestExpectation(onError: chainPromise, expectedError: "foo")
@@ -893,7 +946,7 @@ final class PromiseTests: XCTestCase {
         let innerExpectation = XCTestExpectation(description: "inner promise")
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(fulfilled: 42)
-            .then(on: .immediate, { (x) -> Promise<String,String> in
+            .flatMap(on: .immediate, { (x) -> Promise<String,String> in
                 let innerPromise = Promise<String,String>(on: .utility, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         resolver.cancel()
@@ -914,7 +967,7 @@ final class PromiseTests: XCTestCase {
         let innerExpectation = XCTestExpectation(description: "inner promise")
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(fulfilled: 42)
-            .then(on: .immediate, { (x) -> Promise<String,String> in
+            .flatMap(on: .immediate, { (x) -> Promise<String,String> in
                 let innerPromise = Promise<String,String>(on: .utility, { (resolver) in
                     resolver.onRequestCancel(on: .immediate, { (resolver) in
                         XCTFail("inner promise was cancelled")
@@ -960,7 +1013,7 @@ final class PromiseTests: XCTestCase {
             DispatchQueue.main.async { // tests should be on the main queue already, but just in case
                 let observer = RunloopObserver()
                 var initialDelayed = false
-                // Ensure order is preserved. This really only applies to the catch/recover pair
+                // Ensure order is preserved. This really only applies to the catch/flatMapError pair
                 var order = 0
                 Promise<Int,String>(on: .main, { (resolver) in
                     XCTAssertTrue(initialDelayed) // this block shouldn't be immediate
@@ -971,13 +1024,13 @@ final class PromiseTests: XCTestCase {
                     XCTAssertEqual(order, 0)
                     order += 1
                     observer.invoked = false
-                }).then(on: .main, { (x) -> Int in
+                }).map(on: .main, { (x) -> Int in
                     XCTAssertFalse(observer.invoked, "second then callback was delayed")
                     XCTAssertEqual(order, 1)
                     order += 1
                     observer.invoked = false
                     return 43
-                }).then(on: .main, { (x) -> Promise<Int,String> in
+                }).flatMap(on: .main, { (x) -> Promise<Int,String> in
                     XCTAssertFalse(observer.invoked, "third then callback was delayed")
                     XCTAssertEqual(order, 2)
                     order += 1
@@ -989,12 +1042,12 @@ final class PromiseTests: XCTestCase {
                     order += 1
                     observer.invoked = false
                 }).recover(on: .main, { (x) in
-                    XCTAssertFalse(observer.invoked, "recover callback was delayed")
+                    XCTAssertFalse(observer.invoked, "flatMapError callback was delayed")
                     XCTAssertEqual(order, 4)
                     order += 1
                     observer.invoked = false
                     return 42
-                }).always(on: .main, { (x) -> Promise<Int,String> in
+                }).flatMapResult(on: .main, { (x) -> Promise<Int,String> in
                     XCTAssertFalse(observer.invoked, "always callback was delayed")
                     XCTAssertEqual(order, 5)
                     order += 1
@@ -1020,11 +1073,11 @@ final class PromiseTests: XCTestCase {
                     XCTAssertTrue(initialDelayed) // this block shouldn't be immediate
                     observer.invoked = false
                     resolver.fulfill(with: 42)
-                }).then(on: .queue(.main), { (x) -> Int in
+                }).map(on: .queue(.main), { (x) -> Int in
                     XCTAssertTrue(observer.invoked, "then callback wasn't delayed")
                     observer.invoked = false
                     return x+1
-                }).then(on: .queue(.main), { (x) -> Promise<Int,String> in
+                }).flatMap(on: .queue(.main), { (x) -> Promise<Int,String> in
                     XCTAssertTrue(observer.invoked, "second then callback wasn't delayed")
                     observer.invoked = false
                     return Promise(rejected: "error")
@@ -1032,7 +1085,7 @@ final class PromiseTests: XCTestCase {
                     XCTAssertTrue(observer.invoked, "catch callback wasn't delayed")
                     observer.invoked = false
                 }).recover(on: .queue(.main), { (x) in
-                    XCTAssertTrue(observer.invoked, "recover callback wasn't delayed")
+                    XCTAssertTrue(observer.invoked, "flatMapError callback wasn't delayed")
                     observer.invoked = false
                     return 42
                 }).always(on: .queue(.main), { (x) in
@@ -1052,15 +1105,15 @@ final class PromiseTests: XCTestCase {
                 Promise<Int,String>(on: .main, { (resolver) in
                     observer.invoked = false
                     resolver.fulfill(with: 42)
-                }).then(on: .main, { (x) -> Int in
+                }).map(on: .main, { (x) -> Int in
                     XCTAssertFalse(observer.invoked, "then callback was delayed")
                     observer.invoked = false
                     return x+1
-                }).then(on: .queue(.main), { (x) -> Int in
+                }).map(on: .queue(.main), { (x) -> Int in
                     XCTAssertTrue(observer.invoked, "second then callback wasn't delayed")
                     observer.invoked = false
                     return x+1
-                }).then(on: .main, { (x) -> Int in
+                }).map(on: .main, { (x) -> Int in
                     XCTAssertTrue(observer.invoked, "third then callback wasn't delayed")
                     observer.invoked = false
                     return x+1

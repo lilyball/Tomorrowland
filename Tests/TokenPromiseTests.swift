@@ -23,14 +23,14 @@ final class TokenPromiseTests: XCTestCase {
         XCTAssertEqual(promise, promise.withToken(PromiseInvalidationToken()).inner)
     }
     
-    func testThenInvalidate() {
+    func testMapInvalidate() {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
             sema.wait()
             resolver.fulfill(with: 42)
         })
         let token = PromiseInvalidationToken()
-        let chainPromise = promise.withToken(token).then(on: .utility, { (x) in
+        let chainPromise = promise.withToken(token).map(on: .utility, { (x) in
             XCTFail("invalidated callback invoked")
         })
         let expectation = XCTestExpectation(onCancel: chainPromise.inner)
@@ -54,7 +54,7 @@ final class TokenPromiseTests: XCTestCase {
             })
             expectation2 = XCTestExpectation(onCancel: promise)
             token = PromiseInvalidationToken()
-            _ = promise.withToken(token).then({ $0 })
+            _ = promise.withToken(token).map({ $0 })
         }
         token.invalidate()
         wait(for: [expectation, expectation2], timeout: 1)

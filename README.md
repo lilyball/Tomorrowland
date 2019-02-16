@@ -188,7 +188,7 @@ class URLImageView: UIImageView {
         // Note: dataTaskAsPromise does not actually exist
         promise = URLSession.shared.dataTaskAsPromise(with: url)
         // Use `_ =` to avoid having to handle errors with `.catch`.
-        _ = promise?.then(on: .utility, { (data) in
+        _ = promise?.tryMap(on: .utility, { (data) -> UIImage in
             if let image = UIImage(data: data) {
                 return image
             } else {
@@ -231,7 +231,7 @@ class URLImageView: UIImageView {
         // Note: dataTaskAsPromise does not actually exist
         promise = URLSession.shared.dataTaskAsPromise(with: url)
         // Use `_ =` to avoid having to handle errors with `.catch`.
-        _ = promise?.then(on: .utility, { (data) in
+        _ = promise?.tryMap(on: .utility, { (data) -> UIImage in
             if let image = UIImage(data: data) {
                 return image
             } else {
@@ -352,6 +352,22 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Rename a lot of methods on `Promise` and `TokenPromise` ([#5][]).
+
+  This gets rid of most overrides, leaving the only overridden methods to be ones that handle either `Swift.Error` or `E: Swift.Error`, and even these overrides
+  are removed in the Swift 5 compiler.
+  
+  `then`  is now `map` or `flatMap`, `recover`'s override is now `flatMapError`, `always`'s override is now `flatMapResult`, and similar renames were made for
+  the `try` variants.
+- Add a new `then` method whose block returns `Void`. The returned promise resolves to the same result as the original promise.
+- Add new `mapError` and `tryMapError` methods.
+- Add new `mapResult` and `tryMapResult` methods.
+- Extend `tryFlatMapError` to be available on all `Promise`s instead of just those whose error type is `Swift.Error`.
+
+[#5]: https://github.com/lilyball/Tomorrowland/issues/5 "Should we adopt .map, .flatMap terminology?"
 
 ### v0.4.3
 

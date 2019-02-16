@@ -71,7 +71,7 @@ final class CancelTests: XCTestCase {
         // We're just going to test it on this one type instead of on all.
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
-        let promise2: Promise<(),String>
+        let promise2: Promise<Int,String>
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
@@ -88,7 +88,7 @@ final class CancelTests: XCTestCase {
     func testPropagateCancelThenDontCancelIfMoreObservers() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
-        let promise2: Promise<(),String>
+        let promise2: Promise<Int,String>
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
@@ -113,8 +113,8 @@ final class CancelTests: XCTestCase {
     func testPropagateCancelThenCancelAfterAllObservers() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
-        let promise2: Promise<(),String>
-        let promise3: Promise<(),String>
+        let promise2: Promise<Int,String>
+        let promise3: Promise<Int,String>
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
@@ -149,13 +149,30 @@ final class CancelTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
-    func testPropagateCancelThenReturningPromise() {
+    func testPropagateCancelMap() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
-            let promise2 = promise.then(on: .utility, { (x) -> Promise<String,String> in
+            let promise2 = promise.map(on: .utility, { (x) -> Int in
+                XCTFail("callback invoked")
+                return 42
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2)]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelFlatMap() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+            let promise2 = promise.flatMap(on: .utility, { (x) -> Promise<String,String> in
                 XCTFail("callback invoked")
                 return Promise(fulfilled: "foo")
             })
@@ -199,13 +216,30 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelRecoverReturningPromise() {
+    func testPropagateCancelMapError() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-            let promise2 = promise.recover(on: .utility, { (error) -> Promise<Int,String> in
+            let promise2 = promise.mapError(on: .utility, { (error) -> Int in
+                XCTFail("callback invoked")
+                return 42
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2)]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelFlatMapError() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let promise2 = promise.flatMapError(on: .utility, { (error) -> Promise<Int,String> in
                 XCTFail("callback invoked")
                 return Promise(fulfilled: 42)
             })
@@ -216,13 +250,66 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelAlwaysReturningPromise() {
+    func testPropagateCancelTryMapErrorThrowing() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-            let promise2 = promise.always(on: .utility, { (result) -> Promise<String,Int> in
+            struct DummyError: Error {}
+            let promise2 = promise.tryMapError(on: .default, { (error) -> DummyError in
+                XCTFail("callback invoked")
+                throw DummyError()
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2)]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelAlways() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let alwaysExpectation = XCTestExpectation(description: "always handler")
+            let promise2 = promise.always(on: .default, { (result) in
+                XCTAssertEqual(result, .cancelled)
+                alwaysExpectation.fulfill()
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2), alwaysExpectation]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelMapResult() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let promise2 = promise.mapResult(on: .utility, { (result) -> PromiseResult<String,Int> in
+                XCTAssertEqual(result, .cancelled)
+                return .value("foo")
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onSuccess: promise2, handler: { _ in })]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelFlatMapResult() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+            let promise2 = promise.flatMapResult(on: .utility, { (result) -> Promise<String,Int> in
                 XCTAssertEqual(result, .cancelled)
                 return Promise(fulfilled: "foo")
             })
@@ -250,14 +337,14 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelAlwaysReturningPromiseThrowingCompatibleError() {
+    func testPropagateCancelTryFlatMapResultThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-            let promise2 = promise.tryAlways(on: .utility, { (result) -> Promise<String,DummyError> in
+            let promise2 = promise.tryFlatMapResult(on: .utility, { (result) -> Promise<String,DummyError> in
                 XCTAssertEqual(result, .cancelled)
                 throw DummyError()
             })
@@ -268,13 +355,13 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelAlwaysReturningPromiseThrowingSwiftError() {
+    func testPropagateCancelTryFlatMapResultWithSwiftErrorThrowing() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: Promise<Int,String>
             (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-            let promise2 = promise.tryAlways(on: .utility, { (result) -> Promise<String,Swift.Error> in
+            let promise2 = promise.tryFlatMapResult(on: .utility, { (result) -> Promise<String,Swift.Error> in
                 XCTAssertEqual(result, .cancelled)
                 struct DummyError: Swift.Error {}
                 throw DummyError()
@@ -286,14 +373,14 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorThenThrowing() {
+    func testPropagateCancelTryMapThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: StdPromise<Int>
             (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-            let promise2 = promise.tryThen(on: .utility, { (_) -> String in
+            let promise2 = promise.tryMap(on: .utility, { (_) -> String in
                 XCTFail("callback invoked")
                 struct DummyError: Swift.Error {}
                 throw DummyError()
@@ -305,14 +392,14 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorThenReturningPromiseThrowing() {
+    func testPropagateCancelTryFlatMapWithSwiftErrorThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: StdPromise<Int>
             (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-            let promise2 = promise.tryThen(on: .utility, { (_) -> StdPromise<String> in
+            let promise2 = promise.tryFlatMap(on: .utility, { (_) -> StdPromise<String> in
                 XCTFail("callback invoked")
                 struct DummyError: Swift.Error {}
                 throw DummyError()
@@ -324,14 +411,14 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorThenReturningCompatiblePromiseThrowing() {
+    func testPropagateCancelTryFlatMapThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: StdPromise<Int>
             (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
-            let promise2 = promise.tryThen(on: .utility, { (_) -> Promise<Int,DummyError> in
+            let promise2 = promise.tryFlatMap(on: .utility, { (_) -> Promise<Int,DummyError> in
                 XCTFail("callback invoked")
                 throw DummyError()
             })
@@ -342,7 +429,7 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorRecoverThrowing() {
+    func testPropagateCancelTryRecoverThrowing() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
@@ -360,13 +447,13 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorRecoverReturningPromiseThrowing() {
+    func testPropagateCancelTryFlatMapErrorWithSwiftErrorThrowing() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: StdPromise<Int>
             (promise, sema) = StdPromise<Int>.makeCancellablePromise(value: 2)
-            let promise2 = promise.tryRecover(on: .utility, { (_) -> StdPromise<Int> in
+            let promise2 = promise.tryFlatMapError(on: .utility, { (_) -> StdPromise<Int> in
                 XCTFail("callback invoked")
                 struct DummyError: Swift.Error {}
                 throw DummyError()
@@ -378,14 +465,14 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
-    func testPropagateCancelSwiftErrorRecoverReturningCompatiblePromiseThrowing() {
+    func testPropagateCancelTryFlatMapErrorThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
         do {
             let promise: StdPromise<Int>
             (promise, sema) = StdPromise<Int>.makeCancellablePromise(value: 2)
-            let promise2 = promise.tryRecover(on: .utility, { (_) -> Promise<Int,DummyError> in
+            let promise2 = promise.tryFlatMapError(on: .utility, { (_) -> Promise<Int,DummyError> in
                 XCTFail("callback invoked")
                 throw DummyError()
             })

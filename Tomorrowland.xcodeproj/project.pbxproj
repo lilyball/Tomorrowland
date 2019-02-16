@@ -50,6 +50,7 @@
 		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
 		AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3E31FEDF9450029A283 /* CancelTests.swift */; };
 		AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AB3E33B02015B9AB00E1228C /* TWLCancelTests.m */; };
+		AB8FF1F7221879DA00A619CC /* Deprecations.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8FF1F6221879DA00A619CC /* Deprecations.swift */; };
 		AB9F708420A9020C00B4426F /* TokenPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9F708320A9020C00B4426F /* TokenPromise.swift */; };
 		AB9F708620A915AC00B4426F /* TokenPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */; };
 		ABDC7F781FEB840200036FCD /* When.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDC7F771FEB840200036FCD /* When.swift */; };
@@ -121,6 +122,7 @@
 		AB1FF3E31FEDF9450029A283 /* CancelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelTests.swift; sourceTree = "<group>"; };
 		AB1FF3E61FEE36F80029A283 /* Tomorrowland.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; path = Tomorrowland.podspec; sourceTree = "<group>"; };
 		AB3E33B02015B9AB00E1228C /* TWLCancelTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLCancelTests.m; sourceTree = "<group>"; };
+		AB8FF1F6221879DA00A619CC /* Deprecations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deprecations.swift; sourceTree = "<group>"; };
 		AB9F708320A9020C00B4426F /* TokenPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenPromise.swift; sourceTree = "<group>"; };
 		AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenPromiseTests.swift; sourceTree = "<group>"; };
 		ABDC7F771FEB840200036FCD /* When.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = When.swift; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
 				0A362AA32027B50600807361 /* ObjectiveC.swift */,
+				AB8FF1F6221879DA00A619CC /* Deprecations.swift */,
 				0AFD1B621FFD790500AB2029 /* ObjC */,
 				0AFF27711FE0E4D70006D95A /* Private */,
 				0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */,
@@ -384,6 +387,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */,
+				AB8FF1F7221879DA00A619CC /* Deprecations.swift in Sources */,
 				0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
 				0ACA1F792000B3EB00A65481 /* TWLUtilities.m in Sources */,
