@@ -3,7 +3,7 @@
 //  Tomorrowland
 //
 //  Created by Lily Ballard on 1/2/18.
-//  Copyright © 2018 Lily Ballard. All rights reserved.
+//  Copyright © 2018 Lily Ballard.
 //
 
 #import "TWLThreadLocal.h"
