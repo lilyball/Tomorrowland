@@ -377,10 +377,12 @@ extension PromiseTimeoutError where Error: Equatable {
 extension PromiseTimeoutError: Equatable where Error: Equatable {}
 
 extension PromiseTimeoutError: Hashable where Error: Hashable {
-    public var hashValue: Int {
+    public func hash(into hasher: inout Hasher) {
         switch self {
-        case .timedOut: return 0
-        case .rejected(let error): return error.hashValue << 1 | 1
+        case .timedOut: hasher.combine(0)
+        case .rejected(let error):
+            hasher.combine(1)
+            hasher.combine(error)
         }
     }
 }

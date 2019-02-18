@@ -104,22 +104,6 @@ public enum PromiseContext: Equatable, Hashable {
         }
     }
     
-    public var hashValue: Int {
-        switch self {
-        case .main: return 0
-        case .background: return 1
-        case .utility: return 2
-        case .default: return 3
-        case .userInitiated: return 4
-        case .userInteractive: return 5
-        case .immediate: return 6
-        case .queue(let queue):
-            return queue.hashValue << 3
-        case .operationQueue(let queue):
-            return queue.hashValue << 3 | 1
-        }
-    }
-    
     internal func execute(_ f: @escaping @convention(block) () -> Void) {
         switch self {
         case .main:
@@ -1583,14 +1567,16 @@ public struct PromiseCancellable {
 }
 
 extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {
-    public var hashValue: Int {
+    public func hash(into hasher: inout Hasher) {
         switch self {
         case .value(let value):
-            return value.hashValue << 2
+            hasher.combine(0)
+            hasher.combine(value)
         case .error(let error):
-            return error.hashValue << 2 | 0x1
+            hasher.combine(1)
+            hasher.combine(error)
         case .cancelled:
-            return 0x2
+            hasher.combine(2)
         }
     }
 }
@@ -1725,8 +1711,8 @@ extension PromiseInvalidationToken: Hashable {
         return lhs._inner === rhs._inner
     }
     
-    public var hashValue: Int {
-        return ObjectIdentifier(_inner).hashValue
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(_inner))
     }
 }
 
@@ -1748,9 +1734,7 @@ public enum NoError: Hashable, Equatable, Codable {
         return true
     }
     
-    public var hashValue: Int {
-        return 0
-    }
+    public func hash(into hasher: inout Hasher) {}
     
     public func encode(to encoder: Encoder) throws {
         fatalError()
