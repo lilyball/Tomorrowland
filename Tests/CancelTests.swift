@@ -373,6 +373,25 @@ final class CancelTests: XCTestCase {
         wait(for: expectations, timeout: 1)
     }
     
+    func testPropagateCancelTryThenThrowing() {
+        struct DummyError: Swift.Error {}
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: StdPromise<Int>
+            (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
+            let promise2 = promise.tryThen(on: .default, { (_) in
+                XCTFail("callback invoked")
+                struct DummyError: Swift.Error {}
+                throw DummyError()
+            })
+            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2)]
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 1)
+    }
+    
     func testPropagateCancelTryMapThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]

@@ -179,8 +179,8 @@ final class PromiseTests: XCTestCase {
     }
     
     func testThenReturnsDistinctPromise() {
-        // Ensure then always returns a distinct promise. This is important so cancelling the result
-        // of `then` doesn't necessarily cancel the original promise.
+        // Ensure `then` always returns a distinct promise. This is important so cancelling the
+        // result of `then` doesn't necessarily cancel the original promise.
         let promise = Promise<Int,String>(fulfilled: 42)
         let promise2 = promise.then(on: .immediate, { _ in })
         XCTAssertNotEqual(promise, promise2)
@@ -345,6 +345,14 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testAlwaysReturnsDistinctPromise() {
+        // Ensure `always` always returns a distinct promise. This is important so cancelling the
+        // result of `always` doesn't necessarily cancel the original promise.
+        let promise = Promise<Int,String>(fulfilled: 42)
+        let promise2 = promise.always(on: .immediate, { _ in })
+        XCTAssertNotEqual(promise, promise2)
+    }
+    
     func testMapResult() {
         let promise = Promise<Int,String>(on: .default, { (resolver) in
             resolver.reject(with: "foo")
@@ -420,6 +428,35 @@ final class PromiseTests: XCTestCase {
     
     func testPromiseThrowingError() {
         let promise = Promise<Int,Error>(on: .utility, { (resolver) in
+            throw TestError()
+        })
+        let expectation = XCTestExpectation(onError: promise) { (error) in
+            XCTAssert(error is TestError)
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testTryThenReturnsDistinctPromise() {
+        // Ensure `tryThen` always returns a distinct promise. This is important so cancelling the
+        // result of `tryThen` doesn't necessarily cancel the original promise.
+        let promise = Promise<Int,Error>(fulfilled: 42)
+        let promise2 = promise.tryThen(on: .immediate, { _ in })
+        XCTAssertNotEqual(promise, promise2)
+    }
+    
+    func testTryThen() {
+        let callbackExpectation = XCTestExpectation(description: "then handler invoked")
+        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .default, { (x) in
+            XCTAssertEqual(x, 42)
+            callbackExpectation.fulfill()
+        })
+        let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+        wait(for: [callbackExpectation, expectation], timeout: 1)
+    }
+    
+    func testTryThenThrowing() {
+        let promise = Promise<Int,Error>(fulfilled: 42).tryThen(on: .utility, { (x) in
+            XCTAssertEqual(x, 42)
             throw TestError()
         })
         let expectation = XCTestExpectation(onError: promise) { (error) in
