@@ -81,8 +81,7 @@ let promise = Promise<String,Error>(on: .utility, { (resolver) in
 The body of this promise runs on the specified `PromiseContext`, which in this case is `.utility` (which means `DispatchQueue.global(qos: .utility)`).
 Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on the main thread. The available contexts
 include `.main`, every Dispatch QoS, a specific `DispatchQueue`, a specific `OperationQueue`, or the value `.immediate` which means to run the block
-synchronously. There's also the special context `.auto`, which evaluates to `.main` on the main thread and `.default` otherwise. This special context is the default
-context for all callbacks that don't otherwise specify one.
+synchronously. There's also the special context `.auto`, which evaluates to `.main` on the main thread and `.default` otherwise.
 
 **Note:** The `.immediate` context can be dangerous to use for callback handlers and should be avoided in most cases. It's primarily intended for creating
 promises, and whenever it's used with a callback handler the handler must be prepared to execute on *any thread*. For callbacks it's usually only useful for short
@@ -120,20 +119,21 @@ geocoder.reverseGeocodeLocation(location, completionHandler: resolver.handleCall
 
 ### Using Promises
 
-Once you have a promise, you can register callbacks to be executed when the promise is resolved. As mentioned above, you can specify the context for the
-callback, but if you don't specify it then it defaults to `.auto`, which means the main thread if the callback is registered from the main thread, otherwise the dispatch
-queue with QoS `.default`.
+Once you have a promise, you can register callbacks to be executed when the promise is resolved. Most callback methods require a context, but for some of them
+(`then`, `catch`, `always`, and `tryThen`) you can omit the context and it will default to `.auto`, which means the main thread if the callback is registered from the
+main thread, otherwise the dispatch queue with QoS `.default`.
 
 When you register a callback, the method also returns a `Promise`. All callback registration methods return a new `Promise` even if the callback doesn't affect the
 value of the promise. The reason for this is so chained callbacks always guarantee that the previous callback finished executing before the new one starts, even
-when using concurrent contexts (e.g. `.utility`).
+when using concurrent contexts (e.g. `.utility`), and so cancelling the returned promise doesn't cancel the original one if any other callbacks were registered on
+it.
 
 Most callback registration methods also have versions that allow you to return a `Promise` from your callback. In this event, the resulting `Promise` waits for the
 promise you returned to resolve before adopting its value. This allows for easy composition of promises.
 
 ```swift
 showLoadingIndicator()
-fetchUserCredentials().then { (credentials) in
+fetchUserCredentials().flatMap(on: .default) { (credentials) in
     // This returns a new promise
     return MyAPI.login(name: credentials.name, password: credentials.password)
 }.then { [weak self] (apiKey) in
@@ -366,8 +366,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Add new `mapError` and `tryMapError` methods.
 - Add new `mapResult` and `tryMapResult` methods.
 - Extend `tryFlatMapError` to be available on all `Promise`s instead of just those whose error type is `Swift.Error`.
+- Remove the default `.auto` value for the `on context:` parameter to most calls. It's now only provided for the "terminal" callbacks, the ones that don't return a
+  value from the handler. This avoids the common problem of running trivial maps on the main thread unnecessarily ([#33][]).
 
 [#5]: https://github.com/lilyball/Tomorrowland/issues/5 "Should we adopt .map, .flatMap terminology?"
+[#33]: https://github.com/lilyball/Tomorrowland/issues/33 "Remove default context parameter from map, etc"
 
 ### v0.4.3
 

@@ -106,29 +106,27 @@ extension TokenPromise {
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`. If the
     ///   receiver is rejected or cancelled, the returned promise will also be rejected or
     ///   cancelled.
     ///
     /// - SeeAlso: `Promise.map(on:token:_:)`.
-    public func map<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) -> U) -> TokenPromise<U,Error> {
+    public func map<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) -> U) -> TokenPromise<U,Error> {
         return wrap(inner.map(on: context, token: token, onSuccess))
     }
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`. If the receiver is rejected or cancelled, the returned promise will also be
     ///   rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.flatMap(on:token:_:)`.
-    public func flatMap<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> TokenPromise<U,Error> {
+    public func flatMap<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> TokenPromise<U,Error> {
         return wrap(inner.flatMap(on: context, token: token, onSuccess))
     }
     
@@ -152,29 +150,27 @@ extension TokenPromise {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`. If the
     ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
     ///   cancelled.
     ///
     /// - SeeAlso: `Promise.recover(on:token:_:)`.
-    public func recover(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> Value) -> TokenPromise<Value,NoError> {
+    public func recover(on context: PromiseContext, _ onError: @escaping (Error) -> Value) -> TokenPromise<Value,NoError> {
         return wrap(inner.recover(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be rejected with the return value of `onError`. If the
     ///   receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
     ///   cancelled.
     ///
     /// - SeeAlso: `Promise.mapError(on:token:_:)`.
-    public func mapError<E>(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> E) -> TokenPromise<Value,E> {
+    public func mapError<E>(on context: PromiseContext, _ onError: @escaping (Error) -> E) -> TokenPromise<Value,E> {
         return wrap(inner.mapError(on: context, onError))
     }
     
@@ -182,27 +178,25 @@ extension TokenPromise {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`. If the receiver is fulfilled or cancelled, the returned promise will also be
     ///   fulfilled or cancelled.
     ///
     /// - SeeAlso: `Promise.flatMapError(on:token:_:)`.
-    public func flatMapError<E>(on context: PromiseContext = .auto, _ onError: @escaping (Error) -> Promise<Value,E>) -> TokenPromise<Value,E> {
+    public func flatMapError<E>(on context: PromiseContext, _ onError: @escaping (Error) -> Promise<Value,E>) -> TokenPromise<Value,E> {
         return wrap(inner.flatMapError(on: context, token: token, onError))
     }
     
     /// Registers a callback that is invoked when the promise is rejected.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be rejected with the return value of `onError`, or is
     ///   rejected if `onError` throws an error. If the receiver is fulfilled or cancelled, the
     ///   returned promise will also be fulfilled or cancelled.
-    public func tryMapError<E: Swift.Error>(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> E) -> TokenPromise<Value,Swift.Error> {
+    public func tryMapError<E: Swift.Error>(on context: PromiseContext, _ onError: @escaping (Error) throws -> E) -> TokenPromise<Value,Swift.Error> {
         return wrap(inner.tryMapError(on: context, token: token, onError))
     }
     
@@ -210,26 +204,24 @@ extension TokenPromise {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or is rejected if `onError` throws an error. If the receiver is fulfilled or
     ///   cancelled, the returned promise will also be fulfilled or cancelled.
-    public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> TokenPromise<Value,Swift.Error> {
+    public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> TokenPromise<Value,Swift.Error> {
         return wrap(inner.tryFlatMapError(on: context, token: token, onError))
     }
     
     #if !compiler(>=5) // Swift 5 compiler makes the Swift.Error existential conform to itself
     /// Registers a callback that is invoked when the promise is rejected.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be rejected with the return value of `onError`, or is
     ///   rejected if `onError` throws an error. If the receiver is fulfilled or cancelled, the
     ///   returned promise will also be fulfilled or cancelled.
-    public func tryMapError(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Swift.Error) -> TokenPromise<Value,Swift.Error> {
+    public func tryMapError(on context: PromiseContext, _ onError: @escaping (Error) throws -> Swift.Error) -> TokenPromise<Value,Swift.Error> {
         return wrap(inner.tryMapError(on: context, token: token, onError))
     }
     
@@ -237,13 +229,12 @@ extension TokenPromise {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or is rejected if `onError` throws an error. If the receiver is fulfilled or
     ///   cancelled, the returned promise will also be fulfilled or cancelled.
-    public func tryFlatMapError(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,Swift.Error>) -> TokenPromise<Value,Swift.Error> {
+    public func tryFlatMapError(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,Swift.Error>) -> TokenPromise<Value,Swift.Error> {
         return wrap(inner.tryFlatMapError(on: context, token: token, onError))
     }
     #endif
@@ -265,57 +256,53 @@ extension TokenPromise {
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new result.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new result, which the returned promise will adopt the value of.
     /// - Returns: A new promise that adopts the result returned by `onComplete`.
     ///
     /// - SeeAlso: `Promise.mapResult(on:token:_:)`
-    public func mapResult<T,E>(on context: PromiseContext = .auto, onComplete: @escaping (PromiseResult<Value,Error>) -> PromiseResult<T,E>) -> TokenPromise<T,E> {
+    public func mapResult<T,E>(on context: PromiseContext, onComplete: @escaping (PromiseResult<Value,Error>) -> PromiseResult<T,E>) -> TokenPromise<T,E> {
         return wrap(inner.mapResult(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new promise that adopts the same value that the promise returned by
     ///   `onComplete` does.
     ///
     /// - SeeAlso: `Promise.flatMapResult(on:token:_:)`
-    public func flatMapResult<T,E>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> TokenPromise<T,E> {
+    public func flatMapResult<T,E>(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> TokenPromise<T,E> {
         return wrap(inner.flatMapResult(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new result.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new result, which the returned promise will adopt the value of.
     /// - Returns: A new promise that adopts the result returned by `onComplete`, or is rejected if
     ///   `onComplete` throws an error.
-    public func tryMapResult<T,E: Swift.Error>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,E>) -> TokenPromise<T,Swift.Error> {
+    public func tryMapResult<T,E: Swift.Error>(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,E>) -> TokenPromise<T,Swift.Error> {
         return wrap(inner.tryMapResult(on: context, token: token, onComplete))
     }
     
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `TokenPromise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     ///
     /// - SeeAlso: `Promise.tryFlatMapResult(on:token:_:)`
-    public func tryFlatMapResult<T,E: Swift.Error>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> TokenPromise<T,Swift.Error> {
+    public func tryFlatMapResult<T,E: Swift.Error>(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> TokenPromise<T,Swift.Error> {
         return wrap(inner.tryFlatMapResult(on: context, token: token, onComplete))
     }
     
@@ -323,28 +310,26 @@ extension TokenPromise {
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new result.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new result, which the returned promise will adopt the value of.
     /// - Returns: A new promise that adopts the result returned by `onComplete`, or is rejected if
     ///   `onComplete` throws an error.
-    public func tryMapResult<T>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,Swift.Error>) -> TokenPromise<T,Swift.Error> {
+    public func tryMapResult<T>(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,Swift.Error>) -> TokenPromise<T,Swift.Error> {
         return wrap(inner.tryMapResult(on: context, token: token, onComplete))
     }
 
     /// Registers a callback that will be invoked with the promise result, no matter what it is, and
     /// returns a new promise to wait on.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onComplete: The callback that is invoked with the promise's value. This callback
     ///   returns a new promise, which the returned promise will adopt the value of.
     /// - Returns: A new `TokenPromise` that adopts the same value that the promise returned by
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     ///
     /// - SeeAlso: `Promise.tryFlatMapResult(on:token:_:)`
-    public func tryFlatMapResult<T>(on context: PromiseContext = .auto, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> TokenPromise<T,Swift.Error> {
+    public func tryFlatMapResult<T>(on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> TokenPromise<T,Swift.Error> {
         return wrap(inner.tryFlatMapResult(on: context, token: token, onComplete))
     }
     #endif
@@ -485,45 +470,42 @@ extension TokenPromise where Error == Swift.Error {
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be fulfilled with the return value of `onSuccess`, or
     ///   rejected if `onSuccess` throws an error. If the receiver is rejected or cancelled, the
     ///   returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryMap(on:token:_:)`
-    public func tryMap<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> U) -> TokenPromise<U,Error> {
+    public func tryMap<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> U) -> TokenPromise<U,Error> {
         return wrap(inner.tryMap(on: context, token: token, onSuccess))
     }
     
     #if !compiler(>=5) // Swift 5 compiler makes the Swift.Error existential conform to itself
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryFlatMap(on:token:_:)`
-    public func tryFlatMap<U>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> TokenPromise<U,Error> {
+    public func tryFlatMap<U>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> TokenPromise<U,Error> {
         return wrap(inner.tryFlatMap(on: context, token: token, onSuccess))
     }
     #endif
     
     /// Registers a callback that is invoked when the promise is fulfilled.
     ///
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onSuccess: The callback that is invoked with the fulfilled value.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onSuccess`, or rejected if `onSuccess` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryFlatMap(on:token:_:)`
-    public func tryFlatMap<U,E: Swift.Error>(on context: PromiseContext = .auto, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> TokenPromise<U,Error> {
+    public func tryFlatMap<U,E: Swift.Error>(on context: PromiseContext, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> TokenPromise<U,Error> {
         return wrap(inner.tryFlatMap(on: context, token: token, onSuccess))
     }
     
@@ -531,15 +513,14 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`, or
     ///   rejected if `onError` throws an error. If the receiver is rejected or cancelled, the
     ///   returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryRecover(on:token:_:)`
-    public func tryRecover(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Value) ->
+    public func tryRecover(on context: PromiseContext, _ onError: @escaping (Error) throws -> Value) ->
         TokenPromise<Value,Error> {
             return wrap(inner.tryRecover(on: context, token: token, onError))
     }
@@ -549,15 +530,14 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryFlatMapError(on:token:_:)`
-    public func tryFlatMapError(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> TokenPromise<Value,Error> {
+    public func tryFlatMapError(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,Error>) -> TokenPromise<Value,Error> {
         return wrap(inner.tryFlatMapError(on: context, token: token, onError))
     }
     #endif
@@ -566,15 +546,14 @@ extension TokenPromise where Error == Swift.Error {
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
     //
-    /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be eventually resolved using the promise returned from
     ///   `onError`, or rejected if `onError` throws an error. If the receiver is rejected or
     ///   cancelled, the returned promise will also be rejected or cancelled.
     ///
     /// - SeeAlso: `Promise.tryFlatMapError(on:token:_:)`
-    public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext = .auto, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> TokenPromise<Value,Error> {
+    public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> TokenPromise<Value,Error> {
         return wrap(inner.tryFlatMapError(on: context, token: token, onError))
     }
 }

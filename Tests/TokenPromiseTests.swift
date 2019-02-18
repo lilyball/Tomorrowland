@@ -54,7 +54,7 @@ final class TokenPromiseTests: XCTestCase {
             })
             expectation2 = XCTestExpectation(onCancel: promise)
             token = PromiseInvalidationToken()
-            _ = promise.withToken(token).map({ $0 })
+            _ = promise.withToken(token).map(on: .default, { $0 })
         }
         token.invalidate()
         wait(for: [expectation, expectation2], timeout: 1)
