@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.4.3-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v0.5.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -51,13 +51,13 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "lilyball/Tomorrowland" ~> 0.4.0
+github "lilyball/Tomorrowland" ~> 0.5.0
 ```
 
 ### CocoaPods
 
 ```ruby
-pod 'Tomorrowland', '~> 0.4.0'
+pod 'Tomorrowland', '~> 0.5.0'
 ```
 
 ### SwiftPM
@@ -353,7 +353,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v0.5.0
 
 - Rename a lot of methods on `Promise` and `TokenPromise` ([#5][]).
 
