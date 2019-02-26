@@ -14,7 +14,7 @@
     <a title="Promise Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="../index.html">Tomorrowland Docs</a> (89% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -393,9 +393,9 @@ need to ensure your registered callbacks aren&rsquo;t invoked past a certain poi
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF"></a>
+                    <a name="/s:12Tomorrowland7PromiseV4then2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyxctF"></a>
                     <a name="//apple_ref/swift/Method/then(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">then(on:token:_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV4then2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyxctF">then(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -410,7 +410,7 @@ need to ensure your registered callbacks aren&rsquo;t invoked past a certain poi
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">then</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">then</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -428,6 +428,82 @@ need to ensure your registered callbacks aren&rsquo;t invoked past a certain poi
                                 <div>
                                   <p>The context to invoke the callback on. If not provided, defaults to
 <code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onSuccess</code> from being invoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onSuccess</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the fulfilled value.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will resolve to the same value as the receiver. You may safely
+ignore this value.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV3map2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF"></a>
+                    <a name="//apple_ref/swift/Method/map(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV3map2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">map(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Registers a callback that is invoked when the promise is fulfilled.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">map</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -472,9 +548,9 @@ cancelled.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF"></a>
-                    <a name="//apple_ref/swift/Method/then(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF">then(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseV7flatMap2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF"></a>
+                    <a name="//apple_ref/swift/Method/flatMap(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV7flatMap2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF">flatMap(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -489,7 +565,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">then</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -505,8 +581,7 @@ cancelled.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -647,7 +722,7 @@ ignore this value.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">recover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt"><a href="../Enums/NoError.html">NoError</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">recover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt"><a href="../Enums/NoError.html">NoError</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -663,8 +738,7 @@ ignore this value.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -709,9 +783,9 @@ cancelled.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV7recover2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF"></a>
-                    <a name="//apple_ref/swift/Method/recover(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV7recover2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF">recover(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseV8mapError2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__q_ctlF"></a>
+                    <a name="//apple_ref/swift/Method/mapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8mapError2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__q_ctlF">mapError(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -725,7 +799,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">recover</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -741,8 +815,84 @@ cancelled.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
+rejected and the token is invalidated, the returned promise will be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the rejected error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will be rejected with the return value of <code>onError</code>. If the
+receiver is fulfilled or cancelled, the returned promise will also be fulfilled or
+cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV12flatMapError2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF"></a>
+                    <a name="//apple_ref/swift/Method/flatMapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV12flatMapError2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF">flatMapError(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -780,6 +930,314 @@ rejected and the token is invalidated, the returned promise will be cancelled.</
                         <p>A new promise that will be eventually resolved using the promise returned from
 <code>onError</code>. If the receiver is fulfilled or cancelled, the returned promise will also be
 fulfilled or cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV11tryMapError2on5token_ACyxs0E0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__q_KctsAGRd__lF"></a>
+                    <a name="//apple_ref/swift/Method/tryMapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV11tryMapError2on5token_ACyxs0E0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__q_KctsAGRd__lF">tryMapError(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
+rejected and the token is invalidated, the returned promise will be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the rejected error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will be rejected with the return value of <code>onError</code>, or is
+rejected if <code>onError</code> throws an error. If the receiver is fulfilled or cancelled, the
+returned promise will also be fulfilled or cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV15tryFlatMapError2on5token_ACyxs0F0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__Gq_KctsAGRd__lF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV15tryFlatMapError2on5token_ACyxs0F0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__Gq_KctsAGRd__lF">tryFlatMapError(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
+rejected and the token is invalidated, the returned promise will be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the rejected error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will be eventually resolved using the promise returned from
+<code>onError</code>, or is rejected if <code>onError</code> throws an error. If the receiver is fulfilled or
+cancelled, the returned promise will also be fulfilled or cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV11tryMapError2on5token_ACyxs0E0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgsAG_pq_KctF"></a>
+                    <a name="//apple_ref/swift/Method/tryMapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV11tryMapError2on5token_ACyxs0E0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgsAG_pq_KctF">tryMapError(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryMapError</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
+rejected and the token is invalidated, the returned promise will be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the rejected error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will be rejected with the return value of <code>onError</code>, or is
+rejected if <code>onError</code> throws an error. If the receiver is fulfilled or cancelled, the
+returned promise will also be fulfilled or cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV15tryFlatMapError2on5token_ACyxs0F0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHq_KctF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMapError(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV15tryFlatMapError2on5token_ACyxs0F0_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHq_KctF">tryFlatMapError(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryFlatMapError</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
+rejected and the token is invalidated, the returned promise will be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onError</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the rejected error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will be eventually resolved using the promise returned from
+<code>onError</code>, or is rejected if <code>onError</code> throws an error. If the receiver is fulfilled or
+cancelled, the returned promise will also be fulfilled or cancelled.</p>
                       </div>
                     </section>
                   </div>
@@ -865,9 +1323,9 @@ ignore this value.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV6always2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0B6ResultOyxq_Gctr0_lF"></a>
-                    <a name="//apple_ref/swift/Method/always(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV6always2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0B6ResultOyxq_Gctr0_lF">always(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseV9mapResult2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bD0Oyqd__qd_0_GANyxq_Gctr0_lF"></a>
+                    <a name="//apple_ref/swift/Method/mapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV9mapResult2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bD0Oyqd__qd_0_GANyxq_Gctr0_lF">mapResult(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -876,14 +1334,14 @@ ignore this value.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
-returns a new promise to wait on.</p>
+returns a new result.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">always</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -899,8 +1357,85 @@ returns a new promise to wait on.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onComplete</code> from being invoked and will cause
+the returned <code>Promise</code> to be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onComplete</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the promise&rsquo;s value. This callback
+returns a new result, which the returned promise will adopt the value of.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new <code>Promise</code> that adopts the result returned by <code>onComplete</code>.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV13flatMapResult2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0bE0Oyxq_Gctr0_lF"></a>
+                    <a name="//apple_ref/swift/Method/flatMapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV13flatMapResult2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0bE0Oyxq_Gctr0_lF">flatMapResult(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
+returns a new promise to wait on.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -945,9 +1480,9 @@ returns a new promise, which the returned promise will adopt the value of.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0B6ResultOyxq_GKctsAGRd_0_r0_lF"></a>
-                    <a name="//apple_ref/swift/Method/tryAlways(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0B6ResultOyxq_GKctsAGRd_0_r0_lF">tryAlways(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseV12tryMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bE0Oyqd__qd_0_GAOyxq_GKctsAGRd_0_r0_lF"></a>
+                    <a name="//apple_ref/swift/Method/tryMapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV12tryMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bE0Oyqd__qd_0_GAOyxq_GKctsAGRd_0_r0_lF">tryMapResult(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -956,14 +1491,14 @@ returns a new promise, which the returned promise will adopt the value of.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
-returns a new promise to wait on.</p>
+returns a new result.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryAlways</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -979,8 +1514,86 @@ returns a new promise to wait on.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onComplete</code> from being invoked and will cause
+the returned <code>Promise</code> to be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onComplete</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the promise&rsquo;s value. This callback
+returns a new result, which the returned promise will adopt the value of.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new <code>Promise</code> that adopts the result returned by <code>onComplete</code>, or is rejected
+if <code>onComplete</code> throws an error.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV16tryFlatMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0bF0Oyxq_GKctsAGRd_0_r0_lF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV16tryFlatMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0bF0Oyxq_GKctsAGRd_0_r0_lF">tryFlatMapResult(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
+returns a new promise to wait on.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1025,9 +1638,9 @@ returns a new promise, which the returned promise will adopt the value of.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0B6ResultOyxq_GKctlF"></a>
-                    <a name="//apple_ref/swift/Method/tryAlways(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0B6ResultOyxq_GKctlF">tryAlways(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseV12tryMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bE0Oyqd__sAG_pGAOyxq_GKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryMapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV12tryMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAA0bE0Oyqd__sAG_pGAOyxq_GKctlF">tryMapResult(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1036,14 +1649,14 @@ returns a new promise, which the returned promise will adopt the value of.</p>
                       <div class="pointer"></div>
                       <div class="abstract">
                         <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
-returns a new promise to wait on.</p>
+returns a new result.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryAlways</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1059,8 +1672,86 @@ returns a new promise to wait on.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onComplete</code> from being invoked and will cause
+the returned <code>Promise</code> to be cancelled.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onComplete</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the promise&rsquo;s value. This callback
+returns a new result, which the returned promise will adopt the value of.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new <code>Promise</code> that adopts the result returned by <code>onComplete</code>, or is rejected
+if <code>onComplete</code> throws an error.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV16tryFlatMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0bF0Oyxq_GKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMapResult(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV16tryFlatMapResult2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0bF0Oyxq_GKctlF">tryFlatMapResult(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Registers a callback that will be invoked with the promise result, no matter what it is, and
+returns a new promise to wait on.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1128,7 +1819,8 @@ chain without affecting the chain.</p>
     <p>This method is intended for inserting into the middle of a promise chain without
 affecting existing behavior (in particular, cancellation propagation). If you are not
 inserting this into the middle of a promise chain, you probably want to use
-<code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">then(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV5catch2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyq_ctF">catch(on:token:_:)</a></code>, or <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV6always2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyAA0B6ResultOyxq_GctF">always(on:token:_:)</a></code> instead.</p>
+<code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV4then2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyxctF">then(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV3map2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">map(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV5catch2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyq_ctF">catch(on:token:_:)</a></code>, or <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV6always2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyAA0B6ResultOyxq_GctF">always(on:token:_:)</a></code>
+instead.</p>
 
 </div>
 <div class="aside aside-see-also">
@@ -1226,7 +1918,8 @@ promise chain without affecting the chain.</p>
     <p>This method is intended for inserting into the middle of a promise chain without
 affecting existing behavior (in particular, cancellation propagation). If you are not
 inserting this into the middle of a promise chain, you probably want to use
-<code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">then(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV5catch2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyq_ctF">catch(on:token:_:)</a></code>, or <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV6always2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyAA0B6ResultOyxq_GctF">always(on:token:_:)</a></code> instead.</p>
+<code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV4then2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyxctF">then(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV3map2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">map(on:token:_:)</a></code>, <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV5catch2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyq_ctF">catch(on:token:_:)</a></code>, or <code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV6always2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyAA0B6ResultOyxq_GctF">always(on:token:_:)</a></code>
+instead.</p>
 
 </div>
 <div class="aside aside-see-also">
@@ -1363,7 +2056,7 @@ wish to cancel the chain.
 <p>Example:</p>
 <pre class="highlight swift"><code><span class="k">return</span> <span class="n">urlSession</span><span class="o">.</span><span class="nf">dataTaskAsPromise</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span>
     <span class="o">.</span><span class="nf">fork</span><span class="p">({</span> <span class="nv">$0</span><span class="o">.</span><span class="nf">tap</span><span class="p">()</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="p">{</span> <span class="n">analytics</span><span class="o">.</span><span class="nf">recordNetworkLoad</span><span class="p">(</span><span class="nv">$0</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="nv">for</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span> <span class="p">})</span> <span class="p">})</span>
-    <span class="o">.</span><span class="nf">tryThen</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="k">try</span> <span class="kt">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="kt">Model</span><span class="o">.</span><span class="k">self</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="nv">$0</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="p">})</span>
+    <span class="o">.</span><span class="nf">tryMap</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="k">try</span> <span class="kt">JSONDecoder</span><span class="p">()</span><span class="o">.</span><span class="nf">decode</span><span class="p">(</span><span class="kt">Model</span><span class="o">.</span><span class="k">self</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="nv">$0</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="p">})</span>
 </code></pre>
 
                       </div>
@@ -1518,6 +2211,311 @@ automatically cancelled due to cancel propagation from any observer.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">ignoringCancel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF"></a>
+                    <a name="//apple_ref/swift/Method/then(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xctlF">then(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">then</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF"></a>
+                    <a name="//apple_ref/swift/Method/then(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV4then2on5token_ACyqd__q_GAA0B7ContextO_AA0B17InvalidationTokenVSgAGxctlF">then(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">then</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV7recover2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF"></a>
+                    <a name="//apple_ref/swift/Method/recover(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV7recover2on5token_ACyxqd__GAA0B7ContextO_AA0B17InvalidationTokenVSgAGq_ctlF">recover(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">recover</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV6always2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0B6ResultOyxq_Gctr0_lF"></a>
+                    <a name="//apple_ref/swift/Method/always(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV6always2on5token_ACyqd__qd_0_GAA0B7ContextO_AA0B17InvalidationTokenVSgAgA0B6ResultOyxq_Gctr0_lF">always(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">always</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0B6ResultOyxq_GKctsAGRd_0_r0_lF"></a>
+                    <a name="//apple_ref/swift/Method/tryAlways(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GAA0B6ResultOyxq_GKctsAGRd_0_r0_lF">tryAlways(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryAlways</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0B6ResultOyxq_GKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryAlways(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV9tryAlways2on5token_ACyqd__s5Error_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAhA0B6ResultOyxq_GKctlF">tryAlways(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryAlways</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF">tryThen(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF">tryThen(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF"></a>
+                    <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF">tryThen(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHsAD_pKctF"></a>
+                    <a name="//apple_ref/swift/Method/tryRecover(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHsAD_pKctF">tryRecover(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">tryRecover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__GsAD_pKctsADRd__lF"></a>
+                    <a name="//apple_ref/swift/Method/tryRecover(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__GsAD_pKctsADRd__lF">tryRecover(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="n">tryRecover</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1751,9 +2749,9 @@ throws an error the promise will be rejected (unless it was already resolved fir
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF"></a>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgyxKctF"></a>
                     <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF">tryThen(on:token:_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgyxKctF">tryThen(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1768,7 +2766,7 @@ throws an error the promise will be rejected (unless it was already resolved fir
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryThen</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1786,6 +2784,83 @@ throws an error the promise will be rejected (unless it was already resolved fir
                                 <div>
                                   <p>The context to invoke the callback on. If not provided, defaults to
 <code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
+<code>invalidate()</code> on the token will prevent <code>onSuccess</code> from being invoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>onSuccess</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The callback that is invoked with the fulfilled value.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A new promise that will resolve to the same value as the receiver, or rejected if
+<code>onSuccess</code> throws an error. If the receiver is rejected or cancelled, the returned
+promise will also be rejected or cancelled.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE6tryMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryMap(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE6tryMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgqd__xKctlF">tryMap(on:token:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Registers a callback that is invoked when the promise is fulfilled.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>context</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1830,9 +2905,9 @@ returned promise will also be rejected or cancelled.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF"></a>
-                    <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF">tryThen(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryFlatMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMap(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryFlatMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHxKctlF">tryFlatMap(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1847,7 +2922,7 @@ returned promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1863,8 +2938,7 @@ returned promise will also be rejected or cancelled.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1909,9 +2983,9 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF"></a>
-                    <a name="//apple_ref/swift/Method/tryThen(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE7tryThen2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF">tryThen(on:token:_:)</a>
+                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryFlatMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF"></a>
+                    <a name="//apple_ref/swift/Method/tryFlatMap(on:token:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryFlatMap2on5token_ACyqd__sAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyqd__qd_0_GxKctsADRd_0_r0_lF">tryFlatMap(on:token:_:)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1926,7 +3000,7 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryThen</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1942,8 +3016,7 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2004,7 +3077,7 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryRecover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryRecover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -2020,8 +3093,7 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+                                  <p>The context to invoke the callback on.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2059,162 +3131,6 @@ fulfilled and the token is invalidated, the returned promise will be cancelled.<
                         <p>A new promise that will be fulfilled with the return value of <code>onError</code>, or
 rejected if <code>onError</code> throws an error. If the receiver is rejected or cancelled, the
 returned promise will also be rejected or cancelled.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHsAD_pKctF"></a>
-                    <a name="//apple_ref/swift/Method/tryRecover(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgAHsAD_pKctF">tryRecover(on:token:_:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryRecover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>context</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>token</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
-<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
-fulfilled and the token is invalidated, the returned promise will be cancelled.</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>onError</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The callback that is invoked with the rejected error.</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A new promise that will be eventually resolved using the promise returned from
-<code>onError</code>, or rejected if <code>onError</code> throws an error. If the receiver is rejected or
-cancelled, the returned promise will also be rejected or cancelled.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__GsAD_pKctsADRd__lF"></a>
-                    <a name="//apple_ref/swift/Method/tryRecover(on:token:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseVAAs5Error_pRs_rlE10tryRecover2on5token_ACyxsAD_pGAA0B7ContextO_AA0B17InvalidationTokenVSgACyxqd__GsAD_pKctsADRd__lF">tryRecover(on:token:_:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryRecover</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">token</span><span class="p">:</span> <span class="kt"><a href="../Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Parameters</h4>
-                        <table class="graybox">
-                          <tbody>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>context</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>token</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>An optional <code>PromiseInvalidatonToken</code>. If provided, calling
-<code>invalidate()</code> on the token will prevent <code>onError</code> from being invoked. If the promise is
-fulfilled and the token is invalidated, the returned promise will be cancelled.</p>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <code>
-                                <em>onError</em>
-                                </code>
-                              </td>
-                              <td>
-                                <div>
-                                  <p>The callback that is invoked with the rejected error.</p>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>A new promise that will be eventually resolved using the promise returned from
-<code>onError</code>, or rejected if <code>onError</code> throws an error. If the receiver is rejected or
-cancelled, the returned promise will also be rejected or cancelled.</p>
                       </div>
                     </section>
                   </div>
@@ -2838,7 +3754,7 @@ resolved.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-01-28)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-02-25)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

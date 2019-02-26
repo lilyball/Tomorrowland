@@ -1,6 +1,159 @@
 {
   "warnings": [
-
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 17,
+      "symbol": "Promise.then(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 22,
+      "symbol": "Promise.then(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 27,
+      "symbol": "Promise.recover(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 32,
+      "symbol": "Promise.always(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 37,
+      "symbol": "Promise.tryAlways(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 43,
+      "symbol": "Promise.tryAlways(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 51,
+      "symbol": "Promise.tryThen(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 57,
+      "symbol": "Promise.tryThen(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 63,
+      "symbol": "Promise.tryThen(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 69,
+      "symbol": "Promise.tryRecover(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 75,
+      "symbol": "Promise.tryRecover(on:token:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 82,
+      "symbol": "TokenPromise.then(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 87,
+      "symbol": "TokenPromise.then(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 92,
+      "symbol": "TokenPromise.recover(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 97,
+      "symbol": "TokenPromise.always(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 102,
+      "symbol": "TokenPromise.tryAlways(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 108,
+      "symbol": "TokenPromise.tryAlways(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 116,
+      "symbol": "TokenPromise.tryThen(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 122,
+      "symbol": "TokenPromise.tryThen(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 128,
+      "symbol": "TokenPromise.tryThen(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 134,
+      "symbol": "TokenPromise.tryRecover(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
+      "line": 140,
+      "symbol": "TokenPromise.tryRecover(on:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    }
   ],
   "source_directory": "/Users/kevin/Dev/iPhone/Tomorrowland"
 }

@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="index.html">Tomorrowland Docs</a> (89% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.4.3-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.5.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -156,10 +156,10 @@ implemented in a non-thread-safe manner.</li>
 
 <p>You can add Tomorrowland to your workspace manually like any other project and add the resulting <code>Tomorrowland.framework</code> to your application&rsquo;s frameworks.</p>
 <h3 id='carthage' class='heading'>Carthage</h3>
-<pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 0.4.0
+<pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 0.5.0
 </code></pre>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 0.4.0'</span>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 0.5.0'</span>
 </code></pre>
 <h3 id='swiftpm' class='heading'>SwiftPM</h3>
 
@@ -178,8 +178,7 @@ compatibility would necessitate publicly exposing the private Obj-C module).</p>
 <p>The body of this promise runs on the specified <code><a href="Enums/PromiseContext.html">PromiseContext</a></code>, which in this case is <code>.utility</code> (which means <code>DispatchQueue.global(qos: .utility)</code>).
 Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on the main thread. The available contexts
 include <code>.main</code>, every Dispatch QoS, a specific <code>DispatchQueue</code>, a specific <code>OperationQueue</code>, or the value <code>.immediate</code> which means to run the block
-synchronously. There&rsquo;s also the special context <code>.auto</code>, which evaluates to <code>.main</code> on the main thread and <code>.default</code> otherwise. This special context is the default
-context for all callbacks that don&rsquo;t otherwise specify one.</p>
+synchronously. There&rsquo;s also the special context <code>.auto</code>, which evaluates to <code>.main</code> on the main thread and <code>.default</code> otherwise.</p>
 
 <p><strong>Note:</strong> The <code>.immediate</code> context can be dangerous to use for callback handlers and should be avoided in most cases. It&rsquo;s primarily intended for creating
 promises, and whenever it&rsquo;s used with a callback handler the handler must be prepared to execute on <em>any thread</em>. For callbacks it&rsquo;s usually only useful for short
@@ -212,18 +211,19 @@ cancellation. For example:</p>
 </code></pre>
 <h3 id='using-promises' class='heading'>Using Promises</h3>
 
-<p>Once you have a promise, you can register callbacks to be executed when the promise is resolved. As mentioned above, you can specify the context for the
-callback, but if you don&rsquo;t specify it then it defaults to <code>.auto</code>, which means the main thread if the callback is registered from the main thread, otherwise the dispatch
-queue with QoS <code>.default</code>.</p>
+<p>Once you have a promise, you can register callbacks to be executed when the promise is resolved. Most callback methods require a context, but for some of them
+(<code>then</code>, <code>catch</code>, <code>always</code>, and <code>tryThen</code>) you can omit the context and it will default to <code>.auto</code>, which means the main thread if the callback is registered from the
+main thread, otherwise the dispatch queue with QoS <code>.default</code>.</p>
 
 <p>When you register a callback, the method also returns a <code><a href="Structs/Promise.html">Promise</a></code>. All callback registration methods return a new <code><a href="Structs/Promise.html">Promise</a></code> even if the callback doesn&rsquo;t affect the
 value of the promise. The reason for this is so chained callbacks always guarantee that the previous callback finished executing before the new one starts, even
-when using concurrent contexts (e.g. <code>.utility</code>).</p>
+when using concurrent contexts (e.g. <code>.utility</code>), and so cancelling the returned promise doesn&rsquo;t cancel the original one if any other callbacks were registered on
+it.</p>
 
 <p>Most callback registration methods also have versions that allow you to return a <code><a href="Structs/Promise.html">Promise</a></code> from your callback. In this event, the resulting <code><a href="Structs/Promise.html">Promise</a></code> waits for the
 promise you returned to resolve before adopting its value. This allows for easy composition of promises.</p>
 <pre class="highlight swift"><code><span class="nf">showLoadingIndicator</span><span class="p">()</span>
-<span class="nf">fetchUserCredentials</span><span class="p">()</span><span class="o">.</span><span class="n">then</span> <span class="p">{</span> <span class="p">(</span><span class="n">credentials</span><span class="p">)</span> <span class="k">in</span>
+<span class="nf">fetchUserCredentials</span><span class="p">()</span><span class="o">.</span><span class="nf">flatMap</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="k">default</span><span class="p">)</span> <span class="p">{</span> <span class="p">(</span><span class="n">credentials</span><span class="p">)</span> <span class="k">in</span>
     <span class="c1">// This returns a new promise</span>
     <span class="k">return</span> <span class="kt">MyAPI</span><span class="o">.</span><span class="nf">login</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nv">password</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="n">password</span><span class="p">)</span>
 <span class="p">}</span><span class="o">.</span><span class="n">then</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="p">(</span><span class="n">apiKey</span><span class="p">)</span> <span class="k">in</span>
@@ -275,7 +275,7 @@ cancellation. This may look like</p>
         <span class="c1">// Note: dataTaskAsPromise does not actually exist</span>
         <span class="n">promise</span> <span class="o">=</span> <span class="kt">URLSession</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="nf">dataTaskAsPromise</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span>
         <span class="c1">// Use `_ =` to avoid having to handle errors with `.catch`.</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">promise</span><span class="p">?</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">in</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">promise</span><span class="p">?</span><span class="o">.</span><span class="nf">tryMap</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UIImage</span> <span class="k">in</span>
             <span class="k">if</span> <span class="k">let</span> <span class="nv">image</span> <span class="o">=</span> <span class="kt">UIImage</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
                 <span class="k">return</span> <span class="n">image</span>
             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -316,7 +316,7 @@ the token invalidates, but can be used if the token would otherwise not be expli
         <span class="c1">// Note: dataTaskAsPromise does not actually exist</span>
         <span class="n">promise</span> <span class="o">=</span> <span class="kt">URLSession</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="nf">dataTaskAsPromise</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span>
         <span class="c1">// Use `_ =` to avoid having to handle errors with `.catch`.</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">promise</span><span class="p">?</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">in</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">promise</span><span class="p">?</span><span class="o">.</span><span class="nf">tryMap</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">utility</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UIImage</span> <span class="k">in</span>
             <span class="k">if</span> <span class="k">let</span> <span class="nv">image</span> <span class="o">=</span> <span class="kt">UIImage</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
                 <span class="k">return</span> <span class="n">image</span>
             <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -424,6 +424,26 @@ generic over its types, the return values of callback registration methods that 
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v0-5-0' class='heading'>v0.5.0</h3>
+
+<ul>
+<li>Rename a lot of methods on <code><a href="Structs/Promise.html">Promise</a></code> and <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> (<a href="https://github.com/lilyball/Tomorrowland/issues/5" title="Should we adopt .map, .flatMap terminology?">#5</a>).</li>
+</ul>
+
+<p>This gets rid of most overrides, leaving the only overridden methods to be ones that handle either <code>Swift.Error</code> or <code>E: Swift.Error</code>, and even these overrides
+  are removed in the Swift 5 compiler.</p>
+
+<p><code>then</code>  is now <code>map</code> or <code>flatMap</code>, <code>recover</code>&rsquo;s override is now <code>flatMapError</code>, <code>always</code>&rsquo;s override is now <code>flatMapResult</code>, and similar renames were made for
+  the <code>try</code> variants.</p>
+
+<ul>
+<li>Add a new <code>then</code> method whose block returns <code>Void</code>. The returned promise resolves to the same result as the original promise.</li>
+<li>Add new <code>mapError</code> and <code>tryMapError</code> methods.</li>
+<li>Add new <code>mapResult</code> and <code>tryMapResult</code> methods.</li>
+<li>Extend <code>tryFlatMapError</code> to be available on all <code><a href="Structs/Promise.html">Promise</a></code>s instead of just those whose error type is <code>Swift.Error</code>.</li>
+<li>Remove the default <code>.auto</code> value for the <code>on context:</code> parameter to most calls. It&rsquo;s now only provided for the <q>terminal</q> callbacks, the ones that don&rsquo;t return a
+value from the handler. This avoids the common problem of running trivial maps on the main thread unnecessarily (<a href="https://github.com/lilyball/Tomorrowland/issues/33" title="Remove default context parameter from map, etc">#33</a>).</li>
+</ul>
 <h3 id='v0-4-3' class='heading'>v0.4.3</h3>
 
 <ul>
@@ -506,7 +526,7 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-01-28)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-02-25)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

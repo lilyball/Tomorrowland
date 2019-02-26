@@ -14,7 +14,7 @@
     <a title="Structures  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="index.html">Tomorrowland Docs</a> (89% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -223,6 +223,60 @@ need to ensure your registered callbacks aren&rsquo;t invoked past a certain poi
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:12Tomorrowland12TokenPromiseV"></a>
+                    <a name="//apple_ref/swift/Struct/TokenPromise" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland12TokenPromiseV">TokenPromise</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> adapter that automatically applies a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>.</p>
+
+<p>This exposes the same methods as <code><a href="Structs/Promise.html">Promise</a></code> but it always passes a given
+<code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to the underlying promise.</p>
+<div class="aside aside-important">
+    <p class="aside-title">Important</p>
+    <code>TokenPromise</code> automatically cancels any returned child <code><a href="Structs/Promise.html">Promise</a></code>s when the
+<code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> is invalidated. The only exception is <code><a href="Structs/Promise.html">Promise</a></code>s returned from
+<code>tap()</code> or <code>tap(on:_:)</code>, as these methods do not propagate cancellation.
+
+</div>
+
+<p>A <code>TokenPromise</code> is created with the method <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenyAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code>. The wrapped <code><a href="Structs/Promise.html">Promise</a></code> can
+be accessed with the <code>.inner</code> property.</p>
+<h3 id='example' class='heading'>Example</h3>
+<pre class="highlight swift"><code><span class="nf">methodReturningPromise</span><span class="p">()</span>
+    <span class="o">.</span><span class="nf">withToken</span><span class="p">(</span><span class="n">promiseToken</span><span class="p">)</span>
+    <span class="o">.</span><span class="nf">then</span><span class="p">({</span> <span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">in</span>
+        <span class="c1">// handle value</span>
+    <span class="p">})</span><span class="o">.</span><span class="nf">catch</span><span class="p">({</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="k">in</span>
+        <span class="c1">// handle error</span>
+    <span class="p">})</span>
+</code></pre>
+
+                        <a href="Structs/TokenPromise.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:12Tomorrowland18PromiseCancellableV"></a>
                     <a name="//apple_ref/swift/Struct/PromiseCancellable" class="dashAnchor"></a>
                     <a class="token" href="#/s:12Tomorrowland18PromiseCancellableV">PromiseCancellable</a>
@@ -290,64 +344,10 @@ promise, but a retain cycle prevents this.</p>
                 </li>
               </ul>
             </div>
-            <div class="task-group">
-              <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12Tomorrowland12TokenPromiseV"></a>
-                    <a name="//apple_ref/swift/Struct/TokenPromise" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland12TokenPromiseV">TokenPromise</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>A <code><a href="Structs/Promise.html">Promise</a></code> adapter that automatically applies a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>.</p>
-
-<p>This exposes the same methods as <code><a href="Structs/Promise.html">Promise</a></code> but it always passes a given
-<code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to the underlying promise.</p>
-<div class="aside aside-important">
-    <p class="aside-title">Important</p>
-    <code>TokenPromise</code> automatically cancels any returned child <code><a href="Structs/Promise.html">Promise</a></code>s when the
-<code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> is invalidated. The only exception is <code><a href="Structs/Promise.html">Promise</a></code>s returned from
-<code>tap()</code> or <code>tap(on:_:)</code>, as these methods do not propagate cancellation.
-
-</div>
-
-<p>A <code>TokenPromise</code> is created with the method <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenyAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code>. The wrapped <code><a href="Structs/Promise.html">Promise</a></code> can
-be accessed with the <code>.inner</code> property.</p>
-<h3 id='example' class='heading'>Example</h3>
-<pre class="highlight swift"><code><span class="nf">methodReturningPromise</span><span class="p">()</span>
-    <span class="o">.</span><span class="nf">withToken</span><span class="p">(</span><span class="n">promiseToken</span><span class="p">)</span>
-    <span class="o">.</span><span class="nf">then</span><span class="p">({</span> <span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">in</span>
-        <span class="c1">// handle value</span>
-    <span class="p">})</span><span class="o">.</span><span class="nf">catch</span><span class="p">({</span> <span class="p">(</span><span class="n">error</span><span class="p">)</span> <span class="k">in</span>
-        <span class="c1">// handle error</span>
-    <span class="p">})</span>
-</code></pre>
-
-                        <a href="Structs/TokenPromise.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-              </ul>
-            </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-01-28)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-02-25)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
