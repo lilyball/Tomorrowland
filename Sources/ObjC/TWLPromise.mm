@@ -133,9 +133,10 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
         if (value) {
             [context executeBlock:^{
+                auto handler = oneshot();
                 if (!token || generation == token.generation) {
                     handler(value);
                 }
@@ -146,7 +147,7 @@
         } else {
             [resolver cancel];
         }
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -163,9 +164,10 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
         if (value) {
             [context executeBlock:^{
+                auto handler = oneshot();
                 if (token && generation != token.generation) {
                     [resolver cancel];
                 } else {
@@ -182,7 +184,7 @@
         } else {
             [resolver cancel];
         }
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -199,11 +201,12 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [context executeBlock:^{
+                auto handler = oneshot();
                 if (!token || generation == token.generation) {
                     handler(error);
                 }
@@ -212,7 +215,7 @@
         } else {
             [resolver cancel];
         }
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -229,11 +232,12 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [context executeBlock:^{
+                auto handler = oneshot();
                 if (token && generation != token.generation) {
                     [resolver cancel];
                 } else {
@@ -248,7 +252,7 @@
         } else {
             [resolver cancel];
         }
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -265,14 +269,15 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
+            auto handler = oneshot();
             if (!token || generation == token.generation) {
                 handler(value, error);
             }
             [resolver resolveWithValue:value error:error];
         }];
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -289,8 +294,9 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, TWLPromise *(^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
+            auto handler = oneshot();
             if (token && generation != token.generation) {
                 [resolver cancel];
             } else {
@@ -298,7 +304,7 @@
                 [nextPromise pipeToResolver:resolver];
             }
         }];
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -313,20 +319,21 @@
 
 - (TWLPromise *)tapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, NO, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
+            auto handler = oneshot();
             if (!token || generation == token.generation) {
                 handler(value, error);
             }
         }];
-    } willPropagateCancel:NO];
+    });
     return self;
 }
 
 - (TWLPromise *)tap {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:NO];
     return promise;
@@ -344,20 +351,21 @@
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto generation = token.generation;
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void)){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [resolver rejectWithError:error];
         } else {
             [context executeBlock:^{
+                auto handler = oneshot();
                 if (!token || generation == token.generation) {
                     handler();
                 }
                 [resolver cancel];
             }];
         }
-    } willPropagateCancel:YES];
+    });
     propagateCancellation(resolver, self);
     return promise;
 }
@@ -406,7 +414,7 @@
 - (TWLPromise *)ignoringCancel {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:YES];
     return promise;
@@ -418,7 +426,7 @@
 
 #pragma mark - Private
 
-- (void)enqueueCallback:(void (^)(id _Nullable value, id _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel {
+- (void)enqueueCallbackWithoutOneshot:(void (^)(id _Nullable value, id _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel {
     if (willPropagateCancel) {
         // If the subsequent swap fails, that means we've already resolved (or started resolving)
         // the promise, so the observer count modification is harmless.
@@ -445,7 +453,7 @@
 }
 
 - (void)pipeToResolver:(nonnull TWLResolver *)resolver {
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:YES];
     __weak TWLObjCPromiseBox *box = _box;

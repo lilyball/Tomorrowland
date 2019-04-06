@@ -188,6 +188,16 @@ public typealias StdPromise<Value> = Promise<Value,Swift.Error>
 /// promise does not guarantee that it will cancel, as the promise may be in the process of
 /// resolving when that method is invoked. Make sure to use the invalidation token support if you
 /// need to ensure your registered callbacks aren't invoked past a certain point.
+///
+/// - Note: If a registered callback is invoked (or would have been invoked if no token was
+///   provided) it is guaranteed to be released on the context. This is important if the callback
+///   captures a value whose deallocation must occur on a specific thread (such as the main thread).
+///   If the callback is not invoked (ignoring tokens) it will be released on whatever thread the
+///   promise was resolved on. For example, if a promise is fulfilled, any callback registered with
+///   `.then(on:token:_:)` will be released on the context, but callbacks registered with
+///   `.catch(on:token:_:)` will not. If you need to guarantee the thread that the callback is
+///   released on, you should use `.always(on:token:_:)` or one of the `.mapResult(on:token:_:)`
+///   variants.
 public struct Promise<Value,Error> {
     /// A `Resolver` is used to fulfill, reject, or cancel its associated `Promise`.
     public struct Resolver {
@@ -354,10 +364,11 @@ public struct Promise<Value,Error> {
     ///   ignore this value.
     public func then(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     if generation == token?.generation {
                         onSuccess(value)
                     }
@@ -385,10 +396,11 @@ public struct Promise<Value,Error> {
     ///   cancelled.
     public func map<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -417,10 +429,11 @@ public struct Promise<Value,Error> {
     ///   rejected or cancelled.
     public func flatMap<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -452,12 +465,13 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     if generation == token?.generation {
                         onError(error)
                     }
@@ -485,12 +499,13 @@ public struct Promise<Value,Error> {
     ///   cancelled.
     public func recover(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Value) -> Promise<Value,NoError> {
         let (promise, resolver) = Promise<Value,NoError>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -517,12 +532,13 @@ public struct Promise<Value,Error> {
     ///   cancelled.
     public func mapError<E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> E) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -551,12 +567,13 @@ public struct Promise<Value,Error> {
     ///   fulfilled or cancelled.
     public func flatMapError<E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -584,12 +601,13 @@ public struct Promise<Value,Error> {
     ///   returned promise will also be fulfilled or cancelled.
     public func tryMapError<E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> E) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -622,12 +640,13 @@ public struct Promise<Value,Error> {
     ///   cancelled, the returned promise will also be fulfilled or cancelled.
     public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -660,12 +679,13 @@ public struct Promise<Value,Error> {
     ///   returned promise will also be fulfilled or cancelled.
     public func tryMapError(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Swift.Error) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -698,12 +718,13 @@ public struct Promise<Value,Error> {
     ///   cancelled, the returned promise will also be fulfilled or cancelled.
     public func tryFlatMapError(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Swift.Error>) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -736,8 +757,9 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 if generation == token?.generation {
                     onComplete(result)
                 }
@@ -760,8 +782,9 @@ public struct Promise<Value,Error> {
     /// - Returns: A new `Promise` that adopts the result returned by `onComplete`.
     public func mapResult<T,E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> PromiseResult<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -786,8 +809,9 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does.
     public func flatMapResult<T,E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -813,8 +837,9 @@ public struct Promise<Value,Error> {
     ///   if `onComplete` throws an error.
     public func tryMapResult<T,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -843,8 +868,9 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func tryFlatMapResult<T,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -875,8 +901,9 @@ public struct Promise<Value,Error> {
     ///   if `onComplete` throws an error.
     public func tryMapResult<T>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -905,8 +932,9 @@ public struct Promise<Value,Error> {
     ///   `onComplete` does, or is rejected if `onComplete` throws an error.
     public func tryFlatMapResult<T>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
                     return
@@ -949,8 +977,9 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     @discardableResult
     public func tap(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
-        _seal.enqueue(willPropagateCancel: false) { [generation=token?.generation] (result) in
+        _seal.enqueue(willPropagateCancel: false, makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
             context.execute {
+                let onComplete = onComplete()
                 if generation == token?.generation {
                     onComplete(result)
                 }
@@ -981,7 +1010,7 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap(on:token:_:)`, `ignoringCancel()`
     public func tap() -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue(willPropagateCancel: false) { (result) in
+        _seal._enqueue(willPropagateCancel: false) { (result) in
             resolver.resolve(with: result)
         }
         return promise
@@ -999,7 +1028,7 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onCancel) { [generation=token?.generation] (result, onCancel) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1007,6 +1036,7 @@ public struct Promise<Value,Error> {
                 resolver.reject(with: error)
             case .cancelled:
                 context.execute {
+                    let onCancel = onCancel()
                     if generation == token?.generation {
                         onCancel()
                     }
@@ -1087,14 +1117,14 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     public func ignoringCancel() -> Promise<Value,Error> {
         let (promise, resolver) = Promise.makeWithResolver()
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             resolver.resolve(with: result)
         }
         return promise
     }
     
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -1117,7 +1147,7 @@ extension Promise where Error: Swift.Error {
     }
     
     private func pipe(toStd resolver: Promise<Value,Swift.Error>.Resolver) {
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -1136,7 +1166,7 @@ extension Promise where Error == NoError {
     /// compose better with other promises.
     public var upcast: Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1186,10 +1216,11 @@ extension Promise where Error == Swift.Error {
     ///   promise will also be rejected or cancelled.
     public func tryThen(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     do {
                         if generation == token?.generation {
                             try onSuccess(value)
@@ -1221,10 +1252,11 @@ extension Promise where Error == Swift.Error {
     ///   returned promise will also be rejected or cancelled.
     public func tryMap<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -1296,10 +1328,11 @@ extension Promise where Error == Swift.Error {
     ///   cancelled, the returned promise will also be rejected or cancelled.
     public func tryFlatMap<U,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
             switch result {
             case .value(let value):
                 context.execute {
+                    let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -1335,12 +1368,13 @@ extension Promise where Error == Swift.Error {
     ///   returned promise will also be rejected or cancelled.
     public func tryRecover(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 context.execute {
+                    let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -2097,7 +2131,33 @@ internal class PromiseSeal<T,E>: NSObject {
     /// Enqueues a callback onto the box's callback list.
     ///
     /// If the callback list has already been consumed, the callback is executed immediately.
-    func enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
+    ///
+    /// - Parameter value: A value that is wrapped in a oneshot block and passed to the callback.
+    ///   Executing the block passed to the callback multiple times results in undefined behavior.
+    ///
+    /// - Note: The oneshot value should only be accessed inside the context being dispatched on.
+    ///   The reason for this behavior is to ensure that any user-supplied data is released either
+    ///   on the thread that registers the callback, or on the context itself, and is not released
+    ///   on whatever thread the receiver happens to be resolved on. We only make this guarantee in
+    ///   the case where the callback is invoked (ignoring tokens).
+    func enqueue<Value>(willPropagateCancel: Bool = true, makeOneshot value: Value, callback: @escaping (PromiseResult<T,E>, _ oneshot: @escaping () -> Value) -> Void) {
+        var value = Optional.some(value)
+        let oneshot: () -> Value = {
+            defer { value = nil }
+            return value.unsafelyUnwrapped
+        }
+        _enqueue(willPropagateCancel: willPropagateCancel) { (result) in
+            callback(result, oneshot)
+        }
+    }
+    
+    /// Enqueues a callback onto the box's callback list.
+    ///
+    /// If the callback list has already been consumed, the callback is executed immediately.
+    ///
+    /// - Important: This function should only be called if there's no user-supplied callback
+    ///   involved that should be turned into a oneshot.
+    func _enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
         if willPropagateCancel {
             // If the subsequent swap fails, that means we've already resolved (or started
             // resolving) the promise, so the observer count modification is harmless.

@@ -1185,7 +1185,7 @@ final class PromiseTests: XCTestCase {
         let (promise, resolver) = Promise<Int,String>.makeWithResolver()
         let firstExpectation = XCTestExpectation(description: "first block released")
         let secondExpectation = XCTestExpectation(description: "second block executed")
-        _ = promise.then(on: .main, { [spy=DeinitSpy(onDeinit: { firstExpectation.fulfill() })] _ in
+        _ = promise.then(on: .main, { [spy=DeinitSpy(fulfilling: firstExpectation)] _ in
             withExtendedLifetime(spy) {} // ensure spy isn't optimized away
         }).then(on: .main, { _ in
             self.wait(for: [firstExpectation], timeout: 0)
@@ -1288,6 +1288,37 @@ final class PromiseTests: XCTestCase {
         XCTAssertNotNil(weakObject)
         promise.requestCancel()
         XCTAssertNil(weakObject)
+    }
+    
+    func testThenCallbackDeinited() {
+        // We're doing special things with callback lifetimes, so let's just make sure we aren't
+        // leaking it.
+        do {
+            // When it executes
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            let notYet = XCTestExpectation(description: "spy deinited")
+            notYet.isInverted = true
+            let expectation = XCTestExpectation(description: "then block deinited")
+            _ = promise.then(on: .main, { [spy=DeinitSpy(onDeinit: { notYet.fulfill(); expectation.fulfill() })] _ in
+                self.wait(for: [notYet], timeout: 0) // sanity check to make sure the spy is alive
+                withExtendedLifetime(spy) {} // ensure we don't optimize away the spy
+            })
+            resolver.fulfill(with: 42)
+            wait(for: [expectation], timeout: 1)
+        }
+        do {
+            // When it doesn't execute
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            let notYet = XCTestExpectation(description: "spy deinited")
+            notYet.isInverted = true
+            let expectation = XCTestExpectation(description: "then block deinited")
+            _ = promise.then(on: .main, { [spy=DeinitSpy(onDeinit: { notYet.fulfill(); expectation.fulfill() })] _ in
+                self.wait(for: [notYet], timeout: 0) // sanity check to make sure the spy is alive
+                withExtendedLifetime(spy) {} // ensure we don't optimize away the spy
+            })
+            resolver.reject(with: "foobar")
+            wait(for: [expectation], timeout: 1)
+        }
     }
 }
 

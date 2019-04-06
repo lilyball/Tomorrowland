@@ -37,6 +37,11 @@
                BlueprintName = "TomorrowlandTests"
                ReferencedContainer = "container:Tomorrowland.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "StressTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <MacroExpansion>

@@ -37,11 +37,28 @@ NS_ASSUME_NONNULL_BEGIN
 }
 - (instancetype)initDelayed NS_DESIGNATED_INITIALIZER;
 
-- (void)enqueueCallback:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel;
+- (void)enqueueCallbackWithoutOneshot:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel;
 @end
 
 @interface TWLResolver<ValueType,ErrorType> ()
 - (nonnull instancetype)initWithBox:(nonnull TWLObjCPromiseBox<ValueType,ErrorType> *)box NS_DESIGNATED_INITIALIZER;
 @end
+
+#if __cplusplus
+namespace {
+    template<class ValueType, class ErrorType, class OneshotType>
+    inline void enqueueCallback(TWLPromise<ValueType, ErrorType> * _Nonnull promise, BOOL willPropagateCancel, OneshotType value, void (^ _Nonnull callback)(ValueType _Nullable value, ErrorType _Nullable error, OneshotType (^ _Nonnull oneshot)(void))) {
+        __block OneshotType oneshotValue = value;
+        OneshotType (^oneshot)(void) = ^{
+            OneshotType value = oneshotValue;
+            oneshotValue = nil;
+            return value;
+        };
+        [promise enqueueCallbackWithoutOneshot:^(ValueType _Nullable value, ErrorType _Nullable error) {
+            callback(value, error, oneshot);
+        } willPropagateCancel:willPropagateCancel];
+    }
+}
+#endif
 
 NS_ASSUME_NONNULL_END

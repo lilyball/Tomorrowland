@@ -54,7 +54,7 @@
     for (NSUInteger i = 0; i < count; ++i) {
         TWLPromise *promise = promises[i];
         dispatch_group_enter(group);
-        [promise enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [promise enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
             [context executeBlock:^{
                 if (value) {
                     resultBuffer[i] = (__bridge id)CFBridgingRetain(value);
@@ -121,7 +121,7 @@
     dispatch_group_t group = dispatch_group_create();
     for (TWLPromise *promise in promises) {
         dispatch_group_enter(group);
-        [promise enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [promise enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
             if (value) {
                 [resolver fulfillWithValue:value];
                 [cancelAllInput invoke];

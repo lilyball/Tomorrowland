@@ -65,7 +65,7 @@ pod 'Tomorrowland', '~> 0.5.0'
 Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding
 compatibility would necessitate publicly exposing the private Obj-C module).
 
-## Quick Start
+## Usage
 
 ### Creating Promises
 
@@ -335,6 +335,13 @@ Tomorrowland has Obj-C compatibility in the form of `TWLPromise<ValueType,ErrorT
 `Promise` and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while `TWLPromise` is
 generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).
 
+### Callback lifetimes
+
+Callbacks registered on promises will be retained until the promise is resolved. If a callback is invoked (or would be invoked if the relevant invalidation token hadn't
+been invalidated), Tomorrowland guarantees that it will release the callback on the context it was invoked on. If the callback is not invoked (e.g. it's a `then(on:_:)`
+callback but the promise was rejected) then no guarantees are made as to the context the callback is released on. If you need to ensure it's released on the
+appropriate context (e.g. if it captures an object that must deallocate on the main thread) then you can use `.always` or one of the `.mapResult` variants.
+
 ## Requirements
 
 Requires a minimum of iOS 9, macOS 10.10, watchOS 2.0, or tvOS 9.0.
@@ -356,6 +363,13 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ### Development
 
 - When chaining multiple `.main` context blocks in the same runloop pass, ensure we release each block before executing the next one.
+- Ensure that if a user-supplied callback is invoked, it is also released on the context where it was invoked ([#38][]).
+  
+  This guarantee is only made for callbacks that are invoked (ignoring tokens). What this means is when using e.g. `.then(on:_:)` if the promise is fulfilled, the
+  `onSuccess` block will be released on the provided context, but if the promise is rejected no such guarantee is made. If you rely on the context it's released on
+  (e.g. it captures an object that must deallocate on the main thread) then you can use `.always` or one of the `mapResult` variants.
+
+[#38]: https://github.com/lilyball/Tomorrowland/issues/38 "Dealloc completion blocks on the context they're scheduled on"
 
 ### v0.5.0
 

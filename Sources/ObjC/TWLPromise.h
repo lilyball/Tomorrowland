@@ -69,6 +69,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// promise may be in the process of resolving when that method is invoked. Make sure to use the
 /// invalidation token support if you need to ensure your registered callbacks aren't invoked past a
 /// certain point.
+///
+/// \note If a registered callback is invoked (or would have been invoked if no token was provided)
+/// it is guaranteed to be released on the context. This is important if the callback captures a
+/// value whose deallocation must occur on a specific thread (such as the main thread). If the
+/// callback is not invoked (ignoring tokens) it will be released on whatever thread the promise was
+/// resolved on. For example, if a promise is fulfilled, any callback registered with \c
+/// -thenOnContext:handler: will be released on the context, but callbacks registered with \c
+/// -catchOnContext:handler: will not. If you need to guarantee the thread that the callback is
+/// released on, you should use \c -inspectOnContext:handler: or \c -alwaysOnContext:handler:.
 NS_SWIFT_NAME(ObjCPromise)
 @interface TWLPromise<__covariant ValueType, __covariant ErrorType> : NSObject
 

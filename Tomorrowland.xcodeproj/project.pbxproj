@@ -13,6 +13,9 @@
 		0A2CDAA61FF34FC500B9C652 /* DelayedPromise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */; };
 		0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */; };
 		0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A362AA32027B50600807361 /* ObjectiveC.swift */; };
+		0A81945C225845D200CCB9C3 /* StressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A81945B225845D200CCB9C3 /* StressTests.swift */; };
+		0A8194622258468800CCB9C3 /* TWLAtomicBool.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A81945F2258468600CCB9C3 /* TWLAtomicBool.m */; };
+		0A81946622584D6C00CCB9C3 /* DeinitSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A81946422584C2E00CCB9C3 /* DeinitSpy.swift */; };
 		0A81946922585DFB00CCB9C3 /* TWLDeallocSpy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A81946822585DFB00CCB9C3 /* TWLDeallocSpy.m */; };
 		0A843A301FFE117200D171B4 /* TWLInvalidationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */; };
 		0A843A321FFF3FC500D171B4 /* objc_cast.h in Headers */ = {isa = PBXBuildFile; fileRef = 0A843A311FFF3FC500D171B4 /* objc_cast.h */; };
@@ -77,6 +80,11 @@
 		0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromise.swift; sourceTree = "<group>"; };
 		0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelayedPromiseTests.swift; sourceTree = "<group>"; };
 		0A362AA32027B50600807361 /* ObjectiveC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectiveC.swift; sourceTree = "<group>"; };
+		0A81945B225845D200CCB9C3 /* StressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StressTests.swift; sourceTree = "<group>"; };
+		0A81945E2258468600CCB9C3 /* TWLAtomicBool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLAtomicBool.h; sourceTree = "<group>"; };
+		0A81945F2258468600CCB9C3 /* TWLAtomicBool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLAtomicBool.m; sourceTree = "<group>"; };
+		0A8194632258469600CCB9C3 /* TomorrowlandTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TomorrowlandTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		0A81946422584C2E00CCB9C3 /* DeinitSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeinitSpy.swift; sourceTree = "<group>"; };
 		0A81946722585DFB00CCB9C3 /* TWLDeallocSpy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLDeallocSpy.h; sourceTree = "<group>"; };
 		0A81946822585DFB00CCB9C3 /* TWLDeallocSpy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLDeallocSpy.m; sourceTree = "<group>"; };
 		0A843A2F1FFE117200D171B4 /* TWLInvalidationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TWLInvalidationToken.swift; sourceTree = "<group>"; };
@@ -156,8 +164,12 @@
 		0A81945D2258466800CCB9C3 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				0A81945E2258468600CCB9C3 /* TWLAtomicBool.h */,
+				0A81945F2258468600CCB9C3 /* TWLAtomicBool.m */,
+				0A81946422584C2E00CCB9C3 /* DeinitSpy.swift */,
 				0A81946722585DFB00CCB9C3 /* TWLDeallocSpy.h */,
 				0A81946822585DFB00CCB9C3 /* TWLDeallocSpy.m */,
+				0A8194632258469600CCB9C3 /* TomorrowlandTests-Bridging-Header.h */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -248,11 +260,13 @@
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
 				AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */,
+				0A81945B225845D200CCB9C3 /* StressTests.swift */,
 				0A14B5702027BB310081C4C8 /* ObjectiveCTests.swift */,
 				0AFD1B5F1FFC1FF700AB2029 /* PrivateTests.swift */,
 				0A843A391FFF5F7700D171B4 /* ObjCPromiseTests.swift */,
 				0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */,
 				0ACA1F82200316DB00A65481 /* ObjC */,
+				0A81945D2258466800CCB9C3 /* Helpers */,
 				0AFF27651FE0E3F40006D95A /* Info.plist */,
 			);
 			path = Tests;
@@ -426,6 +440,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */,
+				0A81946622584D6C00CCB9C3 /* DeinitSpy.swift in Sources */,
+				0A81945C225845D200CCB9C3 /* StressTests.swift in Sources */,
 				0A843A3B1FFF5F7700D171B4 /* ObjCPromiseTests.swift in Sources */,
 				ABDC7F821FEB980500036FCD /* WhenTests.swift in Sources */,
 				0A81946922585DFB00CCB9C3 /* TWLDeallocSpy.m in Sources */,
@@ -437,6 +453,7 @@
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */,
 				0AFF636820682659006BCA29 /* ObjCBridgingGenerics.swift in Sources */,
+				0A8194622258468800CCB9C3 /* TWLAtomicBool.m in Sources */,
 				0A843A3A1FFF5F7700D171B4 /* TWLPromiseTests.m in Sources */,
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 				0ACA1F8120020FC900A65481 /* TWLUtilityTests.m in Sources */,
@@ -658,6 +675,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/Helpers/TomorrowlandTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -679,6 +697,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tildesoft.TomorrowlandTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/Helpers/TomorrowlandTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;

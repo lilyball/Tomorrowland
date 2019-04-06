@@ -117,7 +117,7 @@ extension Promise {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         switch context.getDestination() {
         case .queue(let queue):
-            _seal.enqueue { (result) in
+            _seal._enqueue { (result) in
                 let timer = DispatchSource.makeTimerSource(queue: queue)
                 timer.setEventHandler {
                     resolver.resolve(with: result)
@@ -134,7 +134,7 @@ extension Promise {
             }
         case .operationQueue(let queue):
             let operation = TWLBlockOperation()
-            _seal.enqueue { (result) in
+            _seal._enqueue { (result) in
                 operation.addExecutionBlock {
                     resolver.resolve(with: result)
                 }
@@ -205,7 +205,7 @@ extension Promise {
             }
             destination = .operationQueue(operation, operationQueue)
         }
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
@@ -280,7 +280,7 @@ extension Promise where Error == Swift.Error {
             }
             destination = .operationQueue(operation, operationQueue)
         }
-        _seal.enqueue { (result) in
+        _seal._enqueue { (result) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
             context.execute {
                 resolver.resolve(with: result)

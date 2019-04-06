@@ -128,14 +128,14 @@ static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Non
     NSOperationQueue *operationQueue;
     [context getDestinationQueue:&queue operationQueue:&operationQueue];
     if (queue) {
-        [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, ^{
                 [resolver resolveWithValue:value error:error];
             });
         } willPropagateCancel:YES];
     } else {
         __auto_type operation = [TWLBlockOperation new];
-        [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+        [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
             [operation addExecutionBlock:^{
                 [resolver resolveWithValue:value error:error];
             }];
@@ -189,7 +189,7 @@ static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Non
     if (operationQueue) {
         operation = [TWLBlockOperation blockOperationWithBlock:timeoutBlock];
     }
-    [self enqueueCallback:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
         dispatch_block_cancel(timeoutBlock);
         if (error) {
             error = [TWLTimeoutError newWithRejectedError:error];
