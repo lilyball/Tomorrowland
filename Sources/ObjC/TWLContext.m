@@ -156,10 +156,12 @@
                 // We're already executing on the .main context
                 TWLEnqueueThreadLocalBlock(block);
             } else {
+                __block typeof(block) block_ = block;
                 dispatch_async(_queue, ^{
                     TWLExecuteBlockWithMainContextThreadLocalFlag(^{
                         @autoreleasepool {
-                            block();
+                            block_();
+                            block_ = nil;
                         }
                         dispatch_block_t _Nullable block;
                         while ((block = TWLDequeueThreadLocalBlock())) {

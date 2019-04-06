@@ -353,6 +353,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- When chaining multiple `.main` context blocks in the same runloop pass, ensure we release each block before executing the next one.
+
 ### v0.5.0
 
 - Rename a lot of methods on `Promise` and `TokenPromise` ([#5][]).

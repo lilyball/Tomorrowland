@@ -1179,6 +1179,24 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testChainedMainContextCallbacksReleaseBeforeNextOneBegins() {
+        // Ensure that when we chain main context callbacks, we release each block before invoking
+        // the next one.
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        let firstExpectation = XCTestExpectation(description: "first block released")
+        let secondExpectation = XCTestExpectation(description: "second block executed")
+        _ = promise.then(on: .main, { [spy=DeinitSpy(onDeinit: { firstExpectation.fulfill() })] _ in
+            withExtendedLifetime(spy) {} // ensure spy isn't optimized away
+        }).then(on: .main, { _ in
+            self.wait(for: [firstExpectation], timeout: 0)
+            secondExpectation.fulfill()
+        })
+        DispatchQueue.global(qos: .default).async {
+            resolver.fulfill(with: 42)
+        }
+        wait(for: [secondExpectation], timeout: 1)
+    }
+    
     func testResolverHandleCallback() {
         let promise1 = StdPromise<Int>(on: .utility, { (resolver) in
             resolver.handleCallback()(42, nil)

@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
+#import "TWLDeallocSpy.h"
 @import Tomorrowland;
 
 @interface TWLPromiseTests : XCTestCase
@@ -895,6 +896,29 @@
         [expectation fulfill];
     }];
     [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testChainedMainContextCallbacksReleaseBeforeNextOneBegins {
+    // Ensure that when we chain main context callbacks, we release each block before invoking the
+    // next one.
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    XCTestExpectation *firstExpectation = [[XCTestExpectation alloc] initWithDescription:@"first block released"];
+    XCTestExpectation *secondExpectation = [[XCTestExpectation alloc] initWithDescription:@"second block executed"];
+    (void)[[[TWLPromise newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }] thenOnContext:TWLContext.main handler:({
+        __auto_type spy = [TWLDeallocSpy newWithHandler:^{
+            [firstExpectation fulfill];
+        }];
+        ^(id _Nonnull value) {
+            (void)spy;
+        };})] thenOnContext:TWLContext.main handler:^(id _Nonnull value) {
+        [self waitForExpectations:@[firstExpectation] timeout:0];
+        [secondExpectation fulfill];
+    }];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[secondExpectation] timeout:1];
 }
 
 - (void)testResolverHandleCallback {

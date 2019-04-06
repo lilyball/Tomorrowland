@@ -112,9 +112,11 @@ public enum PromiseContext: Equatable, Hashable {
                 // We're already executing on the .main context
                 TWLEnqueueThreadLocalBlock(f)
             } else {
+                var f = Optional.some(f)
                 DispatchQueue.main.async {
                     TWLExecuteBlockWithMainContextThreadLocalFlag {
-                        f()
+                        f.unsafelyUnwrapped()
+                        f = nil
                         while let block = TWLDequeueThreadLocalBlock() {
                             block()
                         }
