@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Tomorrowland"
-  s.version      = "0.5.0"
+  s.version      = "0.5.1"
   s.summary      = "Lightweight Promises for Swift and Obj-C"
 
   s.description  = <<-DESC
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.watchos.deployment_target = "2.0"
   s.tvos.deployment_target = "9.0"
 
-  s.swift_version = '4.0'
+  s.swift_version = '4.2'
 
   s.source       = { :git => "https://github.com/lilyball/Tomorrowland.git", :tag => "v#{s.version}" }
 
