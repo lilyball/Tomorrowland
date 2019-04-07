@@ -37,21 +37,7 @@
     },
     {
       "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 43,
-      "symbol": "Promise.tryAlways(on:token:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
       "line": 51,
-      "symbol": "Promise.tryThen(on:token:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 57,
       "symbol": "Promise.tryThen(on:token:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -60,13 +46,6 @@
       "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
       "line": 63,
       "symbol": "Promise.tryThen(on:token:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 69,
-      "symbol": "Promise.tryRecover(on:token:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
@@ -114,21 +93,7 @@
     },
     {
       "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 108,
-      "symbol": "TokenPromise.tryAlways(on:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
       "line": 116,
-      "symbol": "TokenPromise.tryThen(on:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 122,
       "symbol": "TokenPromise.tryThen(on:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -137,13 +102,6 @@
       "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
       "line": 128,
       "symbol": "TokenPromise.tryThen(on:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/kevin/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 134,
-      "symbol": "TokenPromise.tryRecover(on:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },

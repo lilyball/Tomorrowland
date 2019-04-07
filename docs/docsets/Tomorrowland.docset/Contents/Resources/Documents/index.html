@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland Docs</a> (89% documented)</p>
+        <p><a href="index.html">Tomorrowland Docs</a> (91% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.5.0-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.5.1-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -165,7 +165,7 @@ implemented in a non-thread-safe manner.</li>
 
 <p>Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding
 compatibility would necessitate publicly exposing the private Obj-C module).</p>
-<h2 id='quick-start' class='heading'>Quick Start</h2>
+<h2 id='usage' class='heading'>Usage</h2>
 <h3 id='creating-promises' class='heading'>Creating Promises</h3>
 
 <p>Promises can be created using code like the following:</p>
@@ -407,6 +407,12 @@ testing purposes.</p>
 <p>Tomorrowland has Obj-C compatibility in the form of <code>TWLPromise&lt;ValueType,ErrorType&gt;</code>. This is a parallel promise implementation that can be bridged to/from
 <code><a href="Structs/Promise.html">Promise</a></code> and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while <code>TWLPromise</code> is
 generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).</p>
+<h3 id='callback-lifetimes' class='heading'>Callback lifetimes</h3>
+
+<p>Callbacks registered on promises will be retained until the promise is resolved. If a callback is invoked (or would be invoked if the relevant invalidation token hadn&rsquo;t
+been invalidated), Tomorrowland guarantees that it will release the callback on the context it was invoked on. If the callback is not invoked (e.g. it&rsquo;s a <code>then(on:_:)</code>
+callback but the promise was rejected) then no guarantees are made as to the context the callback is released on. If you need to ensure it&rsquo;s released on the
+appropriate context (e.g. if it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>.mapResult</code> variants.</p>
 <h2 id='requirements' class='heading'>Requirements</h2>
 
 <p>Requires a minimum of iOS 9, macOS 10.10, watchOS 2.0, or tvOS 9.0.</p>
@@ -424,6 +430,16 @@ generic over its types, the return values of callback registration methods that 
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v0-5-1' class='heading'>v0.5.1</h3>
+
+<ul>
+<li>When chaining multiple <code>.main</code> context blocks in the same runloop pass, ensure we release each block before executing the next one.</li>
+<li>Ensure that if a user-supplied callback is invoked, it is also released on the context where it was invoked (<a href="https://github.com/lilyball/Tomorrowland/issues/38" title="Dealloc completion blocks on the context they&#39;re scheduled on">#38</a>).</li>
+</ul>
+
+<p>This guarantee is only made for callbacks that are invoked (ignoring tokens). What this means is when using e.g. <code>.then(on:_:)</code> if the promise is fulfilled, the
+  <code>onSuccess</code> block will be released on the provided context, but if the promise is rejected no such guarantee is made. If you rely on the context it&rsquo;s released on
+  (e.g. it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>mapResult</code> variants.</p>
 <h3 id='v0-5-0' class='heading'>v0.5.0</h3>
 
 <ul>
@@ -526,8 +542,8 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-02-25)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-04-06)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.5</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
