@@ -17,8 +17,8 @@
 // Add support for Swift.Result where it makes sense
 extension Promise where Error: Swift.Error {
     /// Returns a `Promise` that is already resolved with the given result.
-    public init(result: Result<Value,Error>) {
-        self.init(result: PromiseResult(result))
+    public init(with result: Result<Value,Error>) {
+        self.init(with: PromiseResult(result))
     }
 }
 

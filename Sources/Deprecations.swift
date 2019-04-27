@@ -12,6 +12,22 @@
 //  except according to those terms.
 //
 
+import typealias Foundation.TimeInterval
+
+public extension Promise {
+    @available(*, deprecated, renamed: "init(with:)")
+    init(result: PromiseResult<Value,Error>) {
+        self.init(with: result)
+    }
+    
+    @available(*, deprecated, renamed: "init(on:with:after:)")
+    init(on context: PromiseContext = .auto, result: PromiseResult<Value,Error>, after delay: TimeInterval) {
+        self.init(on: context, with: result, after: delay)
+    }
+}
+
+// MARK: - Great API Rename
+
 public extension Promise {
     @available(*, unavailable, renamed: "map(on:token:_:)")
     func then<U>(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {

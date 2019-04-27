@@ -347,7 +347,7 @@ public struct Promise<Value,Error> {
     }
     
     /// Returns a `Promise` that is already resolved with the given result.
-    public init(result: PromiseResult<Value,Error>) {
+    public init(with result: PromiseResult<Value,Error>) {
         _seal = PromiseSeal(result: result)
     }
     

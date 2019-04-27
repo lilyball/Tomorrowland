@@ -667,7 +667,7 @@ final class UtilityTests: XCTestCase {
     func testInitResultAfter() {
         // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
         let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
-        let promise = Promise<Int,String>(on: .userInteractive, result: .cancelled, after: 0.05)
+        let promise = Promise<Int,String>(on: .userInteractive, with: .cancelled, after: 0.05)
         let expectation = XCTestExpectation(description: "promise")
         var invoked: DispatchTime?
         promise.always(on: .immediate) { (result) in
@@ -684,7 +684,7 @@ final class UtilityTests: XCTestCase {
     }
     
     func testInitResultAfterCancelledCancelsImmediately() {
-        let promise = Promise<Int,String>(on: .utility, result: .value(42), after: 1)
+        let promise = Promise<Int,String>(on: .utility, with: .value(42), after: 1)
         XCTAssertNil(promise.result)
         promise.requestCancel()
         // Cancellation of the promise is synchronous
@@ -705,7 +705,7 @@ final class UtilityTests: XCTestCase {
                 expectation.fulfill()
             }
         }
-        let promise = Promise<Spy,String>(on: .utility, result: .value(Spy(expectation: expectation)), after: 1)
+        let promise = Promise<Spy,String>(on: .utility, with: .value(Spy(expectation: expectation)), after: 1)
         promise.requestCancel()
         wait(for: [expectation], timeout: 0.5)
     }
@@ -714,7 +714,7 @@ final class UtilityTests: XCTestCase {
         // NB: We're going to delay by a very short value, 50ms, so the tests are still speedy
         let queue = OperationQueue()
         let deadline = DispatchTime.now() + DispatchTimeInterval.milliseconds(50)
-        let promise = Promise<Int,String>(on: .operationQueue(queue), result: .value(42), after: 0.05)
+        let promise = Promise<Int,String>(on: .operationQueue(queue), with: .value(42), after: 0.05)
         let expectation = XCTestExpectation(description: "promise")
         var invoked: DispatchTime?
         promise.always(on: .immediate) { (result) in
@@ -736,7 +736,7 @@ final class UtilityTests: XCTestCase {
         // immediately, and thus it will have priority over later operations on the same queue.
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
-        let promise = Promise<Int,String>(on: .operationQueue(queue), result: .value(42), after: 0.05)
+        let promise = Promise<Int,String>(on: .operationQueue(queue), with: .value(42), after: 0.05)
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
         queue.addOperation {
             // block the queue for 50ms

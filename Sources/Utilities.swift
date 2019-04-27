@@ -35,7 +35,7 @@ extension Promise {
     /// - Parameter value: The value the promise will be fulfilled with.
     /// - Parameter delay: The number of seconds to delay the promise by.
     public init(on context: PromiseContext = .auto, fulfilled value: Value, after delay: TimeInterval) {
-        self.init(on: context, result: .value(value), after: delay)
+        self.init(on: context, with: .value(value), after: delay)
     }
     
     /// Returns a `Promise` that rejects with the given error after a delay.
@@ -52,7 +52,7 @@ extension Promise {
     /// - Parameter error: The error the promise will be rejected with.
     /// - Parameter delay: The number of seconds to delay the promise by.
     public init(on context: PromiseContext = .auto, rejected error: Error, after delay: TimeInterval) {
-        self.init(on: context, result: .error(error), after: delay)
+        self.init(on: context, with: .error(error), after: delay)
     }
     
     /// Returns a `Promise` that resolves with the given result after a delay.
@@ -68,7 +68,7 @@ extension Promise {
     ///   delay has elapsed.
     /// - Parameter result: The result the promise will be resolved with.
     /// - Parameter delay: The number of seconds to delay the promise by.
-    public init(on context: PromiseContext = .auto, result: PromiseResult<Value,Error>, after delay: TimeInterval) {
+    public init(on context: PromiseContext = .auto, with result: PromiseResult<Value,Error>, after delay: TimeInterval) {
         _seal = PromiseSeal()
         let resolver = Resolver(box: _box)
         let timer: DispatchSourceTimer

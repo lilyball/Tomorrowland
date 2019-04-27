@@ -366,10 +366,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Add convenience functions for working with `Swift.Result` ([#39][]).
 - Mark all the deprecated functions as unavailable instead. This restores the ability to write code like `promise.then({ foo?($0) })` without it incorrectly
   resolving to the deprecated form of `map(_:)` ([#35][]).
+- Rename `Promise.init(result:)` and `Promise.init(on:result:after:)` to `Promise.init(with:)` and `Promise.init(on:with:after:)` ([#40][]).
 
 [#35]: https://github.com/lilyball/Tomorrowland/issues/35 "Move deprecations to unavailable"
 [#37]: https://github.com/lilyball/Tomorrowland/issues/37 "DelayedPromise should conform to Equatable"
 [#39]: https://github.com/lilyball/Tomorrowland/issues/39 "Add some minimal support for Result"
+[#40]: https://github.com/lilyball/Tomorrowland/issues/40 "Rename Promise.init(result:) to Promise.init(with:)"
 
 ### v0.5.1
 

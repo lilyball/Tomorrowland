@@ -154,7 +154,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testAlreadyFulfilledWithResult() {
-        let promise = Promise<Int,String>(result: .value(42))
+        let promise = Promise<Int,String>(with: .value(42))
         XCTAssertEqual(promise.result, .value(42))
         var invoked = false
         _ = promise.then(on: .immediate) { (x) in
@@ -164,7 +164,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testAlreadyRejectedWithResult() {
-        let promise = Promise<Int,String>(result: .error("foo"))
+        let promise = Promise<Int,String>(with: .error("foo"))
         XCTAssertEqual(promise.result, .error("foo"))
         var invoked = false
         _ = promise.catch(on: .immediate) { (x) in
@@ -174,7 +174,7 @@ final class PromiseTests: XCTestCase {
     }
     
     func testAlreadyCancelledWithResult() {
-        let promise = Promise<Int,String>(result: .cancelled)
+        let promise = Promise<Int,String>(with: .cancelled)
         XCTAssertEqual(promise.result, .cancelled)
         var invoked = false
         _ = promise.onCancel(on: .immediate) {
@@ -186,7 +186,7 @@ final class PromiseTests: XCTestCase {
     #if compiler(>=5)
     func testAlreadyFulfilledWithSwiftResult() {
         enum MyError: Error, Equatable { case foo }
-        let promise = Promise<Int,MyError>(result: .success(42))
+        let promise = Promise<Int,MyError>(with: .success(42))
         XCTAssertEqual(promise.result, .value(42))
         var invoked = false
         _ = promise.then(on: .immediate) { (x) in
@@ -197,7 +197,7 @@ final class PromiseTests: XCTestCase {
     
     func testAlreadyRejectedWithSwiftResult() {
         enum MyError: Error, Equatable { case foo }
-        let promise = Promise<Int,MyError>(result: .failure(MyError.foo))
+        let promise = Promise<Int,MyError>(with: .failure(MyError.foo))
         XCTAssertEqual(promise.result, .error(MyError.foo))
         var invoked = false
         _ = promise.catch(on: .immediate) { (x) in
