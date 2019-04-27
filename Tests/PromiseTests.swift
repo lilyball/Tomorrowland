@@ -63,6 +63,21 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation1, expectation2, expectation3], timeout: 1)
     }
     
+    #if compiler(>=5)
+    func testBasicResolveWithSwiftResult() {
+        let promise1 = Promise<Int,Error>(on: .utility, { (resolver) in
+            resolver.resolve(with: .success(42))
+        })
+        let expectation1 = XCTestExpectation(onSuccess: promise1, expectedValue: 42)
+        enum MyError: Error, Equatable { case foo }
+        let promise2 = Promise<Int,MyError>(on: .utility, { (resolver) in
+            resolver.resolve(with: .failure(MyError.foo))
+        })
+        let expectation2 = XCTestExpectation(onError: promise2, expectedError: MyError.foo)
+        wait(for: [expectation1, expectation2], timeout: 1)
+    }
+    #endif
+    
     func testResolveWithPromise() {
         let expectations = [
             XCTestExpectation(onSuccess: Promise<Int,String>(on: .utility, { (resolver) in
@@ -167,6 +182,30 @@ final class PromiseTests: XCTestCase {
         }
         XCTAssertTrue(invoked)
     }
+    
+    #if compiler(>=5)
+    func testAlreadyFulfilledWithSwiftResult() {
+        enum MyError: Error, Equatable { case foo }
+        let promise = Promise<Int,MyError>(result: .success(42))
+        XCTAssertEqual(promise.result, .value(42))
+        var invoked = false
+        _ = promise.then(on: .immediate) { (x) in
+            invoked = true
+        }
+        XCTAssertTrue(invoked)
+    }
+    
+    func testAlreadyRejectedWithSwiftResult() {
+        enum MyError: Error, Equatable { case foo }
+        let promise = Promise<Int,MyError>(result: .failure(MyError.foo))
+        XCTAssertEqual(promise.result, .error(MyError.foo))
+        var invoked = false
+        _ = promise.catch(on: .immediate) { (x) in
+            invoked = true
+        }
+        XCTAssertTrue(invoked)
+    }
+    #endif
     
     func testThen() {
         let thenExpectation = XCTestExpectation(description: "then handler invoked")
@@ -1340,6 +1379,14 @@ final class PromiseResultTests: XCTestCase {
         XCTAssertFalse(PromiseResult<Int,String>.error("wat").isCancelled)
         XCTAssertTrue(PromiseResult<Int,String>.cancelled.isCancelled)
     }
+    
+    #if compiler(>=5)
+    func testInitWithSwiftResult() {
+        enum MyError: Error, Equatable { case foo }
+        XCTAssertEqual(PromiseResult(Result<Int,MyError>.success(42)), PromiseResult.value(42))
+        XCTAssertEqual(PromiseResult(Result<Int,MyError>.failure(.foo)), PromiseResult.error(.foo))
+    }
+    #endif
     
     func testMap() {
         XCTAssertEqual(PromiseResult<Int,String>.value(42).map({ $0 + 1 }), .value(43))

@@ -363,8 +363,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 ### Development
 
 - Make `DelayedPromise` conform to `Equatable` ([#37][]).
+- Add convenience functions for working with `Swift.Result` ([#39][]).
 
 [#37]: https://github.com/lilyball/Tomorrowland/issues/37 "DelayedPromise should conform to Equatable"
+[#39]: https://github.com/lilyball/Tomorrowland/issues/39 "Add some minimal support for Result"
 
 ### v0.5.1
 
