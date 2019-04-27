@@ -32,7 +32,7 @@ public typealias StdDelayedPromise<Value> = DelayedPromise<Value,Swift.Error>
 ///     avatar.promise.then { [weak self] (image) in
 ///         self?.imageView.image = image
 ///     }
-public struct DelayedPromise<Value,Error> {
+public struct DelayedPromise<Value,Error>: Equatable {
     /// The type of the promise resolver. See `Promise<Value,Error>.Resolver`.
     public typealias Resolver = Promise<Value,Error>.Resolver
     
@@ -63,6 +63,11 @@ public struct DelayedPromise<Value,Error> {
     /// `Promise` as the first time it was accessed.
     public var promise: Promise<Value,Error> {
         return _box.toPromise(with: _seal)
+    }
+    
+    /// Two `DelayedPromise`s compare as equal if they would produce equal `Promise`s.
+    public static func ==(lhs: DelayedPromise, rhs: DelayedPromise) -> Bool {
+        return lhs._box === rhs._box
     }
 }
 

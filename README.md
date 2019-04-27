@@ -360,6 +360,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Make `DelayedPromise` conform to `Equatable` ([#37][]).
+
+[#37]: https://github.com/lilyball/Tomorrowland/issues/37 "DelayedPromise should conform to Equatable"
+
 ### v0.5.1
 
 - When chaining multiple `.main` context blocks in the same runloop pass, ensure we release each block before executing the next one.
