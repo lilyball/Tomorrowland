@@ -217,6 +217,17 @@ final class PromiseTests: XCTestCase {
         wait(for: [thenExpectation, expectation], timeout: 1)
     }
     
+    func checkThenSingleExpressionElidingReturnValue() {
+        // If the closure passed to then() is a single-expression closure that evaluates to a
+        // non-Void value, this was getting mapped to the deprecated version instead of throwing
+        // away the return value. Adding an explicit `-> ()` type signature suppressed this, but
+        // shouldn't have been necessary. This code ensures the ideal code evaluates properly.
+        // If it doesn't, the compiler will throw an error.
+        let dummy: ((Int) -> Void)? = { _ in }
+        let promise = Promise<Int,String>(fulfilled: 42).then({ dummy?($0) })
+        let _: Promise<Int,String> = promise
+    }
+    
     func testThenReturnsDistinctPromise() {
         // Ensure `then` always returns a distinct promise. This is important so cancelling the
         // result of `then` doesn't necessarily cancel the original promise.
