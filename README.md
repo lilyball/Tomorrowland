@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.5.1-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v0.6.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -360,7 +360,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v0.6.0
 
 - Make `DelayedPromise` conform to `Equatable` ([#37][]).
 - Add convenience functions for working with `Swift.Result` ([#39][]).
