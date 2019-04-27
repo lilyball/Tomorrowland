@@ -1772,21 +1772,14 @@ public enum NoError: Hashable, Equatable, Codable {
     
     public func hash(into hasher: inout Hasher) {}
     
+    public init(from decoder: Decoder) throws {
+        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Tomorrowland.NoError does not support decoding."))
+    }
+    
     public func encode(to encoder: Encoder) throws {
         fatalError()
     }
 }
-
-// See SR-2729
-/// :nodoc:
-protocol _NoErrorDecodableWorkaround : Decodable {}
-/// :nodoc:
-extension _NoErrorDecodableWorkaround {
-    public init(from decoder: Decoder) throws {
-        throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Tomorrowland.NoError does not support decoding."))
-    }
-}
-extension NoError: _NoErrorDecodableWorkaround {}
 
 // MARK: - Private
 
