@@ -366,6 +366,9 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   This meant that the default `invalidateOnDeinit` behavior would not trigger and the callback would still fire even though there were no more external references
   to the token, and this meant any promises configured to be cancelled when the promise invalidated would not cancel. Tokens used purely for
   `requestCancelOnInvalidate(_:)` would still deallocate, and tokens would still deallocate after any associated promises had resolved.
+- Tweak the atomic memory ordering used in `PromiseInvalidationToken`s. After a careful re-reading I don't believe I was issuing the correct fences previously,
+  making it possible for tokens whose associated promise callbacks were executing concurrently with a call to `requestCancelOnInvalidate(_:)` to read the
+  wrong generation value, and for tokens that had `requestCancelOnInvalidate(_:)` invoked concurrently on multiple threads to corrupt the generation.
 ### v0.6.0
 
 - Make `DelayedPromise` conform to `Equatable` ([#37][]).

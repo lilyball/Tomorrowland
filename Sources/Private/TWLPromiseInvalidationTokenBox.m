@@ -36,21 +36,17 @@
 }
 
 - (void)pushNodeOntoCallbackLinkedList:(void *)node linkBlock:(void (NS_NOESCAPE ^)(void * _Nonnull))linkBlock {
-    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
+    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_acquire);
     while (1) {
         linkBlock((void *)oldValue);
-        if (atomic_compare_exchange_weak_explicit(&_callbackLinkedList, &oldValue, (uintptr_t)node, memory_order_release, memory_order_relaxed)) {
-            if ((oldValue & 1) == 0) {
-                // it's an actual node
-                atomic_thread_fence(memory_order_acquire);
-            }
+        if (atomic_compare_exchange_weak_explicit(&_callbackLinkedList, &oldValue, (uintptr_t)node, memory_order_release, memory_order_acquire)) {
             return;
         }
     }
 }
 
 - (nonnull void *)resetCallbackLinkedListUsing:(nonnull NSUInteger (NS_NOESCAPE ^)(void * _Nonnull))block {
-    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
+    uintptr_t oldValue = atomic_load_explicit(&_callbackLinkedList, memory_order_acquire);
     while (1) {
         NSUInteger newValue = block((void *)oldValue);
         uintptr_t taggedValue = ((uintptr_t)newValue << 1) | 1;
