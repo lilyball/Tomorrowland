@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v0.6.0-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.0.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -156,11 +156,17 @@ implemented in a non-thread-safe manner.</li>
 
 <p>You can add Tomorrowland to your workspace manually like any other project and add the resulting <code>Tomorrowland.framework</code> to your application&rsquo;s frameworks.</p>
 <h3 id='carthage' class='heading'>Carthage</h3>
-<pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 0.5.0
+<pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 1.0
 </code></pre>
+
+<p>The project file is configured to use Swift 5. The code can be compiled against Swift 4.2 instead, but I&rsquo;m not aware of any way to instruct Carthage to override the
+swift version during compilation.</p>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 0.5.0'</span>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 1.0'</span>
 </code></pre>
+
+<p>The podspec declares support for both Swift 4.2 and Swift 5.0, but selecting the Swift version requires using CoocaPods 1.7.0 or later. When using CocoaPods 1.6
+or earlier the Swift version will default to 5.0.</p>
 <h3 id='swiftpm' class='heading'>SwiftPM</h3>
 
 <p>Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding
@@ -328,6 +334,14 @@ the token invalidates, but can be used if the token would otherwise not be expli
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
+<h4 id='invalidation-token-chaining' class='heading'>Invalidation token chaining</h4>
+
+<p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s can be arranged in a tree such that invalidating one token will cascade this invalidation down to other tokens. This is
+accomplished by calling <code>childToken.chainInvalidation(from: parentToken)</code>. Practically speaking this is no different than just manually invalidating each
+child token yourself after invalidating the parent token, but it&rsquo;s provided as a convenience to make it easy to have fine-grained invalidation control while also having
+a simple way to bulk-invalidate tokens. For example, you might have separate tokens for different view controllers that all chain invalidation from a single token that
+gets invalidated when the user logs out, thus automatically invalidating all your user-dependent network requests at once while still allowing each view controller the
+ability to invalidate just its own requests independently.</p>
 <h4 id='code-tokenpromise-code' class='heading'><code><a href="Structs/TokenPromise.html">TokenPromise</a></code></h4>
 
 <p>In order to avoid the repetition of passing a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to multiple <code><a href="Structs/Promise.html">Promise</a></code> methods as well as cancelling the resulting promise, a type
@@ -430,6 +444,23 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-0-0' class='heading'>v1.0.0</h3>
+
+<ul>
+<li>Fix a rather serious bug where <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s would not deinit as long as any promise whose callback was tied to the token was still unresolved.
+This meant that the default <code>invalidateOnDeinit</code> behavior would not trigger and the callback would still fire even though there were no more external references
+to the token, and this meant any promises configured to be cancelled when the promise invalidated would not cancel. Tokens used purely for
+<code>requestCancelOnInvalidate(_:)</code> would still deallocate, and tokens would still deallocate after any associated promises had resolved.</li>
+<li>Tweak the atomic memory ordering used in <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s. After a careful re-reading I don&rsquo;t believe I was issuing the correct fences previously,
+making it possible for tokens whose associated promise callbacks were executing concurrently with a call to <code>requestCancelOnInvalidate(_:)</code> to read the
+wrong generation value, and for tokens that had <code>requestCancelOnInvalidate(_:)</code> invoked concurrently on multiple threads to corrupt the generation.</li>
+<li>Add <code>PromiseInvalidationToken.chainInvalidation(from:)</code> to invalidate a token whenever another token invalidates. This allows for building a tree of
+tokens in order to have both fine-grained and bulk invalidation at the same time. Tokens chained together this way stay chained forever (<a href="https://github.com/lilyball/Tomorrowland/issues/43" title="Add PromiseInvalidationToken.chainInvalidation(from: PromiseInvalidationToken)">#43</a>).</li>
+<li>Update project file to Swift 5.0. The source already supported this. This change should only affect people using <a href="https://github.com/carthage/carthage">Carthage</a> or anyone adding building this
+framework from source.</li>
+<li>Update the podspec to list both Swift 4.2 and Swift 5.0. With CocoaPods 1.7.0 or later your <code>Podfile</code> can now declare which version of Swift it&rsquo;s compatible with.
+For anyone using CocoaPods 1.6 or earlier it will default to Swift 5.0.</li>
+</ul>
 <h3 id='v0-6-0' class='heading'>v0.6.0</h3>
 
 <ul>
@@ -551,7 +582,7 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-04-27)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-05-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

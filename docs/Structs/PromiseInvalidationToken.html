@@ -299,6 +299,91 @@ invalidated.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:12Tomorrowland24PromiseInvalidationTokenV05chainC04from34includingCancelWithoutInvalidatingyAC_SbtF"></a>
+                    <a name="//apple_ref/swift/Method/chainInvalidation(from:includingCancelWithoutInvalidating:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland24PromiseInvalidationTokenV05chainC04from34includingCancelWithoutInvalidatingyAC_SbtF">chainInvalidation(from:includingCancelWithoutInvalidating:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Invalidates the token whenever another token is invalidated.</p>
+
+<p>When the given other token is invalidated, the receiver will also be invalidated. This
+allows you to build trees of tokens for fine-grained cancellation control while still
+allowing for the ability to cancel a lot of promises from a single token.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>Chained invalidation is a permanent relationship with no way to un-chain it later.
+Invalidating <code>token</code> multiple times will invalidate the receiver every time.</p>
+
+</div>
+<div class="aside aside-remark">
+    <p class="aside-title">Remark</p>
+    <p>By using chained invalidation it&rsquo;s possible to construct a scenario wherein you
+respond to cancellation of a promise associated with the parent token by immediately
+constructing a new promise using a child token, prior to the child token being invalidated
+due to the parent token&rsquo;s invalidation. This is a rather esoteric case.</p>
+
+</div>
+<div class="aside aside-important">
+    <p class="aside-title">Important</p>
+    <p>Do not introduce any cycles into the invalidation chain, as this will produce
+an infinite loop upon invalidation.</p>
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">chainInvalidation</span><span class="p">(</span><span class="n">from</span> <span class="nv">token</span><span class="p">:</span> <span class="kt">PromiseInvalidationToken</span><span class="p">,</span> <span class="nv">includingCancelWithoutInvalidating</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>token</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Another token that, when invalidated, will cause the current token to be
+invalidated as well.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>includingCancelWithoutInvalidating</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The default value of <code>true</code> means calls to
+<code>token.cancelWithoutInvalidating()</code> will similarly call <code><a href="../Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25cancelWithoutInvalidatingyyF">cancelWithoutInvalidating()</a></code> on
+the current token.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:s23CustomStringConvertibleP11descriptionSSvp"></a>
                     <a name="//apple_ref/swift/Property/description" class="dashAnchor"></a>
                     <a class="token" href="#/s:s23CustomStringConvertibleP11descriptionSSvp">description</a>
@@ -451,7 +536,7 @@ invalidated.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-04-27)</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-05-19)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.6</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
