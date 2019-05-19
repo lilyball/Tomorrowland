@@ -38,6 +38,9 @@ extension Promise {
             Thread.current.threadDictionary[tokenKey] = keyObject
         }
         let key = UnsafeRawPointer(Unmanaged.passUnretained(keyObject).toOpaque())
+        // NB: We don't need an autorelease pool here because objc_getAssociatedObject only
+        // autoreleases the returned value when using an atomic association policy, and we're using
+        // a nonatomic one.
         if let token = objc_getAssociatedObject(object, key) as? PromiseInvalidationToken {
             requestCancelOnInvalidate(token)
         } else {

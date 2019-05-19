@@ -402,6 +402,8 @@
         keyObject = [NSObject new];
         NSThread.currentThread.threadDictionary[threadKey] = keyObject;
     }
+    // NB: We don't need an autorelease pool here because objc_getAssociatedObject only autoreleases
+    // the returned value when using an atomic association policy, and we're using a nonatomic one.
     TWLInvalidationToken *token = objc_getAssociatedObject(object, (__bridge void *)keyObject);
     if (!token) {
         token = [TWLInvalidationToken new];
