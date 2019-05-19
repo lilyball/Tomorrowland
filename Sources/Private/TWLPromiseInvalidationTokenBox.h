@@ -21,6 +21,14 @@
 /// of the pointer.
 @property (atomic, readonly, nonnull) void *callbackLinkedList;
 
+/// Returns the token chain linked list pointer.
+///
+/// The token chain list pointer is a linked list that does not support resetting, only appending.
+/// Once a node has been pushed onto the list, the list can never become empty again.
+///
+/// \note The token chain list pointer is initialized to \c NULL.
+@property (atomic, readonly, nullable) void *tokenChainLinkedList;
+
 /// Pushes a new node onto the callback linked list.
 ///
 /// \note The callback linked list pointer initially holds a tagged integer. The tag is the low bit
@@ -40,5 +48,16 @@
 ///              block may be invoked multiple times if the list changes concurrently.
 /// \returns The old value of the linked list.
 - (nonnull void *)resetCallbackLinkedListUsing:(nonnull NSUInteger (NS_NOESCAPE ^)(void * _Nonnull))block __attribute__((warn_unused_result));
+
+/// Pushes a new node onto the token chain linked list.
+///
+/// \note If the token chain linked list pointer is \c NULL the \c linkBlock will not be invoked. In
+/// this case the \c node should have been initialized appropriately assuming it's the sole entry.
+///
+/// \param node The node to push onto the head of the list.
+/// \param linkBlock A block that is invoked with the previous head prior to pushing the new node
+/// on. This block should modify the new node to link to the previous head. If multiple threads are
+/// swapping the list at the same time, this block may be invoked multiple times.
+- (void)pushNodeOntoTokenChainLinkedList:(nonnull void *)node linkBlock:(nonnull void (NS_NOESCAPE ^)(void * _Nonnull nextNode))linkBlock;
 
 @end

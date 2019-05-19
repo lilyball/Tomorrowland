@@ -92,6 +92,61 @@ public final class ObjCPromiseInvalidationToken: NSObject {
         _token.requestCancelOnInvalidate(promise)
     }
     
+    /// Invalidates the token whenever another token is invalidated.
+    ///
+    /// When the given other token is invalidated, the receiver will also be invalidated. This
+    /// allows you to build trees of tokens for fine-grained cancellation control while still
+    /// allowing for the ability to cancel a lot of promises from a single token.
+    ///
+    /// Calls to `-[token cancelWithoutInvalidating]` will similarly call
+    /// `-cancelWithoutInvalidating` on the current token. Use
+    /// `-chainInvalidationFromToken:includingCancelWithoutInvalidating:` to disable this.
+    ///
+    /// - Note: Chained invalidation is a permanent relationship with no way to un-chain it later.
+    ///   Invalidating `token` multiple times will invalidate the receiver every time.
+    ///
+    /// - Remark: By using chained invalidation it's possible to construct a scenario wherein you
+    ///   respond to cancellation of a promise associated with the parent token by immediately
+    ///   constructing a new promise using a child token, prior to the child token being invalidated
+    ///   due to the parent token's invalidation. This is a rather esoteric case.
+    ///
+    /// - Important: Do not introduce any cycles into the invalidation chain, as this will produce
+    ///   an infinite loop upon invalidation.
+    ///
+    /// - Parameter token: Another token that, when invalidated, will cause the current token to be
+    ///   invalidated as well.
+    @objc(chainInvalidationFromToken:)
+    public func chainInvalidation(from token: ObjCPromiseInvalidationToken) {
+        _token.chainInvalidation(from: token._token)
+    }
+    
+    /// Invalidates the token whenever another token is invalidated.
+    ///
+    /// When the given other token is invalidated, the receiver will also be invalidated. This
+    /// allows you to build trees of tokens for fine-grained cancellation control while still
+    /// allowing for the ability to cancel a lot of promises from a single token.
+    ///
+    /// - Note: Chained invalidation is a permanent relationship with no way to un-chain it later.
+    ///   Invalidating `token` multiple times will invalidate the receiver every time.
+    ///
+    /// - Remark: By using chained invalidation it's possible to construct a scenario wherein you
+    ///   respond to cancellation of a promise associated with the parent token by immediately
+    ///   constructing a new promise using a child token, prior to the child token being invalidated
+    ///   due to the parent token's invalidation. This is a rather esoteric case.
+    ///
+    /// - Important: Do not introduce any cycles into the invalidation chain, as this will produce
+    ///   an infinite loop upon invalidation.
+    ///
+    /// - Parameter token: Another token that, when invalidated, will cause the current token to be
+    ///   invalidated as well.
+    /// - Parameter includingCancelWithoutInvalidating: If `true`, calls to
+    ///   `-[token cancelWithoutInvalidating]` will similarly call `-cancelWithoutInvalidating` on
+    ///   the current token.
+    @objc(chainInvalidationFromToken:includingCancelWithoutInvalidating:)
+    public func chainInvalidation(from token: ObjCPromiseInvalidationToken, includingCancelWithoutInvalidating: Bool) {
+        _token.chainInvalidation(from: token._token, includingCancelWithoutInvalidating: includingCancelWithoutInvalidating)
+    }
+    
     @objc(box) // hack to allow TWLPromise to query this
     internal var box: TWLPromiseInvalidationTokenBox {
         return _token.__objcBox

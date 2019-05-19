@@ -1728,6 +1728,32 @@ public struct PromiseInvalidationToken: CustomStringConvertible, CustomDebugStri
         box.requestCancelOnInvalidate(PromiseCancellable(promise.cancellable))
     }
     
+    /// Invalidates the token whenever another token is invalidated.
+    ///
+    /// When the given other token is invalidated, the receiver will also be invalidated. This
+    /// allows you to build trees of tokens for fine-grained cancellation control while still
+    /// allowing for the ability to cancel a lot of promises from a single token.
+    ///
+    /// - Note: Chained invalidation is a permanent relationship with no way to un-chain it later.
+    ///   Invalidating `token` multiple times will invalidate the receiver every time.
+    ///
+    /// - Remark: By using chained invalidation it's possible to construct a scenario wherein you
+    ///   respond to cancellation of a promise associated with the parent token by immediately
+    ///   constructing a new promise using a child token, prior to the child token being invalidated
+    ///   due to the parent token's invalidation. This is a rather esoteric case.
+    ///
+    /// - Important: Do not introduce any cycles into the invalidation chain, as this will produce
+    ///   an infinite loop upon invalidation.
+    ///
+    /// - Parameter token: Another token that, when invalidated, will cause the current token to be
+    ///   invalidated as well.
+    /// - Parameter includingCancelWithoutInvalidating: The default value of `true` means calls to
+    ///   `token.cancelWithoutInvalidating()` will similarly call `cancelWithoutInvalidating()` on
+    ///   the current token.
+    public func chainInvalidation(from token: PromiseInvalidationToken, includingCancelWithoutInvalidating: Bool = true) {
+        box.chainInvalidation(from: token.box, includingCancelWithoutInvalidating: includingCancelWithoutInvalidating)
+    }
+    
     fileprivate var box: PromiseInvalidationTokenBox {
         return _inner.box
     }
@@ -1862,18 +1888,64 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
         }
     }
     
+    private struct TokenChainNode {
+        var next: UnsafeMutablePointer<TokenChainNode>?
+        let includesCancelWithoutInvalidation: Bool
+        weak var tokenBox: PromiseInvalidationTokenBox?
+        
+        static func castPointer(_ pointer: UnsafeMutableRawPointer) -> UnsafeMutablePointer<TokenChainNode> {
+            return pointer.assumingMemoryBound(to: TokenChainNode.self)
+        }
+        
+        /// Destroys the linked list
+        ///
+        /// - Precondition: The pointer must be initialized.
+        /// - Postcondition: The pointer is deallocated.
+        static func destroyPointer(_ pointer: UnsafeMutablePointer<TokenChainNode>) {
+            var nextPointer = pointer.pointee.next
+            pointer.deinitialize(count: 1)
+            pointer.deallocate()
+            while let current = nextPointer {
+                nextPointer = current.pointee.next
+                current.deinitialize(count: 1)
+                current.deallocate()
+            }
+        }
+    }
+    
     deinit {
         if let nodePtr = CallbackNode.castPointer(callbackLinkedList) {
             CallbackNode.destroyPointer(nodePtr)
         }
+        if let nodePtr = tokenChainLinkedList.map(TokenChainNode.castPointer) {
+            TokenChainNode.destroyPointer(nodePtr)
+        }
     }
     
     func invalidate() {
+        // Read the invalidation chain before calling out to external code
+        let tokenChain = tokenChainLinkedList.map(TokenChainNode.castPointer)
+        
         resetCallbacks(andIncrementGenerationBy: 1)
+        
+        if let tokenChain = tokenChain {
+            for nodePtr in sequence(first: tokenChain, next: { $0.pointee.next }) {
+                nodePtr.pointee.tokenBox?.invalidate()
+            }
+        }
     }
     
     func cancelWithoutInvalidating() {
+        // Read the invalidation chain before calling out to external code
+        let tokenChain = tokenChainLinkedList.map(TokenChainNode.castPointer)
+        
         resetCallbacks(andIncrementGenerationBy: 0)
+        
+        if let tokenChain = tokenChain {
+            for nodePtr in sequence(first: tokenChain, next: { $0.pointee.next }) where nodePtr.pointee.includesCancelWithoutInvalidation {
+                nodePtr.pointee.tokenBox?.cancelWithoutInvalidating()
+            }
+        }
     }
     
     func requestCancelOnInvalidate(_ cancellable: PromiseCancellable) {
@@ -1894,6 +1966,22 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
                 nodePtr.pointee.generation = CallbackNode.interpretTaggedInteger(rawPtr)
                 nodePtr.pointee.next = nil
             }
+        }
+    }
+    
+    func chainInvalidation(from token: PromiseInvalidationTokenBox, includingCancelWithoutInvalidating: Bool) {
+        guard token !== self else { return } // trivial check for looping on self
+        let nodePtr = UnsafeMutablePointer<TokenChainNode>.allocate(capacity: 1)
+        nodePtr.initialize(to: .init(next: nil, includesCancelWithoutInvalidation: includingCancelWithoutInvalidating, tokenBox: self))
+        token.pushNodeOntoTokenChainLinkedList(nodePtr) { (rawPtr) in
+            var next = Optional.some(TokenChainNode.castPointer(rawPtr))
+            // Prune nil tokens off the top of the list.
+            // This is safe to do because we aren't modifying any shared data structures, only
+            // tweaking the `next` pointer of our brand new node.
+            while let nextPtr = next, nextPtr.pointee.tokenBox == nil {
+                next = nextPtr.pointee.next
+            }
+            nodePtr.pointee.next = next
         }
     }
     

@@ -17,11 +17,13 @@
 
 @implementation TWLPromiseInvalidationTokenBox {
     atomic_uintptr_t _callbackLinkedList;
+    atomic_uintptr_t _tokenChainLinkedList;
 }
 
 - (instancetype)init {
     if ((self = [super init])) {
         atomic_init(&_callbackLinkedList, 1);
+        atomic_init(&_tokenChainLinkedList, 0);
     }
     return self;
 }
@@ -29,6 +31,15 @@
 - (void *)callbackLinkedList {
     uintptr_t list = atomic_load_explicit(&_callbackLinkedList, memory_order_relaxed);
     if ((list & 1) == 0) {
+        // it's an actual node
+        atomic_thread_fence(memory_order_acquire);
+    }
+    return (void *)list;
+}
+
+- (void *)tokenChainLinkedList {
+    uintptr_t list = atomic_load_explicit(&_tokenChainLinkedList, memory_order_relaxed);
+    if (list != 0) {
         // it's an actual node
         atomic_thread_fence(memory_order_acquire);
     }
@@ -56,6 +67,18 @@
                 atomic_thread_fence(memory_order_acquire);
             }
             return (void *)oldValue;
+        }
+    }
+}
+
+- (void)pushNodeOntoTokenChainLinkedList:(void *)node linkBlock:(void (NS_NOESCAPE ^)(void * _Nonnull))linkBlock {
+    uintptr_t oldValue = atomic_load_explicit(&_tokenChainLinkedList, memory_order_acquire);
+    while (1) {
+        if (oldValue != 0) {
+            linkBlock((void *)oldValue);
+        }
+        if (atomic_compare_exchange_weak_explicit(&_tokenChainLinkedList, &oldValue, (uintptr_t)node, memory_order_release, memory_order_acquire)) {
+            return;
         }
     }
 }

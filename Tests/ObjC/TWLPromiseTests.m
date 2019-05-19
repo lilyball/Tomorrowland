@@ -587,6 +587,159 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testInvalidationTokenChainInvalidationFromToken {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    dispatch_queue_t queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
+    TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+    TWLInvalidationToken *subToken = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+    [subToken chainInvalidationFromToken:token];
+    {
+        TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolved"];
+        [[promise thenOnContext:TWLContext.utility token:subToken handler:^(NSNumber * _Nonnull x) {
+            XCTFail("invalidated callback invoked");
+        }] inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation fulfill];
+        }];
+        [token invalidate];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    // Ensure the chain is still intact
+    {
+        TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolved"];
+        [[promise thenOnContext:TWLContext.utility token:subToken handler:^(NSNumber * _Nonnull x) {
+            XCTFail("invalidated callback invoked; the chained invalidation was not permanent");
+        }] inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation fulfill];
+        }];
+        [token invalidate];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    // Ensure adding a second token to the chain will cancel both of them
+    {
+        TWLInvalidationToken *subToken2 = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        [subToken2 chainInvalidationFromToken:token];
+        TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"subToken promise resolved"];
+        [[promise thenOnContext:TWLContext.utility token:subToken handler:^(NSNumber * _Nonnull x) {
+            XCTFail("invalidated callback invoked");
+        }] inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation fulfill];
+        }];
+        XCTestExpectation *expectation2 = [[XCTestExpectation alloc] initWithDescription:@"subToken2 promise resolved"];
+        [[promise thenOnContext:TWLContext.utility token:subToken2 handler:^(NSNumber * _Nonnull x) {
+            XCTFail("invalidated callback invoked");
+        }] inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation2 fulfill];
+        }];
+        [token invalidate];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation, expectation2] timeout:1];
+    }
+}
+
+- (void)testInvalidationTokenChainInvalidationFromTokenIncludingCancelWithoutInvalidate {
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+    { // propagating cancel without invalidate
+        TWLInvalidationToken *subToken = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        [subToken chainInvalidationFromToken:token];
+        TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+                [resolver cancel];
+            }];
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }] requestCancelOnInvalidate:subToken];
+        XCTestExpectation *expectation = TWLExpectationCancel(promise);
+        [token cancelWithoutInvalidating];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    { // without propagating cancel without invalidate
+        TWLInvalidationToken *subToken = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        [subToken chainInvalidationFromToken:token includingCancelWithoutInvalidating:NO];
+        TWLPromise<NSNumber*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+                XCTFail(@"cancel requested");
+                [resolver cancel];
+            }];
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }] requestCancelOnInvalidate:subToken];
+        XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @42);
+        [token cancelWithoutInvalidating];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+}
+
+- (void)testInvalidationTokenChainInvalidationFromTokenDoesNotRetain {
+    // Ensure that -chainInvalidationFromToken: does not retain the tokens in either direction
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    dispatch_queue_t queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
+    { // child is not retained
+        TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        {
+            TWLInvalidationToken *subToken = [TWLInvalidationToken newInvalidateOnDealloc:YES];
+            [subToken chainInvalidationFromToken:token];
+            promise = [promise thenOnContext:TWLContext.utility token:subToken handler:^(NSNumber * _Nonnull x) {
+                XCTFail("invalidated callback invoked");
+            }];
+        } // subToken deinited, thus invalidated
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolved"];
+        [promise inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation fulfill];
+        }];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    { // parent is not retained
+        TWLInvalidationToken *subToken = [TWLInvalidationToken newInvalidateOnDealloc:NO];
+        TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }];
+        {
+            TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:YES];
+            [subToken chainInvalidationFromToken:token];
+            promise = [promise thenOnContext:TWLContext.utility token:token handler:^(NSNumber * _Nonnull x) {
+                XCTFail("invalidated callback invoked");
+            }];
+        } // token deinited, thus invalidated
+        XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolved"];
+        [promise inspectOnContext:[TWLContext queue:queue] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [expectation fulfill];
+        }];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+}
+
+- (void)testInvalidationTokenChainInvalidationFromSelf {
+    // Ask a token to chain invalidation from itself just to ensure this doesn't trigger an infinite
+    // loop.
+    TWLInvalidationToken *token = [TWLInvalidationToken new];
+    [token chainInvalidationFromToken:token];
+    [token invalidate];
+}
+
 #pragma mark -
 
 - (void)testResolvingFulfilledPromise {

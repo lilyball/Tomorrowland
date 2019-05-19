@@ -931,6 +931,159 @@ final class PromiseTests: XCTestCase {
         }
     }
     
+    func testInvalidationTokenChainInvalidationFrom() {
+        let sema = DispatchSemaphore(value: 0)
+        let queue = DispatchQueue(label: "test queue")
+        let token = PromiseInvalidationToken(invalidateOnDeinit: false)
+        let subToken = PromiseInvalidationToken(invalidateOnDeinit: false)
+        subToken.chainInvalidation(from: token)
+        do {
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            let expectation = XCTestExpectation(description: "promise resolved")
+            promise.then(on: .queue(queue), token: subToken, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            token.invalidate()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        // Ensure the chain is still intact
+        do {
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            let expectation = XCTestExpectation(description: "promise resolved")
+            promise.then(on: .queue(queue), token: subToken, { (x) in
+                XCTFail("invalidated callback invoked; the chained invalidation was not permanent")
+            }).always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            token.invalidate()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        // Ensure adding a second token to the chain will cancel both of them
+        do {
+            let subToken2 = PromiseInvalidationToken(invalidateOnDeinit: false)
+            subToken2.chainInvalidation(from: token)
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            let expectation = XCTestExpectation(description: "subToken promise resolved")
+            promise.then(on: .queue(queue), token: subToken, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            let expectation2 = XCTestExpectation(description: "subToken2 promise resolved")
+            promise.then(on: .queue(queue), token: subToken2, { (x) in
+                XCTFail("invalidated callback invoked")
+            }).always(on: .queue(queue), { (_) in
+                expectation2.fulfill()
+            })
+            token.invalidate()
+            sema.signal()
+            wait(for: [expectation, expectation2], timeout: 1)
+        }
+    }
+    
+    func testInvalidationTokenChainInvalidationFromIncludingCancelWithoutInvalidate() {
+        let sema = DispatchSemaphore(value: 0)
+        let token = PromiseInvalidationToken(invalidateOnDeinit: false)
+        do { // propagating cancel without invalidate
+            let subToken = PromiseInvalidationToken(invalidateOnDeinit: false)
+            subToken.chainInvalidation(from: token)
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    resolver.cancel()
+                })
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).requestCancelOnInvalidate(subToken)
+            let expectation = XCTestExpectation(onCancel: promise)
+            token.cancelWithoutInvalidating()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        do { // without propagating cancel without invalidate
+            let subToken = PromiseInvalidationToken(invalidateOnDeinit: false)
+            subToken.chainInvalidation(from: token, includingCancelWithoutInvalidating: false)
+            let promise = Promise<Int,String>(on: .utility, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    XCTFail("cancel requested")
+                    resolver.cancel()
+                })
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).requestCancelOnInvalidate(subToken)
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            token.cancelWithoutInvalidating()
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testInvalidationTokenChainInvalidationFromDoesNotRetain() {
+        // Ensure that `chainInvalidation(from:)` does not retain the tokens in either direction.
+        let sema = DispatchSemaphore(value: 0)
+        let queue = DispatchQueue(label: "test queue")
+        do { // child is not retained
+            let token = PromiseInvalidationToken(invalidateOnDeinit: false)
+            var promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            do {
+                let subToken = PromiseInvalidationToken(invalidateOnDeinit: true)
+                subToken.chainInvalidation(from: token)
+                promise = promise.then(on: .queue(queue), token: subToken, { (x) in
+                    XCTFail("invalidated callback invoked")
+                })
+            } // subToken deinited, thus invalidated
+            let expectation = XCTestExpectation(description: "promise resolved")
+            promise.always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        do { // parent is not retained
+            let subToken = PromiseInvalidationToken(invalidateOnDeinit: false)
+            var promise = Promise<Int,String>(on: .utility, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            })
+            do {
+                let token = PromiseInvalidationToken(invalidateOnDeinit: true)
+                subToken.chainInvalidation(from: token)
+                promise = promise.then(on: .queue(queue), token: token, { (x) in
+                    XCTFail("invalidated callback invoked")
+                })
+            } // token deinited, thus invalidated
+            let expectation = XCTestExpectation(description: "promise resolved")
+            promise.always(on: .queue(queue), { (_) in
+                expectation.fulfill()
+            })
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testInvalidationTokenChainInvalidationFromSelf() {
+        // Ask a token to chain invalidation from itself just to ensure this doesn't trigger an
+        // infinite loop.
+        let token = PromiseInvalidationToken()
+        token.chainInvalidation(from: token)
+        token.invalidate()
+    }
+    
     // MARK: -
     
     func testResolvingFulfilledPromise() {

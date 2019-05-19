@@ -244,6 +244,15 @@ class URLImageView: UIImageView {
 }
 ```
 
+#### Invalidation token chaining
+
+`PromiseInvalidationToken`s can be arranged in a tree such that invalidating one token will cascade this invalidation down to other tokens. This is
+accomplished by calling `childToken.chainInvalidation(from: parentToken)`. Practically speaking this is no different than just manually invalidating each
+child token yourself after invalidating the parent token, but it's provided as a convenience to make it easy to have fine-grained invalidation control while also having
+a simple way to bulk-invalidate tokens. For example, you might have separate tokens for different view controllers that all chain invalidation from a single token that
+gets invalidated when the user logs out, thus automatically invalidating all your user-dependent network requests at once while still allowing each view controller the
+ability to invalidate just its own requests independently.
+
 #### `TokenPromise`
 
 In order to avoid the repetition of passing a `PromiseInvalidationToken` to multiple `Promise` methods as well as cancelling the resulting promise, a type
@@ -369,6 +378,11 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Tweak the atomic memory ordering used in `PromiseInvalidationToken`s. After a careful re-reading I don't believe I was issuing the correct fences previously,
   making it possible for tokens whose associated promise callbacks were executing concurrently with a call to `requestCancelOnInvalidate(_:)` to read the
   wrong generation value, and for tokens that had `requestCancelOnInvalidate(_:)` invoked concurrently on multiple threads to corrupt the generation.
+- Add `PromiseInvalidationToken.chainInvalidation(from:)` to invalidate a token whenever another token invalidates. This allows for building a tree of
+  tokens in order to have both fine-grained and bulk invalidation at the same time. Tokens chained together this way stay chained forever ([#43][]).
+
+[#43]: https://github.com/lilyball/Tomorrowland/issues/43 "Add PromiseInvalidationToken.chainInvalidation(from: PromiseInvalidationToken)"
+
 ### v0.6.0
 
 - Make `DelayedPromise` conform to `Equatable` ([#37][]).
