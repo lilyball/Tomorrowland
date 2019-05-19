@@ -79,6 +79,8 @@ public enum PromiseContext: Equatable, Hashable {
             self = .userInitiated
         case .userInteractive:
             self = .userInteractive
+        @unknown default:
+            self = .queue(.global(qos: qos))
         }
     }
     

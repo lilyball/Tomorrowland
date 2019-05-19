@@ -14,7 +14,7 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(int, TWLPromiseBoxState) {
+typedef NS_CLOSED_ENUM(int, TWLPromiseBoxState) {
     TWLPromiseBoxStateDelayed,
     TWLPromiseBoxStateEmpty,
     TWLPromiseBoxStateResolving,

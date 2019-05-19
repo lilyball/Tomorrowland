@@ -51,14 +51,20 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "lilyball/Tomorrowland" ~> 0.5.0
+github "lilyball/Tomorrowland" ~> 0.6.0
 ```
+
+The project file is configured to use Swift 5. The code can be compiled against Swift 4.2 instead, but I'm not aware of any way to instruct Carthage to override the
+swift version during compilation.
 
 ### CocoaPods
 
 ```ruby
-pod 'Tomorrowland', '~> 0.5.0'
+pod 'Tomorrowland', '~> 0.6.0'
 ```
+
+The podspec declares support for both Swift 4.2 and Swift 5.0, but selecting the Swift version requires using CoocaPods 1.7.0 or later. When using CocoaPods 1.6
+or earlier the Swift version will default to 5.0.
 
 ### SwiftPM
 
@@ -380,6 +386,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   wrong generation value, and for tokens that had `requestCancelOnInvalidate(_:)` invoked concurrently on multiple threads to corrupt the generation.
 - Add `PromiseInvalidationToken.chainInvalidation(from:)` to invalidate a token whenever another token invalidates. This allows for building a tree of
   tokens in order to have both fine-grained and bulk invalidation at the same time. Tokens chained together this way stay chained forever ([#43][]).
+- Update project file to Swift 5.0. The source already supported this. This change should only affect people using [Carthage][] or anyone adding building this
+  framework from source.
+- Update the podspec to list both Swift 4.2 and Swift 5.0. With CocoaPods 1.7.0 or later your `Podfile` can now declare which version of Swift it's compatible with.
+  For anyone using CocoaPods 1.6 or earlier it will default to Swift 5.0.
 
 [#43]: https://github.com/lilyball/Tomorrowland/issues/43 "Add PromiseInvalidationToken.chainInvalidation(from: PromiseInvalidationToken)"
 
