@@ -360,6 +360,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Fix a rather serious bug where `PromiseInvalidationToken`s would not deinit as long as any promise whose callback was tied to the token was still unresolved.
+  This meant that the default `invalidateOnDeinit` behavior would not trigger and the callback would still fire even though there were no more external references
+  to the token, and this meant any promises configured to be cancelled when the promise invalidated would not cancel. Tokens used purely for
+  `requestCancelOnInvalidate(_:)` would still deallocate, and tokens would still deallocate after any associated promises had resolved.
 ### v0.6.0
 
 - Make `DelayedPromise` conform to `Equatable` ([#37][]).

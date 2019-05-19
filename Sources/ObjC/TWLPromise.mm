@@ -15,6 +15,7 @@
 #import "TWLPromisePrivate.h"
 #import <Tomorrowland/Tomorrowland-Swift.h>
 #import "TWLContextPrivate.h"
+#import "TWLPromiseInvalidationTokenBox.h"
 #import <objc/runtime.h>
 #import "objc_cast.h"
 
@@ -25,6 +26,10 @@
 @end
 
 @interface TWLInvalidationToken (Private)
+@property (atomic, readonly) TWLPromiseInvalidationTokenBox *box;
+@end
+
+@interface TWLPromiseInvalidationTokenBox (Private)
 @property (atomic, readonly) NSUInteger generation;
 @end
 
@@ -132,12 +137,13 @@
 - (TWLPromise *)thenOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
         if (value) {
             [context executeBlock:^{
                 auto handler = oneshot();
-                if (!token || generation == token.generation) {
+                if (!tokenBox || generation == tokenBox.generation) {
                     handler(value);
                 }
                 [resolver fulfillWithValue:value];
@@ -163,12 +169,13 @@
 - (TWLPromise *)mapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
         if (value) {
             [context executeBlock:^{
                 auto handler = oneshot();
-                if (token && generation != token.generation) {
+                if (tokenBox && generation != tokenBox.generation) {
                     [resolver cancel];
                 } else {
                     id newValue = handler(value);
@@ -200,14 +207,15 @@
 - (TWLPromise *)catchOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [context executeBlock:^{
                 auto handler = oneshot();
-                if (!token || generation == token.generation) {
+                if (!tokenBox || generation == tokenBox.generation) {
                     handler(error);
                 }
                 [resolver rejectWithError:error];
@@ -231,14 +239,15 @@
 - (TWLPromise *)recoverOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(id _Nonnull (^)(id _Nonnull))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [context executeBlock:^{
                 auto handler = oneshot();
-                if (token && generation != token.generation) {
+                if (tokenBox && generation != tokenBox.generation) {
                     [resolver cancel];
                 } else {
                     id newValue = handler(error);
@@ -268,11 +277,12 @@
 - (TWLPromise *)inspectOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
             auto handler = oneshot();
-            if (!token || generation == token.generation) {
+            if (!tokenBox || generation == tokenBox.generation) {
                 handler(value, error);
             }
             [resolver resolveWithValue:value error:error];
@@ -293,11 +303,12 @@
 - (TWLPromise *)alwaysOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(TWLPromise * _Nonnull (^)(id _Nullable, id _Nullable))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, TWLPromise *(^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
             auto handler = oneshot();
-            if (token && generation != token.generation) {
+            if (tokenBox && generation != tokenBox.generation) {
                 [resolver cancel];
             } else {
                 auto nextPromise = handler(value, error);
@@ -318,11 +329,12 @@
 }
 
 - (TWLPromise *)tapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, NO, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
         [context executeBlock:^{
             auto handler = oneshot();
-            if (!token || generation == token.generation) {
+            if (!tokenBox || generation == tokenBox.generation) {
                 handler(value, error);
             }
         }];
@@ -350,7 +362,8 @@
 - (TWLPromise *)whenCancelledOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(void))handler {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    auto generation = token.generation;
+    auto tokenBox = token.box;
+    auto generation = tokenBox.generation;
     enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void)){
         if (value) {
             [resolver fulfillWithValue:value];
@@ -359,7 +372,7 @@
         } else {
             [context executeBlock:^{
                 auto handler = oneshot();
-                if (!token || generation == token.generation) {
+                if (!tokenBox || generation == tokenBox.generation) {
                     handler();
                 }
                 [resolver cancel];

@@ -667,6 +667,8 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectationMain, expectationBG], timeout: 1)
     }
     
+    // MARK: - Invalidation Tokens
+    
     func testInvalidationTokenNoInvalidate() {
         let sema = DispatchSemaphore(value: 0)
         let promise = Promise<Int,String>(on: .utility, { (resolver) in
@@ -833,6 +835,26 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testInvalidationTokenNotRetained() {
+        // Ensure that passing a token to a callback doesn't retain the token
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        })
+        let expectation = XCTestExpectation(description: "promise resolved")
+        do {
+            let token = PromiseInvalidationToken()
+            promise.then(on: .immediate, token: token, { _ in
+                XCTFail("token did not deinit when expected")
+            }).always(on: .immediate, { _ in
+                expectation.fulfill()
+            })
+        }
+        sema.signal()
+        wait(for: [expectation], timeout: 1)
+    }
+    
     func testInvalidationTokenCancelWithoutInvalidating() {
         let sema = DispatchSemaphore(value: 0)
         let token = PromiseInvalidationToken(invalidateOnDeinit: false)
@@ -908,6 +930,8 @@ final class PromiseTests: XCTestCase {
             XCTAssertEqual(try nodeCount(from: token), 1)
         }
     }
+    
+    // MARK: -
     
     func testResolvingFulfilledPromise() {
         // Resolving a promise that has already been fulfilled does nothing

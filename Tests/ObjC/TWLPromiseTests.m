@@ -376,6 +376,8 @@
     [self waitForExpectations:@[expectationMain, expectationBG] timeout:1];
 }
 
+#pragma mark - Invalidation Token
+
 - (void)testInvalidationTokenNoInvalidate {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
@@ -547,6 +549,26 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testInvalidationTokenNotRetained {
+    // Ensure that passing a token to a callback doesn't retain the token
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    TWLPromise *promise = [TWLPromise newOnContext:TWLContext.utility withBlock:^(TWLResolver * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"promise resolved"];
+    {
+        TWLInvalidationToken *token = [TWLInvalidationToken new];
+        [[promise thenOnContext:TWLContext.immediate token:token handler:^(id _Nonnull value) {
+            XCTFail(@"token did not deinit when expected");
+        }] inspectOnContext:TWLContext.immediate handler:^(id _Nullable value, id _Nullable error) {
+            [expectation fulfill];
+        }];
+    }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 - (void)testInvalidationTokenCancelWithoutInvalidating {
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     TWLInvalidationToken *token = [TWLInvalidationToken newInvalidateOnDealloc:NO];
@@ -564,6 +586,8 @@
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[expectation] timeout:1];
 }
+
+#pragma mark -
 
 - (void)testResolvingFulfilledPromise {
     // Resolving a promise that has already been fulfilled does nothing

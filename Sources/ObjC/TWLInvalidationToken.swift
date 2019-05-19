@@ -92,9 +92,9 @@ public final class ObjCPromiseInvalidationToken: NSObject {
         _token.requestCancelOnInvalidate(promise)
     }
     
-    @objc(generation) // hack to allow TWLPromise to query this
-    internal var generation: UInt {
-        return _token.generation
+    @objc(box) // hack to allow TWLPromise to query this
+    internal var box: TWLPromiseInvalidationTokenBox {
+        return _token.__objcBox
     }
 }
 
