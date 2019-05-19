@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v0.6.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.0.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -51,7 +51,7 @@ You can add Tomorrowland to your workspace manually like any other project and a
 ### Carthage
 
 ```
-github "lilyball/Tomorrowland" ~> 0.6.0
+github "lilyball/Tomorrowland" ~> 1.0
 ```
 
 The project file is configured to use Swift 5. The code can be compiled against Swift 4.2 instead, but I'm not aware of any way to instruct Carthage to override the
@@ -60,7 +60,7 @@ swift version during compilation.
 ### CocoaPods
 
 ```ruby
-pod 'Tomorrowland', '~> 0.6.0'
+pod 'Tomorrowland', '~> 1.0'
 ```
 
 The podspec declares support for both Swift 4.2 and Swift 5.0, but selecting the Swift version requires using CoocaPods 1.7.0 or later. When using CocoaPods 1.6
@@ -375,7 +375,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v1.0.0
 
 - Fix a rather serious bug where `PromiseInvalidationToken`s would not deinit as long as any promise whose callback was tied to the token was still unresolved.
   This meant that the default `invalidateOnDeinit` behavior would not trigger and the callback would still fire even though there were no more external references
