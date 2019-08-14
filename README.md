@@ -375,6 +375,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Suppress a warning from the Swift 5.1 compiler about code that the Swift 5.0 compiler requires.
+
 ### v1.0.0
 
 - Fix a rather serious bug where `PromiseInvalidationToken`s would not deinit as long as any promise whose callback was tied to the token was still unresolved.

@@ -1825,7 +1825,9 @@ public enum NoError: Hashable, Equatable, Codable {
     ///   - lhs: A value to compare.
     ///   - rhs: Another value to compare.
     public static func ==(lhs: NoError, rhs: NoError) -> Bool {
+        #if !compiler(>=5.1)
         return true
+        #endif
     }
     
     public func hash(into hasher: inout Hasher) {}
