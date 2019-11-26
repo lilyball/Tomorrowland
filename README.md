@@ -310,6 +310,34 @@ chain). You can also use `tap()` as a more generic version of this.
 
 Note that `ignoringCancel()` disables automatic cancellation propagation on the receiver. Once you invoke this on a promise, it will never automatically cancel.
 
+##### `propagatingCancellation(on:cancelRequested:)`
+
+In some cases you may need to hold onto a promise without blocking cancellation propagation from its children. The primary use-case here is deduplicating access to
+an asynchronous resource (such as a network load). In this scenario you may wish to hold onto a promise and return a new child for every client requesting the same
+resource, without preventing cancellation of the resource load if all clients cancel their requests. This can be accomplished by holding onto the result of calling
+`.propagatingCancellation(on:cancelRequested:)`. The promise returned from this method will propagate cancellation to its parent as soon as all children
+have requested cancellation even if the promise is still in scope. When cancellation is requested, the `cancelRequested` handler will be invoked immediately prior to
+propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load). An
+example of this might look like:
+
+```swift
+func loadResource(at url: URL) {
+    let promise: StdPromise<Model>
+    if let existingPromise = resourceLoads[url] {
+        promise = existingPromise
+    } else {
+        promise = makeResourceRequest(for: url).propagatingCancellation(on: .main, cancelRequested: { (promise) in
+            if self.resourceLoads[url] == promise {
+                self.resourceLoads[url] = nil
+            }
+        })
+        resourceLoads[url] = promise
+    }
+    // Return a new child for each request so all clients have to cancel, not just one.
+    return promise.then(on: .immediate, { _ in })
+}
+```
+
 ### Promise Helpers
 
 There are a few helper functions that can be used to deal with multiple promises.
@@ -374,6 +402,15 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Add new method `.propagatingCancellation(on:cancelRequested:)` that can be used to create a long-lived promise that propagates cancellation from its
+  children to its parent while it's still alive. Normally promises don't propagate cancellation until they themselves are released, in case more children are going to be
+  added. This new method is intended to be used when deduplicating requests for an asynchronous resource (such as a network load) such that the resource request
+  can be cancelled in the event that no children care about it anymore ([#46][]).
+
+[#46]: https://github.com/lilyball/Tomorrowland/issues/46 "A way to hold onto a promise without blocking cancellation propagation from children"
 
 ### v1.0.1
 

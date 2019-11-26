@@ -448,6 +448,32 @@ NS_SWIFT_NAME(ObjCPromise)
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)whenCancelledOnContext:(TWLContext *)context token:(nullable TWLInvalidationToken *)token handler:(void (^)(void))handler NS_SWIFT_NAME(onCancel(on:token:_:));
 
+/// Returns a promise that adopts the same value as the receiver, and propagates cancellation
+/// from its children upwards even when it still exists.
+///
+/// Normally cancellation is only propagated from children upwards when the parent promise is no
+/// longer held on to directly. This allows more children to be attached to the parent later,
+/// and only after the parent has been dropped will cancellation requests from its children
+/// propagate up to its own parent.
+///
+/// This method returns a promise that ignores that logic and propagates cancellation upwards
+/// even while it still exists. As soon as all existing children have requested cancellation,
+/// the cancellation request will propagate to the receiver. A callback is provided to allow you
+/// to drop the returned promise at that point, so you don't try to attach new children.
+///
+/// The intent of this method is to allow you to deduplicate requests for a long-lived resource
+/// (such as a network load) without preventing cancellation of the load in the event that no
+/// children care about it anymore.
+///
+/// \param context The context to invoke the callback on.
+/// \param cancelRequested The callback that is invoked when the promise is requested to cancel,
+/// either because \c .requestCancel() was invoked on it directly or because all children have
+/// requested cancellation. This callback is executed immediately prior to the cancellation request
+/// being propagated to the receiver. The argument to the callback is the same promise that's
+/// returned from this method.
+/// \returns A new promise that will resolve to the same value as the receiver.
+- (TWLPromise<ValueType,ErrorType> *)propagatingCancellationOnContext:(TWLContext *)context cancelRequestedHandler:(void (^)(TWLPromise<ValueType,ErrorType> *promise))cancelRequested NS_SWIFT_NAME(propagatingCancellation(on:cancelRequested:));
+
 /// Returns the promise's value if it's already been resolved.
 ///
 /// If the return value is \c YES and both \a *outValue and \a *outError are \c nil this means the

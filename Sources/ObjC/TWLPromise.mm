@@ -383,6 +383,32 @@
     return promise;
 }
 
+- (TWLPromise *)propagatingCancellationOnContext:(TWLContext *)context cancelRequestedHandler:(void (^)(TWLPromise<id,id> *promise))cancelRequested {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
+        [resolver resolveWithValue:value error:error];
+    } willPropagateCancel:YES];
+    // Replicate the "oneshot" behavior from enqueueCallback, as -whenCancelRequestedOnContext: does not have this same behavior.
+    void (__block ^ _Nullable oneshotValue)(TWLPromise *) = cancelRequested;
+    auto oneshot = ^{
+        auto value = oneshotValue;
+        oneshotValue = nil;
+        return value;
+    };
+    __weak TWLObjCPromiseBox *box = _box;
+    [resolver whenCancelRequestedOnContext:context handler:^(TWLResolver * _Nonnull resolver) {
+        // Retaining promise in its own callback will keep it alive until it's resolved. This is
+        // safe because our box is kept alive by the parent promise until it's resolved, and the
+        // seal doesn't matter as we already sealed it.
+        oneshot()(promise);
+        [box propagateCancel];
+    }];
+    // Seal the promise now. This allows cancellation propagation.
+    [promise->_box seal];
+    return promise;
+}
+
 - (BOOL)getValue:(id  _Nullable __strong *)outValue error:(id  _Nullable __strong *)outError {
     return [_box getValue:outValue error:outError];
 }

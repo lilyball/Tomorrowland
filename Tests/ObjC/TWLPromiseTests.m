@@ -304,6 +304,191 @@
 
 #pragma mark -
 
+- (void)testPropagatingCancellation {
+    __auto_type requestExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on root"];
+    __auto_type childExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child"];
+    __auto_type notYetExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child too early"];
+    notYetExpectation.inverted = YES;
+    TWLPromise *childPromise __attribute__((objc_precise_lifetime));
+    { // scope rootPromise
+        __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber*,NSString*> * _Nonnull _resolver) {
+                [requestExpectation fulfill];
+                [resolver cancel]; // retain resolver to keep the promise alive until cancelled
+            }];
+        }];
+        __block TWLPromise *blockChildPromise;
+        childPromise = [rootPromise propagatingCancellationOnContext:TWLContext.immediate cancelRequestedHandler:^(TWLPromise *promise){
+            XCTAssertEqualObjects(promise, blockChildPromise, @"Promise passed to cancelRequestedHandler isn't the same as what was returned");
+            // Note: We can only wait on an expectation once, so we trigger multiple here for testing at different points.
+            [childExpectation fulfill];
+            [notYetExpectation fulfill];
+        }];
+        blockChildPromise = childPromise;
+    }
+    __auto_type promise1 = [childPromise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {}];
+    __auto_type promise2 = [childPromise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {}];
+    [promise1 requestCancel];
+    if ([[[XCTWaiter alloc] initWithDelegate:self] waitForExpectations:@[notYetExpectation] timeout:0] != XCTWaiterResultCompleted) {
+        XCTFail(@"Cancel requested on child too early");
+        return;
+    }
+    __auto_type cancelExpectations = @[
+        TWLExpectationCancelOnContext(TWLContext.immediate, promise1),
+        TWLExpectationCancelOnContext(TWLContext.immediate, promise2)
+    ];
+    [promise2 requestCancel];
+    // Everything was marked as immediate, so all cancellation should have happened immediately.
+    [self waitForExpectations:[@[childExpectation, requestExpectation] arrayByAddingObjectsFromArray:cancelExpectations] timeout:0 enforceOrder:YES];
+    
+    // Adding new children at this point causes no problems, they're just insta-cancelled.
+    __auto_type promise3 = [childPromise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {}];
+    id _Nullable value, error;
+    XCTAssertTrue([promise3 getValue:&value error:&error]);
+    XCTAssertNil(value);
+    XCTAssertNil(error);
+}
+
+- (void)testPropagatingCancellationNoChildren {
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type requestExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on root"];
+    requestExpectation.inverted = YES;
+    __auto_type childExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child"];
+    childExpectation.inverted = YES;
+    __auto_type resolvedExpectation = [[XCTestExpectation alloc] initWithDescription:@"Child promise resolved"];
+    resolvedExpectation.inverted = YES;
+    { // scope childPromise
+        TWLPromise *childPromise;
+        { // scope rootPromise
+            __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+                [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+                    [requestExpectation fulfill];
+                    [resolver cancel];
+                }];
+                dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                    [resolver fulfillWithValue:@42];
+                });
+            }];
+            childPromise = [rootPromise propagatingCancellationOnContext:TWLContext.immediate cancelRequestedHandler:^(TWLPromise *_promise){
+                [childExpectation fulfill];
+            }];
+        }
+        [[childPromise tap] inspectOnContext:TWLContext.immediate handler:^(id  _Nullable value, id  _Nullable error) {
+            [resolvedExpectation fulfill];
+        }];
+    }
+    // At this point childPromise and rootPromise are gone, and all callbacks are .immediate.
+    // If cancellation was going to propagate, it would have done so already.
+    [self waitForExpectations:@[requestExpectation, childExpectation, resolvedExpectation] timeout:0];
+    dispatch_semaphore_signal(sema);
+}
+
+- (void)testPropagatingCancelManualRequestCancel {
+    // -requestCancel should behave the same as cancellation propagation with respect to running the callback
+    __auto_type childExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child"];
+    __auto_type notYetExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child too early"];
+    notYetExpectation.inverted = YES;
+    TWLPromise *childPromise;
+    { // scope rootPromise
+        __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber*,NSString*> * _Nonnull _resolver) {
+                [resolver cancel]; // retain resolver to keep the promise alive until cancelled
+            }];
+        }];
+        childPromise = [rootPromise propagatingCancellationOnContext:TWLContext.immediate cancelRequestedHandler:^(TWLPromise *_promise){
+            // Note: We can only wait on an expectation once, so we trigger multiple here for testing at different points.
+            [childExpectation fulfill];
+            [notYetExpectation fulfill];
+        }];
+    }
+    if ([[[XCTWaiter alloc] initWithDelegate:self] waitForExpectations:@[notYetExpectation] timeout:0] != XCTWaiterResultCompleted) {
+        XCTFail(@"Cancel requested on child too early");
+        return;
+    }
+    [childPromise requestCancel];
+    [self waitForExpectations:@[childExpectation] timeout:0];
+}
+
+- (void)testPropagatingCancellationAsyncCallback {
+    // Test that using an asynchronous cancelRequested callback works as expected.
+    __auto_type childExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child"];
+    TWLPromise *childPromise;
+    __auto_type queue = [NSOperationQueue new];
+    queue.maxConcurrentOperationCount = 1;
+    { // scope rootPromise
+        __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber*,NSString*> * _Nonnull _resolver) {
+                [resolver cancel]; // retain resolver
+            }];
+        }];
+        childPromise = [rootPromise propagatingCancellationOnContext:[TWLContext operationQueue:queue] cancelRequestedHandler:^(TWLPromise *_promise){
+            XCTAssertEqualObjects(NSOperationQueue.currentQueue, queue);
+            [childExpectation fulfill];
+        }];
+    }
+    [[childPromise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {}] requestCancel];
+    // cancel should already be enqueued on the queue at this point. No need for a timeout.
+    [queue waitUntilAllOperationsAreFinished];
+    [self waitForExpectations:@[childExpectation] timeout:0];
+}
+
+- (void)testPropagatingCancellationFulfilled {
+    // Just a quick test to ensure propagatingCancellation actually resolves properly too
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }];
+    __auto_type childPromise = [rootPromise propagatingCancellationOnContext:TWLContext.immediate cancelRequestedHandler:^(TWLPromise *_promise){
+        XCTFail(@"Unexpected cancellation");
+    }];
+    __auto_type expectation1 = TWLExpectationSuccessWithValueOnContext(TWLContext.immediate, childPromise, @42);
+    expectation1.inverted = YES;
+    [self waitForExpectations:@[expectation1] timeout:0];
+    __auto_type expectation2 = TWLExpectationSuccessWithValue(childPromise, @42);
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[expectation2] timeout:1];
+}
+
+- (void)testPropagatingCancellationOtherChildrenOfRoot {
+    // Ensure cancellation propagation doesn't ignore other children of the root promise
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type rootPromiseCancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on root promise"];
+    rootPromiseCancelExpectation.inverted = YES;
+    __auto_type childExpectation = [[XCTestExpectation alloc] initWithDescription:@"Cancel requested on child"];
+    XCTestExpectation *child2Expectation;
+    __auto_type notYetExpectation = [[XCTestExpectation alloc] initWithDescription:@"Child 2 promise resolved too quickly"];
+    notYetExpectation.inverted = YES;
+    TWLPromise *childPromise;
+    { // scope rootPromise
+        __auto_type rootPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber*,NSString*> * _Nonnull resolver) {
+                [rootPromiseCancelExpectation fulfill];
+                [resolver cancel];
+            }];
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                [resolver fulfillWithValue:@42];
+            });
+        }];
+        childPromise = [rootPromise propagatingCancellationOnContext:TWLContext.immediate cancelRequestedHandler:^(TWLPromise *_promise){
+            [childExpectation fulfill];
+        }];
+        __auto_type child2Promise = [rootPromise thenOnContext:TWLContext.immediate handler:^(NSNumber * _Nonnull value) {}];
+        child2Expectation = TWLExpectationSuccessWithValueOnContext(TWLContext.immediate, child2Promise, @42);
+        [[child2Promise tap] inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            [notYetExpectation fulfill];
+        }];
+    }
+    [[childPromise thenOnContext:TWLContext.immediate handler:^(id  _Nonnull value) {}] requestCancel];
+    [self waitForExpectations:@[notYetExpectation, childExpectation] timeout:0];
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:@[rootPromiseCancelExpectation, child2Expectation] timeout:1];
+}
+
+#pragma mark -
+
 - (void)testPromiseContexts {
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray array];
     XCTestExpectation *mainExpectation = [[XCTestExpectation alloc] initWithDescription:@"main context"];

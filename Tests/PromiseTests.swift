@@ -472,6 +472,187 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    // MARK: -
+    
+    func testPropagatingCancellation() {
+        let requestExpectation = XCTestExpectation(description: "Cancel requested on root")
+        let childExpectation = XCTestExpectation(description: "Cancel requested on child")
+        let notYetExpectation = XCTestExpectation(description: "Cancel requested on child too early")
+        notYetExpectation.isInverted = true
+        let childPromise: Promise<Int,String>
+        do { // scope rootPromise
+            let rootPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate) { (_) in // retain resolver to keep the promise alive until cancelled
+                    requestExpectation.fulfill()
+                    resolver.cancel()
+                }
+            })
+            var blockChildPromise: Promise<Int,String>?
+            childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { (promise) in
+                XCTAssertEqual(promise, blockChildPromise, "Promise passed to cancelRequested isn't the same as what was returned")
+                // Note: We can only wait on an expectation once, so we trigger multiple here for testing at different points.
+                childExpectation.fulfill()
+                notYetExpectation.fulfill()
+            })
+            blockChildPromise = childPromise
+        }
+        let promise1 = childPromise.then(on: .immediate, { _ in })
+        let promise2 = childPromise.then(on: .immediate, { _ in })
+        promise1.requestCancel()
+        guard XCTWaiter(delegate: self).wait(for: [notYetExpectation], timeout: 0) == .completed else {
+            XCTFail("Cancel requested on child too early")
+            return
+        }
+        let cancelExpectations = [promise1, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+        promise2.requestCancel()
+        // Everything was marked as immediate, so all cancellation should have happened immediately.
+        wait(for: [childExpectation, requestExpectation] + cancelExpectations, timeout: 0, enforceOrder: true)
+        
+        // Adding new children at this point causes no problems, they're just insta-cancelled.
+        let promise3 = childPromise.then(on: .immediate, { _ in })
+        XCTAssertEqual(promise3.result, .cancelled)
+        
+        withExtendedLifetime(childPromise) {} // Ensure childPromise lives to this point
+    }
+    
+    func testPropagatingCancellationNoChildren() {
+        let sema = DispatchSemaphore(value: 0)
+        let requestExpectation = XCTestExpectation(description: "Cancel requested on root")
+        requestExpectation.isInverted = true
+        let childExpectation = XCTestExpectation(description: "Cancel requested on child")
+        childExpectation.isInverted = true
+        let resolvedExpectation = XCTestExpectation(description: "Child promise resolved")
+        resolvedExpectation.isInverted = true
+        do { // scope childPromise
+            let childPromise: Promise<Int,String>
+            do { // scope rootPromise
+                let rootPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate) { (resolver) in
+                        requestExpectation.fulfill()
+                        resolver.cancel()
+                    }
+                    DispatchQueue.global(qos: .utility).async {
+                        sema.wait()
+                        resolver.fulfill(with: 42)
+                    }
+                })
+                childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { _ in
+                    childExpectation.fulfill()
+                })
+            }
+            childPromise.tap().always(on: .immediate, { _ in
+                resolvedExpectation.fulfill()
+            })
+        }
+        // At this point childPromise and rootPromise are gone, and all callbacks are .immediate.
+        // If cancellation was going to propagate, it would have done so already.
+        wait(for: [requestExpectation, childExpectation, resolvedExpectation], timeout: 0)
+        sema.signal()
+    }
+    
+    func testPropagatingCancelManualRequestCancel() {
+        // requestCancel() should behave the same as cancellation propagation with respect to running the callback
+        let childExpectation = XCTestExpectation(description: "Cancel requested on child")
+        let notYetExpectation = XCTestExpectation(description: "Cancel requested on child too early")
+        notYetExpectation.isInverted = true
+        let childPromise: Promise<Int,String>
+        do { // scope rootPromise
+            let rootPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate) { (_) in // retain resolver to keep the promise alive until cancelled
+                    resolver.cancel()
+                }
+            })
+            childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { _ in
+                // Note: We can only wait on an expectation once, so we trigger multiple here for testing at different points.
+                childExpectation.fulfill()
+                notYetExpectation.fulfill()
+            })
+        }
+        guard XCTWaiter(delegate: self).wait(for: [notYetExpectation], timeout: 0) == .completed else {
+            XCTFail("Cancel requested on child too early")
+            return
+        }
+        childPromise.requestCancel()
+        wait(for: [childExpectation], timeout: 0)
+    }
+    
+    func testPropagatingCancellationAsyncCallback() {
+        // Test that using an asynchronous cancelRequested callback works as expected.
+        let childExpectation = XCTestExpectation(description: "Cancel requested on child")
+        let childPromise: Promise<Int,String>
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        do { // scope rootPromise
+            let rootPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { _ in // retain resolver
+                    resolver.cancel()
+                })
+            })
+            childPromise = rootPromise.propagatingCancellation(on: .operationQueue(queue), cancelRequested: { _ in
+                XCTAssertEqual(OperationQueue.current, queue)
+                childExpectation.fulfill()
+            })
+        }
+        childPromise.then(on: .immediate, { _ in }).requestCancel()
+        // cancel should already be enqueued on the queue at this point. No need for a timeout
+        queue.waitUntilAllOperationsAreFinished()
+        wait(for: [childExpectation], timeout: 0)
+    }
+    
+    func testPropagatingCancellationFulfilled() {
+        // Just a quick test to ensure propagatingCancellation actually resolves properly too
+        let sema = DispatchSemaphore(value: 0)
+        let rootPromise = Promise<Int,String>(on: .utility, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        })
+        let childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { _ in
+            XCTFail("Unexpected cancellation")
+        })
+        let expectation1 = XCTestExpectation(on: .immediate, onSuccess: childPromise, expectedValue: 42)
+        expectation1.isInverted = true
+        wait(for: [expectation1], timeout: 0)
+        let expectation2 = XCTestExpectation(onSuccess: childPromise, expectedValue: 42)
+        sema.signal()
+        wait(for: [expectation2], timeout: 1)
+    }
+    
+    func testPropagatingCancellationOtherChildrenOfRoot() {
+        // Ensure cancellation propagation doesn't ignore other children of the root promise
+        let sema = DispatchSemaphore(value: 0)
+        let rootPromiseCancelExpectation = XCTestExpectation(description: "Cancel requested on root promise")
+        rootPromiseCancelExpectation.isInverted = true
+        let childExpectation = XCTestExpectation(description: "Cancel requested on child")
+        let child2Expectation: XCTestExpectation
+        let notYetExpectation = XCTestExpectation(description: "Child 2 promise resolved too early")
+        notYetExpectation.isInverted = true
+        let childPromise: Promise<Int,String>
+        do { // scope rootPromise
+            let rootPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate) { (resolver) in
+                    rootPromiseCancelExpectation.fulfill()
+                    resolver.cancel()
+                }
+                DispatchQueue.global(qos: .utility).async {
+                    sema.wait()
+                    resolver.fulfill(with: 42)
+                }
+            })
+            childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { _ in
+                childExpectation.fulfill()
+            })
+            let child2Promise = rootPromise.then(on: .immediate, { _ in })
+            child2Expectation = XCTestExpectation(on: .immediate, onSuccess: child2Promise, expectedValue: 42)
+            child2Promise.tap().always(on: .immediate, { _ in
+                notYetExpectation.fulfill()
+            })
+        }
+        childPromise.then(on: .immediate, { _ in }).requestCancel()
+        wait(for: [notYetExpectation, childExpectation], timeout: 0)
+        sema.signal()
+        wait(for: [rootPromiseCancelExpectation, child2Expectation], timeout: 1)
+    }
+    
     // MARK: - Specializations for Error
     
     struct TestError: Error {}

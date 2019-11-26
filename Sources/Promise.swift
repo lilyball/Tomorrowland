@@ -1072,6 +1072,56 @@ public struct Promise<Value,Error> {
     
     // MARK: -
     
+    
+    /// Returns a promise that adopts the same value as the receiver, and propagates cancellation
+    /// from its children upwards even when it still exists.
+    ///
+    /// Normally cancellation is only propagated from children upwards when the parent promise is no
+    /// longer held on to directly. This allows more children to be attached to the parent later,
+    /// and only after the parent has been dropped will cancellation requests from its children
+    /// propagate up to its own parent.
+    ///
+    /// This method returns a promise that ignores that logic and propagates cancellation upwards
+    /// even while it still exists. As soon as all existing children have requested cancellation,
+    /// the cancellation request will propagate to the receiver. A callback is provided to allow you
+    /// to drop the returned promise at that point, so you don't try to attach new children.
+    ///
+    /// The intent of this method is to allow you to deduplicate requests for a long-lived resource
+    /// (such as a network load) without preventing cancellation of the load in the event that no
+    /// children care about it anymore.
+    ///
+    /// - Parameter context: The context to invoke the callback on.
+    /// - Parameter cancelRequested: The callback that is invoked when the promise is requested to
+    ///   cancel, either because `.requestCancel()` was invoked on it directly or because all
+    ///   children have requested cancellation. This callback is executed immediately prior to the
+    ///   cancellation request being propagated to the receiver.
+    /// - Parameter promise: The same promise that's returned from this method.
+    /// - Returns: A new promise that will resolve to the same value as the receiver.
+    public func propagatingCancellation(on context: PromiseContext, cancelRequested: @escaping (_ promise: Promise<Value,Error>) -> Void) -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        _seal._enqueue { (result) in
+            resolver.resolve(with: result)
+        }
+        // Replicate the "oneshot" behavior from _seal.enqueue, as resolver.onRequestCancel does not have this same behavior.
+        var callback = Optional.some(cancelRequested)
+        let oneshot: () -> (Promise<Value,Error>) -> Void = {
+            defer { callback = nil }
+            return callback.unsafelyUnwrapped
+        }
+        resolver.onRequestCancel(on: context) { [weak box=self._box] _ in
+            // Retaining promise in its own callback will keep it alive until it's resolved. This is
+            // safe because our box is kept alive by the parent promise until it's resolved, and the
+            // seal doesn't matter as we already sealed it.
+            oneshot()(promise)
+            box?.propagateCancel()
+        }
+        // Seal the promise now. This allows cancellation propagation.
+        promise._box.seal()
+        return promise
+    }
+    
+    // MARK: -
+    
     /// Passes the `Promise` to a block and then returns the `Promise` for further chaining.
     ///
     /// This method exists to make it easy to add multiple children to the same `Promise` in a

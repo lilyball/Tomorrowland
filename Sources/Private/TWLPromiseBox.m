@@ -178,8 +178,9 @@ static void * _Nullable swapLinkedList(atomic_uintptr_t * _Nonnull list, void * 
     uint64_t count = (uint64_t)atomic_load_explicit(&_observerCount, memory_order_relaxed);
     while (1) {
         uint64_t newCount = count & ~ObserverCountFlagUnsealed;
-        NSAssert(newCount != count, @"Tried to seal box twice");
-        if (atomic_compare_exchange_weak_explicit(&_observerCount, &count, newCount, memory_order_relaxed, memory_order_relaxed)) {
+        if (newCount == count // we already sealed the box
+            || atomic_compare_exchange_weak_explicit(&_observerCount, &count, newCount, memory_order_relaxed, memory_order_relaxed))
+        {
             return newCount == 0;
         }
     }
