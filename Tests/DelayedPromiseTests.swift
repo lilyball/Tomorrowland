@@ -49,15 +49,6 @@ final class DelayedPromiseTests: XCTestCase {
     }
     
     func testDelayedPromiseDropsCallbackAfterInvocation() {
-        class DropSpy {
-            let callback: () -> Void
-            init(onDrop: @escaping () -> Void) {
-                callback = onDrop
-            }
-            deinit {
-                callback()
-            }
-        }
         let dropExpectation = XCTestExpectation(description: "callback dropped")
         let notDroppedExpectation = XCTestExpectation(description: "callback not yet dropped")
         notDroppedExpectation.isInverted = true
@@ -76,5 +67,35 @@ final class DelayedPromiseTests: XCTestCase {
         withExtendedLifetime(dp) {
             wait(for: [dropExpectation], timeout: 1)
         }
+    }
+    
+    func testDelayedPromiseDropsCallbackIfReleased() {
+        let dropExpectation = XCTestExpectation(description: "callback dropped")
+        let notDroppedExpectation = XCTestExpectation(description: "callback not yet dropped")
+        notDroppedExpectation.isInverted = true
+        var dropSpy: DropSpy? = DropSpy(onDrop: {
+            dropExpectation.fulfill()
+            notDroppedExpectation.fulfill()
+        })
+        var dp = Optional(DelayedPromise<Int,String>(on: .utility, { [dropSpy] (resolver) in
+            withExtendedLifetime(dropSpy, {
+                resolver.fulfill(with: 42)
+            })
+        }))
+        _ = dp // suppress "variable never read" warning
+        dropSpy = nil
+        wait(for: [notDroppedExpectation], timeout: 0) // ensure DropSpy is held by dp
+        dp = nil
+        wait(for: [dropExpectation], timeout: 0) // dropSpy should be dropped now
+    }
+}
+
+private class DropSpy {
+    let callback: () -> Void
+    init(onDrop: @escaping () -> Void) {
+        callback = onDrop
+    }
+    deinit {
+        callback()
     }
 }
