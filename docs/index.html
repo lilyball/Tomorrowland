@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland Docs</a> (98% documented)</p>
+        <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.0.1-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.1.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -387,6 +387,31 @@ order to register an observer that won&rsquo;t interfere with the existing autom
 chain). You can also use <code>tap()</code> as a more generic version of this.</p>
 
 <p>Note that <code>ignoringCancel()</code> disables automatic cancellation propagation on the receiver. Once you invoke this on a promise, it will never automatically cancel.</p>
+<h5 id='code-propagatingcancellation-on-cancelrequested-code' class='heading'><code>propagatingCancellation(on:cancelRequested:)</code></h5>
+
+<p>In some cases you may need to hold onto a promise without blocking cancellation propagation from its children. The primary use-case here is deduplicating access to
+an asynchronous resource (such as a network load). In this scenario you may wish to hold onto a promise and return a new child for every client requesting the same
+resource, without preventing cancellation of the resource load if all clients cancel their requests. This can be accomplished by holding onto the result of calling
+<code>.propagatingCancellation(on:cancelRequested:)</code>. The promise returned from this method will propagate cancellation to its parent as soon as all children
+have requested cancellation even if the promise is still in scope. When cancellation is requested, the <code>cancelRequested</code> handler will be invoked immediately prior to
+propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load). An
+example of this might look like:</p>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">loadResource</span><span class="p">(</span><span class="n">at</span> <span class="nv">url</span><span class="p">:</span> <span class="kt">URL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">promise</span><span class="p">:</span> <span class="kt">StdPromise</span><span class="o">&lt;</span><span class="kt">Model</span><span class="o">&gt;</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">existingPromise</span> <span class="o">=</span> <span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="p">{</span>
+        <span class="n">promise</span> <span class="o">=</span> <span class="n">existingPromise</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">promise</span> <span class="o">=</span> <span class="nf">makeResourceRequest</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="nf">propagatingCancellation</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="nv">cancelRequested</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="n">promise</span><span class="p">)</span> <span class="k">in</span>
+            <span class="k">if</span> <span class="k">self</span><span class="o">.</span><span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">==</span> <span class="n">promise</span> <span class="p">{</span>
+                <span class="k">self</span><span class="o">.</span><span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="kc">nil</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+        <span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">promise</span>
+    <span class="p">}</span>
+    <span class="c1">// Return a new child for each request so all clients have to cancel, not just one.</span>
+    <span class="k">return</span> <span class="n">promise</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">immediate</span><span class="p">,</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span> <span class="p">})</span>
+<span class="p">}</span>
+</code></pre>
 <h3 id='promise-helpers' class='heading'>Promise Helpers</h3>
 
 <p>There are a few helper functions that can be used to deal with multiple promises.</p>
@@ -444,6 +469,14 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-1-0' class='heading'>v1.1.0</h3>
+
+<ul>
+<li>Add new method <code>.propagatingCancellation(on:cancelRequested:)</code> that can be used to create a long-lived promise that propagates cancellation from its
+children to its parent while it&rsquo;s still alive. Normally promises don&rsquo;t propagate cancellation until they themselves are released, in case more children are going to be
+added. This new method is intended to be used when deduplicating requests for an asynchronous resource (such as a network load) such that the resource request
+can be cancelled in the event that no children care about it anymore (<a href="https://github.com/lilyball/Tomorrowland/issues/46" title="A way to hold onto a promise without blocking cancellation propagation from children">#46</a>).</li>
+</ul>
 <h3 id='v1-0-1' class='heading'>v1.0.1</h3>
 
 <ul>
@@ -587,8 +620,8 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-08-13)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.10.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-11-25)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.12.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

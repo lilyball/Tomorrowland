@@ -1,19 +1,6 @@
 {
   "warnings": [
-    {
-      "file": "/Users/lily/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 19,
-      "symbol": "Promise.init(result:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/lily/Dev/iPhone/Tomorrowland/Sources/Deprecations.swift",
-      "line": 24,
-      "symbol": "Promise.init(on:result:after:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.instance",
-      "warning": "undocumented"
-    }
+
   ],
-  "source_directory": "/Users/lily/Dev/iPhone/Tomorrowland"
+  "source_directory": "/Users/lilyball/Dev/Tomorrowland"
 }
