@@ -512,7 +512,7 @@ extension TokenPromise where Error == Swift.Error {
     /// Registers a callback that is invoked when the promise is rejected.
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
-    //
+    ///
     /// - Parameter context: The context to invoke the callback on.
     /// - Parameter onError: The callback that is invoked with the rejected error.
     /// - Returns: A new promise that will be fulfilled with the return value of `onError`, or

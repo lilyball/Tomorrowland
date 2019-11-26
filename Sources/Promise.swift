@@ -1433,7 +1433,7 @@ extension Promise where Error == Swift.Error {
     /// Registers a callback that is invoked when the promise is rejected.
     ///
     /// Unlike `catch(on:_:)` this callback can recover from the error and return a new value.
-    //
+    ///
     /// - Parameter context: The context to invoke the callback on.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
     ///   `invalidate()` on the token will prevent `onError` from being invoked. If the promise is
