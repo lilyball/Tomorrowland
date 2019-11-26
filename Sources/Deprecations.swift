@@ -15,11 +15,19 @@
 import typealias Foundation.TimeInterval
 
 public extension Promise {
+    /// Returns a `Promise` that is already resolved with the given result.
+    ///
+    /// - Note: This initializer has been renamed to `init(with:)`.
+    /// - SeeAlso: `Promise.init(with:)`.
     @available(*, deprecated, renamed: "init(with:)")
     init(result: PromiseResult<Value,Error>) {
         self.init(with: result)
     }
     
+    /// Returns a `Promise` that resolves with the given result after a delay.
+    ///
+    /// - Note: This initializer has been renamed to `init(on:with:after:)`.
+    /// - SeeAlso: `Promise.init(on:with:after:)`.
     @available(*, deprecated, renamed: "init(on:with:after:)")
     init(on context: PromiseContext = .auto, result: PromiseResult<Value,Error>, after delay: TimeInterval) {
         self.init(on: context, with: result, after: delay)
