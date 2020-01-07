@@ -4,7 +4,10 @@ help:
 	@echo "  docs"
 .PHONY: help
 
-# FIXME: Add --objc when realm/jazzy#976 is fixed
+# FIXME: Build both ObjC and Swift docs once Jazzy supports this natively.
+# In 0.13.0 it's possible if I run sourcekitten manually, but I'm not sure how
+# to do that, and I'm pretty sure the generated documentation won't have a
+# toggle between objc and swift.
 docs:
 	@rm -rf build
 	@mkdir -p build/ObjC
