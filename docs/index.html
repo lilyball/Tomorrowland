@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.1.0-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.1.1-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -138,7 +138,7 @@ asynchronous task that provides a standard way of subscribing to task resolution
 
 <ul>
 <li>It uses atomics internally instead of creating a separate <code>DispatchQueue</code> for each promise. This means it&rsquo;s faster and uses fewer resources.</li>
-<li>It provides full support for cancellable promises. PromiseKit supports detection of <q>cancelled</q> errors but has no way to request cancellation of a promise. Hydra
+<li>It provides full support for cancellable promises. PromiseKit supports detection of &ldquo;cancelled&rdquo; errors but has no way to request cancellation of a promise. Hydra
 supports cancelling a promise, but it can&rsquo;t actually stop any work being done by the promise unless the promise body itself polls for the cancellation status (so e.g.
 a promise wrapping a network task can&rsquo;t reasonably cancel the network task). Tomorrowland improves on this by allowing the promise body to observe the
 cancelled state, and allows linking cancellation of a child promise to its parent.</li>
@@ -190,7 +190,7 @@ synchronously. There&rsquo;s also the special context <code>.auto</code>, which 
 promises, and whenever it&rsquo;s used with a callback handler the handler must be prepared to execute on <em>any thread</em>. For callbacks it&rsquo;s usually only useful for short
 thread-agnostic callbacks, such as an <code>.onRequestCancel</code> that does nothing more than cancelling a <code>URLSessionTask</code>.</p>
 
-<p>The body of a <code><a href="Structs/Promise.html">Promise</a></code> receives a <q>resolver</q>, which it must use to fulfill, reject, or cancel the promise. If the resolver goes out of scope without being used, the
+<p>The body of a <code><a href="Structs/Promise.html">Promise</a></code> receives a &ldquo;resolver&rdquo;, which it must use to fulfill, reject, or cancel the promise. If the resolver goes out of scope without being used, the
 promise is automatically cancelled. If the promise&rsquo;s error type is <code>Error</code>, the promise body may also throw an error (as seen above), which is then used to reject the
 promise. This resolver can also be used to observe cancellation requests using <code>resolver.onRequestCancel</code>, as seen here:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">promise</span> <span class="o">=</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Data</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">immediate</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">resolver</span><span class="p">)</span> <span class="k">in</span>
@@ -469,6 +469,13 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-1-1' class='heading'>v1.1.1</h3>
+
+<ul>
+<li>Fix memory leaks in <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code> and
+<code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV05chainC04from34includingCancelWithoutInvalidatingyAC_SbtF">PromiseInvalidationToken.chainInvalidation(from:includingCancelWithoutInvalidating:)</a></code> when cleaning up <code>nil</code> nodes prior to pushing on the
+new node (<a href="https://github.com/lilyball/Tomorrowland/issues/48" title="Memory leak in PromiseInvalidationToken">#48</a>).</li>
+</ul>
 <h3 id='v1-1-0' class='heading'>v1.1.0</h3>
 
 <ul>
@@ -535,7 +542,7 @@ resolving to the deprecated form of <code>map(_:)</code> (<a href="https://githu
 <li>Add new <code>mapError</code> and <code>tryMapError</code> methods.</li>
 <li>Add new <code>mapResult</code> and <code>tryMapResult</code> methods.</li>
 <li>Extend <code>tryFlatMapError</code> to be available on all <code><a href="Structs/Promise.html">Promise</a></code>s instead of just those whose error type is <code>Swift.Error</code>.</li>
-<li>Remove the default <code>.auto</code> value for the <code>on context:</code> parameter to most calls. It&rsquo;s now only provided for the <q>terminal</q> callbacks, the ones that don&rsquo;t return a
+<li>Remove the default <code>.auto</code> value for the <code>on context:</code> parameter to most calls. It&rsquo;s now only provided for the &ldquo;terminal&rdquo; callbacks, the ones that don&rsquo;t return a
 value from the handler. This avoids the common problem of running trivial maps on the main thread unnecessarily (<a href="https://github.com/lilyball/Tomorrowland/issues/33" title="Remove default context parameter from map, etc">#33</a>).</li>
 </ul>
 <h3 id='v0-4-3' class='heading'>v0.4.3</h3>
@@ -620,8 +627,8 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-11-25)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.12.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

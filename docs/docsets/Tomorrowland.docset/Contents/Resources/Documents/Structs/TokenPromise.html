@@ -117,6 +117,7 @@
               <div class="declaration">
                 <div class="language">
                   <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">TokenPromise</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
 
                 </div>
               </div>
@@ -261,10 +262,6 @@ be accessed with the <code>.inner</code> property.</p>
                     </section>
                   </div>
                 </li>
-              </ul>
-            </div>
-            <div class="task-group">
-              <ul>
                 <li class="item">
                   <div>
                     <code>
@@ -290,7 +287,7 @@ be accessed with the <code>.inner</code> property.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">then</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">then</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -359,7 +356,7 @@ ignore this value.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">map</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">map</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -428,7 +425,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -500,7 +497,7 @@ rejected or cancelled.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="p">`</span><span class="nv">catch</span><span class="p">`(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="p">`</span><span class="nv">catch</span><span class="p">`(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -568,7 +565,7 @@ ignore this value.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">recover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt"><a href="../Enums/NoError.html">NoError</a></span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">recover</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt"><a href="../Enums/NoError.html">NoError</a></span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -636,7 +633,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -704,7 +701,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -767,7 +764,7 @@ fulfilled or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -830,7 +827,7 @@ returned promise will also be fulfilled or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -936,7 +933,7 @@ cancelled, the returned promise will also be fulfilled or cancelled.</p>
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">always</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">always</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1006,7 +1003,7 @@ returns a new result.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">mapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1075,7 +1072,7 @@ returns a new promise to wait on.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">flatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1140,7 +1137,7 @@ returns a new result.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -1210,7 +1207,7 @@ returns a new promise to wait on.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span><span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapResult</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -1327,8 +1324,7 @@ affecting existing behavior (in particular, cancellation propagation). If you ar
 inserting this into the middle of a promise chain, you probably want to use <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV4then2on_ACyxq_GAA0C7ContextO_yxctF">then(on:_:)</a></code>,
 <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV3map2on_ACyqd__q_GAA0C7ContextO_qd__xctlF">map(on:_:)</a></code>, <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV5catch2on_ACyxq_GAA0C7ContextO_yq_ctF">catch(on:_:)</a></code>, or <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV6always2on_ACyxq_GAA0C7ContextO_yAA0C6ResultOyxq_GctF">always(on:_:)</a></code> instead.</p>
 
-</div>
-<div class="aside aside-see-also">
+</div><div class="aside aside-see-also">
     <p class="aside-title">See also</p>
     <p><code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV3tap2on5token_ACyxq_GAA0B7ContextO_AA0B17InvalidationTokenVSgyAA0B6ResultOyxq_GctF">Promise.tap(on:token:_:)</a></code></p>
 
@@ -1340,7 +1336,7 @@ inserting this into the middle of a promise chain, you probably want to use <cod
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">tap</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">tap</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onComplete</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt"><a href="../Enums/PromiseResult.html">PromiseResult</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1413,8 +1409,7 @@ affecting existing behavior (in particular, cancellation propagation). If you ar
 inserting this into the middle of a promise chain, you probably want to use <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV4then2on_ACyxq_GAA0C7ContextO_yxctF">then(on:_:)</a></code>,
 <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV3map2on_ACyqd__q_GAA0C7ContextO_qd__xctlF">map(on:_:)</a></code>, <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV5catch2on_ACyxq_GAA0C7ContextO_yq_ctF">catch(on:_:)</a></code>, or <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV6always2on_ACyxq_GAA0C7ContextO_yAA0C6ResultOyxq_GctF">always(on:_:)</a></code> instead.</p>
 
-</div>
-<div class="aside aside-see-also">
+</div><div class="aside aside-see-also">
     <p class="aside-title">See also</p>
     <p><code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV3tapACyxq_GyF">Promise.tap()</a></code></p>
 
@@ -1463,7 +1458,7 @@ new wrapped <code><a href="../Structs/Promise.html">Promise</a></code> to cancel
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@discardableResult</span>
-<span class="kd">public</span> <span class="kd">func</span> <span class="nf">onCancel</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onCancel</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">onCancel</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onCancel</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1507,10 +1502,6 @@ ignore this value.</p>
                     </section>
                   </div>
                 </li>
-              </ul>
-            </div>
-            <div class="task-group">
-              <ul>
                 <li class="item">
                   <div>
                     <code>
@@ -1582,14 +1573,12 @@ propagating cancel requests up the chain, e.g. if you want to implement somethin
     <p>This is similar to <code><a href="../Structs/TokenPromise.html#/s:12Tomorrowland12TokenPromiseV3tapACyxq_GyF">tap()</a></code> except it prevents the parent promise from being
 automatically cancelled due to cancel propagation from any observer.</p>
 
-</div>
-<div class="aside aside-note">
+</div><div class="aside aside-note">
     <p class="aside-title">Note</p>
     <p>The returned <code>TokenPromise</code> will still be cancelled if its parent promise is
 cancelled.</p>
 
-</div>
-<div class="aside aside-see-also">
+</div><div class="aside aside-see-also">
     <p class="aside-title">See also</p>
     <p><code><a href="../Structs/Promise.html#/s:12Tomorrowland7PromiseV14ignoringCancelACyxq_GyF">Promise.ignoringCancel()</a></code></p>
 
@@ -1611,11 +1600,55 @@ cancelled.</p>
             </div>
             <div class="task-group">
               <div class="task-name-container">
-                <a name="/TokenPromise%3C_,Swift.Error%3E"></a>
-                <a name="//apple_ref/swift/Section/TokenPromise&lt;_,Swift.Error&gt;" class="dashAnchor"></a>
-                <a href="#/TokenPromise%3C_,Swift.Error%3E">
-                  <h3 class="section-name">TokenPromise&lt;_,Swift.Error&gt;</h3>
-                </a>
+                <a name="/Equatable"></a>
+                <a name="//apple_ref/swift/Section/Equatable" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Equatable"></a>
+                  <h3 class="section-name"><p>Equatable</p>
+</h3>
+                </div>
+              </div>
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland12TokenPromiseV2eeoiySbACyxq_G_AEtFZ"></a>
+                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland12TokenPromiseV2eeoiySbACyxq_G_AEtFZ">==(_:_:)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Two <code>TokenPromise</code>s compare as equal if they represent the same promise.</p>
+
+<p>Two distinct <code>TokenPromise</code>s that are resolved to the same value compare as unequal.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">TokenPromise</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">TokenPromise</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Available%20where%20%60Error%60%20==%20%60Swift.Error%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Error` == `Swift.Error`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Error%60%20==%20%60Swift.Error%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Error</code> == <code>Swift.Error</code></p>
+</h3>
+                </div>
               </div>
               <ul>
                 <li class="item">
@@ -1638,7 +1671,7 @@ cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryThen</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">tryThen</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1708,7 +1741,7 @@ promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">U</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -1801,7 +1834,7 @@ returned promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMap</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onSuccess</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Value</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">U</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -1941,7 +1974,7 @@ returned promise will also be rejected or cancelled.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">tryFlatMapError</span><span class="o">&lt;</span><span class="kt">E</span><span class="o">&gt;</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span><span class="p">,</span> <span class="n">_</span> <span class="nv">onError</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">Error</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/Promise.html">Promise</a></span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">E</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">TokenPromise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span> <span class="k">where</span> <span class="kt">E</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
 
                         </div>
                       </div>
@@ -1987,51 +2020,11 @@ cancelled, the returned promise will also be rejected or cancelled.</p>
                 </li>
               </ul>
             </div>
-            <div class="task-group">
-              <div class="task-name-container">
-                <a name="/Equatable"></a>
-                <a name="//apple_ref/swift/Section/Equatable" class="dashAnchor"></a>
-                <a href="#/Equatable">
-                  <h3 class="section-name">Equatable</h3>
-                </a>
-              </div>
-              <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12Tomorrowland12TokenPromiseV2eeoiySbACyxq_G_AEtFZ"></a>
-                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland12TokenPromiseV2eeoiySbACyxq_G_AEtFZ">==(_:_:)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Two <code>TokenPromise</code>s compare as equal if they represent the same promise.</p>
-
-<p>Two distinct <code>TokenPromise</code>s that are resolved to the same value compare as unequal.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">TokenPromise</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">TokenPromise</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-              </ul>
-            </div>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-11-25)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.12.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

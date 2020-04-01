@@ -117,6 +117,10 @@
               <div class="declaration">
                 <div class="language">
                   <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PromiseResult</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">PromiseResult</span><span class="p">:</span> <span class="kt">Equatable</span> <span class="k">where</span> <span class="kt">Value</span><span class="p">:</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kt">Error</span><span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">PromiseResult</span><span class="p">:</span> <span class="kt">Hashable</span> <span class="k">where</span> <span class="kt">Value</span><span class="p">:</span> <span class="kt">Hashable</span><span class="p">,</span> <span class="kt">Error</span><span class="p">:</span> <span class="kt">Hashable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">PromiseResult</span><span class="p">:</span> <span class="kt">Encodable</span> <span class="k">where</span> <span class="kt">Value</span><span class="p">:</span> <span class="kt">Encodable</span><span class="p">,</span> <span class="kt">Error</span><span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+<pre class="highlight swift"><code><span class="kd">extension</span> <span class="kt">PromiseResult</span><span class="p">:</span> <span class="kt">Decodable</span> <span class="k">where</span> <span class="kt">Value</span><span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Error</span><span class="p">:</span> <span class="kt">Decodable</span></code></pre>
 
                 </div>
               </div>
@@ -400,11 +404,13 @@
             </div>
             <div class="task-group">
               <div class="task-name-container">
-                <a name="/Resolver%3C_,Swift.Error%3E"></a>
-                <a name="//apple_ref/swift/Section/Resolver&lt;_,Swift.Error&gt;" class="dashAnchor"></a>
-                <a href="#/Resolver%3C_,Swift.Error%3E">
-                  <h3 class="section-name">Resolver&lt;_,Swift.Error&gt;</h3>
-                </a>
+                <a name="/Available%20where%20%60Value%60:%20%60Equatable%60,%20%60Error%60:%20%60Equatable%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Value`: `Equatable`, `Error`: `Equatable`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Value%60:%20%60Equatable%60,%20%60Error%60:%20%60Equatable%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Value</code>: <code>Equatable</code>, <code>Error</code>: <code>Equatable</code></p>
+</h3>
+                </div>
               </div>
               <ul>
                 <li class="item">
@@ -535,6 +541,15 @@ for any type that conforms to <code>Equatable</code>.</p>
               </ul>
             </div>
             <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Available%20where%20%60Value%60:%20%60Hashable%60,%20%60Error%60:%20%60Hashable%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Value`: `Hashable`, `Error`: `Hashable`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Value%60:%20%60Hashable%60,%20%60Error%60:%20%60Hashable%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Value</code>: <code>Hashable</code>, <code>Error</code>: <code>Hashable</code></p>
+</h3>
+                </div>
+              </div>
               <ul>
                 <li class="item">
                   <div>
@@ -565,6 +580,15 @@ for any type that conforms to <code>Equatable</code>.</p>
               </ul>
             </div>
             <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Available%20where%20%60Value%60:%20%60Encodable%60,%20%60Error%60:%20%60Encodable%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Value`: `Encodable`, `Error`: `Encodable`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Value%60:%20%60Encodable%60,%20%60Error%60:%20%60Encodable%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Value</code>: <code>Encodable</code>, <code>Error</code>: <code>Encodable</code></p>
+</h3>
+                </div>
+              </div>
               <ul>
                 <li class="item">
                   <div>
@@ -595,6 +619,15 @@ for any type that conforms to <code>Equatable</code>.</p>
               </ul>
             </div>
             <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Available%20where%20%60Value%60:%20%60Decodable%60,%20%60Error%60:%20%60Decodable%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Value`: `Decodable`, `Error`: `Decodable`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Value%60:%20%60Decodable%60,%20%60Error%60:%20%60Decodable%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Value</code>: <code>Decodable</code>, <code>Error</code>: <code>Decodable</code></p>
+</h3>
+                </div>
+              </div>
               <ul>
                 <li class="item">
                   <div>
@@ -625,6 +658,15 @@ for any type that conforms to <code>Equatable</code>.</p>
               </ul>
             </div>
             <div class="task-group">
+              <div class="task-name-container">
+                <a name="/Available%20where%20%60Error%60:%20%60Swift.Error%60"></a>
+                <a name="//apple_ref/swift/Section/Available where `Error`: `Swift.Error`" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/Available%20where%20%60Error%60:%20%60Swift.Error%60"></a>
+                  <h3 class="section-name"><p>Available where <code>Error</code>: <code>Swift.Error</code></p>
+</h3>
+                </div>
+              </div>
               <ul>
                 <li class="item">
                   <div>
@@ -658,8 +700,8 @@ for any type that conforms to <code>Equatable</code>.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2019 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2019-11-25)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.12.0</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
