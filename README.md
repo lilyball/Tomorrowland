@@ -403,6 +403,14 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Fix memory leaks in `PromiseInvalidationToken.requestCancelOnInvalidate(_:)` and
+  `PromiseInvalidationToken.chainInvalidation(from:includingCancelWithoutInvalidating:)` when cleaning up `nil` nodes prior to pushing on the
+  new node ([#48][]).
+
+[#48]: https://github.com/lilyball/Tomorrowland/issues/48 "Memory leak in PromiseInvalidationToken"
+
 ### v1.1.0
 
 - Add new method `.propagatingCancellation(on:cancelRequested:)` that can be used to create a long-lived promise that propagates cancellation from its

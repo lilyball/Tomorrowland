@@ -2005,21 +2005,31 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
     func requestCancelOnInvalidate(_ cancellable: PromiseCancellable) {
         let nodePtr = UnsafeMutablePointer<CallbackNode>.allocate(capacity: 1)
         nodePtr.initialize(to: .init(next: nil, generation: 0, cancellable: cancellable))
+        var freeRange: (from: UnsafeMutablePointer<CallbackNode>, to: UnsafeMutablePointer<CallbackNode>?)?
         pushNodeOntoCallbackLinkedList(nodePtr) { (rawPtr) in
             if let nextPtr = CallbackNode.castPointer(rawPtr) {
                 nodePtr.pointee.generation = nextPtr.pointee.generation
                 // Prune nil promises off the top of the list.
                 // This is safe to do because we aren't modifying any shared data structures, only
-                // tweaking the `next` pointer of our brand new node.
+                // tweaking the `next` pointer of our brand new node. Any popped nodes are freed
+                // when we're done.
                 var next = Optional.some(nextPtr)
                 while let nextPtr = next, nextPtr.pointee.cancellable.cancellable == nil {
                     next = nextPtr.pointee.next
                 }
                 nodePtr.pointee.next = next
+                freeRange = (nextPtr, next)
             } else {
                 nodePtr.pointee.generation = CallbackNode.interpretTaggedInteger(rawPtr)
                 nodePtr.pointee.next = nil
             }
+        }
+        // Free any popped nodes
+        var next = freeRange?.from
+        while let nextPtr = next, nextPtr != freeRange?.to {
+            next = nextPtr.pointee.next
+            nextPtr.deinitialize(count: 1)
+            nextPtr.deallocate()
         }
     }
     
@@ -2027,15 +2037,26 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
         guard token !== self else { return } // trivial check for looping on self
         let nodePtr = UnsafeMutablePointer<TokenChainNode>.allocate(capacity: 1)
         nodePtr.initialize(to: .init(next: nil, includesCancelWithoutInvalidation: includingCancelWithoutInvalidating, tokenBox: self))
+        var freeRange: (from: UnsafeMutablePointer<TokenChainNode>, to: UnsafeMutablePointer<TokenChainNode>?)?
         token.pushNodeOntoTokenChainLinkedList(nodePtr) { (rawPtr) in
-            var next = Optional.some(TokenChainNode.castPointer(rawPtr))
+            let nextPtr = TokenChainNode.castPointer(rawPtr)
             // Prune nil tokens off the top of the list.
             // This is safe to do because we aren't modifying any shared data structures, only
-            // tweaking the `next` pointer of our brand new node.
+            // tweaking the `next` pointer of our brand new node. Any popped nodes are freed when
+            // we're done.
+            var next = Optional.some(nextPtr)
             while let nextPtr = next, nextPtr.pointee.tokenBox == nil {
                 next = nextPtr.pointee.next
             }
             nodePtr.pointee.next = next
+            freeRange = (nextPtr, next)
+        }
+        // Free any popped nodes
+        var next = freeRange?.from
+        while let nextPtr = next, nextPtr != freeRange?.to {
+            next = nextPtr.pointee.next
+            nextPtr.deinitialize(count: 1)
+            nextPtr.deallocate()
         }
     }
     
