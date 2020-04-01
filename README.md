@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v1.1.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.1.1-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -403,7 +403,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v1.1.1
 
 - Fix memory leaks in `PromiseInvalidationToken.requestCancelOnInvalidate(_:)` and
   `PromiseInvalidationToken.chainInvalidation(from:includingCancelWithoutInvalidating:)` when cleaning up `nil` nodes prior to pushing on the
