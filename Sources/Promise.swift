@@ -1695,6 +1695,7 @@ extension PromiseResult: Hashable where Value: Hashable, Error: Hashable {
 }
 
 extension PromiseResult {
+    /// :nodoc:
     enum CodingKeys: CodingKey {
         case value
         case error
@@ -2377,7 +2378,7 @@ private protocol NodeProtocol {
     var next: UnsafeMutablePointer<Self>? { get set }
 }
 
-extension NodeProtocol {
+private extension NodeProtocol {
     static func castPointer(_ pointer: UnsafeMutableRawPointer?) -> UnsafeMutablePointer<Self>? {
         guard let pointer = pointer, pointer != TWLLinkedListSwapFailed else { return nil }
         return pointer.assumingMemoryBound(to: self)
