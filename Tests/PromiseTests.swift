@@ -1265,6 +1265,66 @@ final class PromiseTests: XCTestCase {
         token.invalidate()
     }
     
+    func testInvalidationTokenChainNodeCleanup() throws {
+        // This test depends on the formatting of the token's debug description
+        func nodeCount(from token: PromiseInvalidationToken) throws -> Int {
+            let desc = String(reflecting: token)
+            guard let prefixRange = desc.range(of: "tokenChainLinkedList=("),
+                let spaceIdx = desc[prefixRange.upperBound...].unicodeScalars.firstIndex(of: " "),
+                let nodeCount = Int(desc[prefixRange.upperBound..<spaceIdx])
+                else {
+                    struct CantGetNodeCount: Error {}
+                    throw CantGetNodeCount()
+            }
+            return nodeCount
+        }
+        
+        do {
+            let token = PromiseInvalidationToken()
+            for _ in 0..<100 {
+                PromiseInvalidationToken(invalidateOnDeinit: false).chainInvalidation(from: token)
+            }
+            // 1 node for the final chained token
+            XCTAssertEqual(try nodeCount(from: token), 1)
+        }
+        
+        do {
+            // This time hold onto a node in the middle
+            let token = PromiseInvalidationToken()
+            for _ in 0..<50 {
+                PromiseInvalidationToken(invalidateOnDeinit: false).chainInvalidation(from: token)
+            }
+            let middleToken = PromiseInvalidationToken()
+            middleToken.chainInvalidation(from: token)
+            for _ in 0..<50 {
+                PromiseInvalidationToken(invalidateOnDeinit: false).chainInvalidation(from: token)
+            }
+            try withExtendedLifetime(middleToken) {
+                // 1 node for middle token, 1 node for final token
+                XCTAssertEqual(try nodeCount(from: token), 2)
+            }
+        }
+        
+        do {
+            // This keeps each previous token alive when we make the new one
+            let token = PromiseInvalidationToken()
+            var lastToken: PromiseInvalidationToken?
+            for _ in 0..<100 {
+                let nextToken = PromiseInvalidationToken(invalidateOnDeinit: false)
+                nextToken.chainInvalidation(from: token)
+                lastToken = nextToken
+            }
+            _ = lastToken // suppress "never read" warning
+            lastToken = nil
+            // 100 nodes because nothing could be cleaned up as each new token was pushed on
+            XCTAssertEqual(try nodeCount(from: token), 100)
+            // Now that we've let the final token die, try pushing one more on and it should clean them all up
+            PromiseInvalidationToken(invalidateOnDeinit: false).chainInvalidation(from: token)
+            // 1 node for the brand new token, everything else was cleaned up
+            XCTAssertEqual(try nodeCount(from: token), 1)
+        }
+    }
+    
     // MARK: -
     
     func testResolvingFulfilledPromise() {

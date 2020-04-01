@@ -2073,7 +2073,14 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
                 callbackCount = "0 nodes"
             }
         }
-        return "<\(type(of: self)): \(address); generation=\(generation) callbackLinkedList=(\(callbackCount))>"
+        let tokenChainCount: String
+        if let nodePtr = tokenChainLinkedList.map(TokenChainNode.castPointer) {
+            let count = sequence(first: nodePtr, next: { $0.pointee.next }).reduce(0, { (x, _) in x + 1 })
+            tokenChainCount = "\(count) node\(count == 1 ? "" : "s")"
+        } else {
+            tokenChainCount = "0 nodes"
+        }
+        return "<\(type(of: self)): \(address); generation=\(generation) callbackLinkedList=(\(callbackCount)) tokenChainLinkedList=(\(tokenChainCount))>"
     }
 }
 
