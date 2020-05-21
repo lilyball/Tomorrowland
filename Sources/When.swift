@@ -57,8 +57,8 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     let context = PromiseContext(qos: qos)
     for (i, promise) in promises.enumerated() {
         group.enter()
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 switch result {
                 case .value(let value):
                     resultBuffer[i] = value
@@ -154,8 +154,8 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
     
     /// Like `promise.tap` except it registers a propagateCancel observer
     func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 onComplete(result)
             }
         }
@@ -247,8 +247,8 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
     
     /// Like `promise.tap` except it registers a propagateCancel observer
     func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 onComplete(result)
             }
         }
@@ -334,8 +334,8 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
     
     /// Like `promise.tap` except it registers a propagateCancel observer
     func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 onComplete(result)
             }
         }
@@ -415,8 +415,8 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
     
     /// Like `promise.tap` except it registers a propagateCancel observer
     func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 onComplete(result)
             }
         }
@@ -490,8 +490,8 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
     
     /// Like `promise.tap` except it registers a propagateCancel observer
     func tap<Value>(_ promise: Promise<Value,Error>, on context: PromiseContext, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) {
-        promise._seal._enqueue { (result) in
-            context.execute {
+        promise._seal._enqueue { (result, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 onComplete(result)
             }
         }
@@ -568,7 +568,7 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
     let group = DispatchGroup()
     for promise in promises {
         group.enter()
-        promise._seal._enqueue { (result) in
+        promise._seal._enqueue { (result, _) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)

@@ -21,8 +21,12 @@
 @end
 
 @implementation TWLContext {
+    // Note: All new ivars must be added to -initAsNowOr:
+    
     /// \c YES iff this is the main queue.
     BOOL _isMain;
+    /// \c YES if this context allows for running now on callback registration.
+    BOOL _canRunNow;
     // If both of these are nil, this is the immediate context.
     // Otherwise, one of these will be non-nil (but never both).
     dispatch_queue_t _Nullable _queue;
@@ -109,6 +113,10 @@
     return [[self alloc] initWithOperationQueue:operationQueue];
 }
 
++ (TWLContext *)nowOrContext:(TWLContext *)context {
+    return [[self alloc] initAsNowOrContext:context];
+}
+
 + (TWLContext *)contextForQoS:(dispatch_qos_class_t)qos {
     switch (qos) {
         case QOS_CLASS_BACKGROUND:
@@ -140,6 +148,17 @@
     return self;
 }
 
+- (instancetype)initAsNowOrContext:(TWLContext *)context {
+    if ((self = [super init])) {
+        // Copy all ivars from context to us, setting _canRunNow
+        _isMain = context->_isMain;
+        _canRunNow = YES;
+        _queue = context->_queue;
+        _operationQueue = context->_operationQueue;
+    }
+    return self;
+}
+
 - (instancetype)initImmediate {
     return [super init];
 }
@@ -148,8 +167,10 @@
     return _queue == nil && _operationQueue == nil;
 }
 
-- (void)executeBlock:(dispatch_block_t)block {
-    if (_queue) {
+- (void)executeIsSynchronous:(BOOL)isSynchronous block:(dispatch_block_t)block {
+    if (isSynchronous && _canRunNow) {
+        block();
+    } else if (_queue) {
         if (_isMain) {
             if (TWLGetMainContextThreadLocalFlag()) {
                 NSAssert(NSThread.isMainThread, @"Found thread-local flag set while not executing on the main thread");

@@ -54,6 +54,16 @@ public enum PromiseContext: Equatable, Hashable {
     ///           task.cancel()
     ///       })
     case immediate
+    /// Execute synchronously if the promise is already resolved, otherwise use another context.
+    ///
+    /// This is a convenience for a pattern where you check a promise's `result` to see if it's
+    /// already resolved and only attach a callback if it hasn't resolved yet. Passing this context
+    /// to a callback will execute it synchronously before returning to the caller if and only if
+    /// the promise has already resolved.
+    ///
+    /// If this is passed to a promise initializer it acts like `.immediate`. If passed to a
+    /// `DelayedPromise` initializer it acts like the given context.
+    indirect case nowOr(PromiseContext)
     
     /// Returns `.main` when accessed from the main thread, otherwise `.default`.
     public static var auto: PromiseContext {
@@ -103,10 +113,12 @@ public enum PromiseContext: Equatable, Hashable {
         case (.queue, _): return false
         case let (.operationQueue(a), .operationQueue(b)): return a === b
         case (.operationQueue, _): return false
+        case let (.nowOr(a), .nowOr(b)): return a == b
+        case (.nowOr, _): return false
         }
     }
     
-    internal func execute(_ f: @escaping @convention(block) () -> Void) {
+    internal func execute(isSynchronous: Bool, _ f: @escaping @convention(block) () -> Void) {
         switch self {
         case .main:
             if TWLGetMainContextThreadLocalFlag() {
@@ -141,6 +153,12 @@ public enum PromiseContext: Equatable, Hashable {
             queue.addOperation(f)
         case .immediate:
             f()
+        case .nowOr(let context):
+            if isSynchronous {
+                f()
+            } else {
+                context.execute(isSynchronous: false, f)
+            }
         }
     }
     
@@ -162,6 +180,7 @@ public enum PromiseContext: Equatable, Hashable {
         case .queue(let queue): return.queue(queue)
         case .operationQueue(let queue): return .operationQueue(queue)
         case .immediate: return PromiseContext.auto.getDestination()
+        case .nowOr(let context): return context.getDestination()
         }
     }
 }
@@ -276,7 +295,7 @@ public struct Promise<Value,Error> {
                 nodePtr.deallocate()
                 switch _box.unfencedState {
                 case .cancelling, .cancelled:
-                    context.execute {
+                    context.execute(isSynchronous: true) {
                         callback(self)
                     }
                 case .delayed, .empty, .resolving, .resolved:
@@ -320,7 +339,7 @@ public struct Promise<Value,Error> {
     public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) -> Void) {
         _seal = PromiseSeal()
         let resolver = Resolver(box: _box)
-        context.execute {
+        context.execute(isSynchronous: true) {
             handler(resolver)
         }
     }
@@ -367,10 +386,10 @@ public struct Promise<Value,Error> {
     public func then(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     if generation == token?.generation {
                         onSuccess(value)
@@ -400,10 +419,10 @@ public struct Promise<Value,Error> {
     public func map<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -434,10 +453,10 @@ public struct Promise<Value,Error> {
     public func flatMap<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -471,12 +490,12 @@ public struct Promise<Value,Error> {
     public func `catch`(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     if generation == token?.generation {
                         onError(error)
@@ -506,12 +525,12 @@ public struct Promise<Value,Error> {
     public func recover(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Value) -> Promise<Value,NoError> {
         let (promise, resolver) = Promise<Value,NoError>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -540,12 +559,12 @@ public struct Promise<Value,Error> {
     public func mapError<E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> E) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -576,12 +595,12 @@ public struct Promise<Value,Error> {
     public func flatMapError<E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) -> Promise<Value,E>) -> Promise<Value,E> {
         let (promise, resolver) = Promise<Value,E>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -611,12 +630,12 @@ public struct Promise<Value,Error> {
     public func tryMapError<E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> E) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -651,12 +670,12 @@ public struct Promise<Value,Error> {
     public func tryFlatMapError<E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,E>) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -691,12 +710,12 @@ public struct Promise<Value,Error> {
     public func tryMapError(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Swift.Error) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -731,12 +750,12 @@ public struct Promise<Value,Error> {
     public func tryFlatMapError(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Promise<Value,Swift.Error>) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -771,8 +790,8 @@ public struct Promise<Value,Error> {
     public func always(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 if generation == token?.generation {
                     onComplete(result)
@@ -797,8 +816,8 @@ public struct Promise<Value,Error> {
     public func mapResult<T,E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> PromiseResult<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -825,8 +844,8 @@ public struct Promise<Value,Error> {
     public func flatMapResult<T,E>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Promise<T,E>) -> Promise<T,E> {
         let (promise, resolver) = Promise<T,E>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -854,8 +873,8 @@ public struct Promise<Value,Error> {
     public func tryMapResult<T,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -886,8 +905,8 @@ public struct Promise<Value,Error> {
     public func tryFlatMapResult<T,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,E>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -920,8 +939,8 @@ public struct Promise<Value,Error> {
     public func tryMapResult<T>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> PromiseResult<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -952,8 +971,8 @@ public struct Promise<Value,Error> {
     public func tryFlatMapResult<T>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) throws -> Promise<T,Swift.Error>) -> Promise<T,Swift.Error> {
         let (promise, resolver) = Promise<T,Swift.Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 guard generation == token?.generation else {
                     resolver.cancel()
@@ -998,8 +1017,8 @@ public struct Promise<Value,Error> {
     @discardableResult
     public func tap(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onComplete: @escaping (PromiseResult<Value,Error>) -> Void) -> Promise<Value,Error> {
         let token = token?.box
-        _seal.enqueue(willPropagateCancel: false, makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete) in
-            context.execute {
+        _seal.enqueue(willPropagateCancel: false, makeOneshot: onComplete) { [generation=token?.generation] (result, onComplete, isSynchronous) in
+            context.execute(isSynchronous: isSynchronous) {
                 let onComplete = onComplete()
                 if generation == token?.generation {
                     onComplete(result)
@@ -1031,7 +1050,7 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap(on:token:_:)`, `ignoringCancel()`
     public func tap() -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal._enqueue(willPropagateCancel: false) { (result) in
+        _seal._enqueue(willPropagateCancel: false) { (result, _) in
             resolver.resolve(with: result)
         }
         return promise
@@ -1050,14 +1069,14 @@ public struct Promise<Value,Error> {
     public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onCancel) { [generation=token?.generation] (result, onCancel) in
+        _seal.enqueue(makeOneshot: onCancel) { [generation=token?.generation] (result, onCancel, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
                 resolver.reject(with: error)
             case .cancelled:
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onCancel = onCancel()
                     if generation == token?.generation {
                         onCancel()
@@ -1099,7 +1118,7 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will resolve to the same value as the receiver.
     public func propagatingCancellation(on context: PromiseContext, cancelRequested: @escaping (_ promise: Promise<Value,Error>) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal._enqueue { (result) in
+        _seal._enqueue { (result, _) in
             resolver.resolve(with: result)
         }
         // Replicate the "oneshot" behavior from _seal.enqueue, as resolver.onRequestCancel does not have this same behavior.
@@ -1189,14 +1208,14 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     public func ignoringCancel() -> Promise<Value,Error> {
         let (promise, resolver) = Promise.makeWithResolver()
-        _seal._enqueue { (result) in
+        _seal._enqueue { (result, _) in
             resolver.resolve(with: result)
         }
         return promise
     }
     
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
-        _seal._enqueue { (result) in
+        _seal._enqueue { (result, _) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -1219,7 +1238,7 @@ extension Promise where Error: Swift.Error {
     }
     
     private func pipe(toStd resolver: Promise<Value,Swift.Error>.Resolver) {
-        _seal._enqueue { (result) in
+        _seal._enqueue { (result, _) in
             resolver.resolve(with: result)
         }
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
@@ -1238,7 +1257,7 @@ extension Promise where Error == NoError {
     /// compose better with other promises.
     public var upcast: Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Swift.Error>.makeWithResolver()
-        _seal._enqueue { (result) in
+        _seal._enqueue { (result, _) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1267,7 +1286,7 @@ extension Promise where Error == Swift.Error {
     public init(on context: PromiseContext, _ handler: @escaping (_ resolver: Resolver) throws -> Void) {
         _seal = PromiseSeal()
         let resolver = Resolver(box: _box)
-        context.execute {
+        context.execute(isSynchronous: true) {
             do {
                 try handler(resolver)
             } catch {
@@ -1289,10 +1308,10 @@ extension Promise where Error == Swift.Error {
     public func tryThen(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     do {
                         if generation == token?.generation {
@@ -1326,10 +1345,10 @@ extension Promise where Error == Swift.Error {
     public func tryMap<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> U) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -1365,10 +1384,10 @@ extension Promise where Error == Swift.Error {
     public func tryFlatMap<U>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,Error>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue { [generation=token?.generation] (result) in
+        _seal.enqueue { [generation=token?.generation] (result, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     guard generation == token?.generation else {
                         resolver.cancel()
                         return
@@ -1404,10 +1423,10 @@ extension Promise where Error == Swift.Error {
     public func tryFlatMap<U,E: Swift.Error>(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onSuccess: @escaping (Value) throws -> Promise<U,E>) -> Promise<U,Error> {
         let (promise, resolver) = Promise<U,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess) in
+        _seal.enqueue(makeOneshot: onSuccess) { [generation=token?.generation] (result, onSuccess, isSynchronous) in
             switch result {
             case .value(let value):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onSuccess = onSuccess()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -1445,12 +1464,12 @@ extension Promise where Error == Swift.Error {
     public func tryRecover(on context: PromiseContext, token: PromiseInvalidationToken? = nil, _ onError: @escaping (Error) throws -> Value) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError) in
+        _seal.enqueue(makeOneshot: onError) { [generation=token?.generation] (result, onError, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
             case .error(let error):
-                context.execute {
+                context.execute(isSynchronous: isSynchronous) {
                     let onError = onError()
                     guard generation == token?.generation else {
                         resolver.cancel()
@@ -2109,7 +2128,7 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
 internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
-        var callback: (PromiseResult<T,E>) -> Void
+        var callback: (PromiseResult<T,E>, _ isSynchronous: Bool) -> Void
     }
     
     struct RequestCancelNode: NodeProtocol {
@@ -2122,7 +2141,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
                 // skip the state check
                 callback(resolver)
             } else {
-                context.execute { [callback] in
+                context.execute(isSynchronous: false) { [callback] in
                     switch resolver._box.unfencedState {
                     case .delayed, .empty:
                         assertionFailure("We shouldn't be invoking an onRequestCancel callback on an empty promise")
@@ -2146,7 +2165,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
             nodePtr = CallbackNode.reverseList(nodePtr)
             defer { CallbackNode.destroyPointer(nodePtr) }
             for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                nodePtr.pointee.callback(.cancelled)
+                nodePtr.pointee.callback(.cancelled, false)
             }
         }
         if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
@@ -2208,7 +2227,7 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
                 nodePtr = CallbackNode.reverseList(nodePtr)
                 defer { CallbackNode.destroyPointer(nodePtr) }
                 for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                    nodePtr.pointee.callback(result)
+                    nodePtr.pointee.callback(result, false)
                 }
             }
         }
@@ -2329,19 +2348,22 @@ internal class PromiseSeal<T,E>: NSObject {
     /// - Parameter value: A value that is wrapped in a oneshot block and passed to the callback.
     ///   Executing the block passed to the callback multiple times results in undefined behavior.
     ///
+    /// - Parameter isSynchronous: `true` if the callback is being called synchronously before the
+    ///   enqueue returns, otherwise `false`.
+    ///
     /// - Note: The oneshot value should only be accessed inside the context being dispatched on.
     ///   The reason for this behavior is to ensure that any user-supplied data is released either
     ///   on the thread that registers the callback, or on the context itself, and is not released
     ///   on whatever thread the receiver happens to be resolved on. We only make this guarantee in
     ///   the case where the callback is invoked (ignoring tokens).
-    func enqueue<Value>(willPropagateCancel: Bool = true, makeOneshot value: Value, callback: @escaping (PromiseResult<T,E>, _ oneshot: @escaping () -> Value) -> Void) {
+    func enqueue<Value>(willPropagateCancel: Bool = true, makeOneshot value: Value, callback: @escaping (PromiseResult<T,E>, _ oneshot: @escaping () -> Value, _ isSynchronous: Bool) -> Void) {
         var value = Optional.some(value)
         let oneshot: () -> Value = {
             defer { value = nil }
             return value.unsafelyUnwrapped
         }
-        _enqueue(willPropagateCancel: willPropagateCancel) { (result) in
-            callback(result, oneshot)
+        _enqueue(willPropagateCancel: willPropagateCancel) { (result, isSynchronous) in
+            callback(result, oneshot, isSynchronous)
         }
     }
     
@@ -2349,9 +2371,12 @@ internal class PromiseSeal<T,E>: NSObject {
     ///
     /// If the callback list has already been consumed, the callback is executed immediately.
     ///
+    /// - Parameter isSynchronous: `true` if the callback is being called synchronously before the
+    ///   enqueue returns, otherwise `false`.
+    ///
     /// - Important: This function should only be called if there's no user-supplied callback
     ///   involved that should be turned into a oneshot.
-    func _enqueue(willPropagateCancel: Bool = true, callback: @escaping (PromiseResult<T,E>) -> Void) {
+    func _enqueue(willPropagateCancel: Bool = true, callback: @escaping (_ value: PromiseResult<T,E>, _ isSynchronous: Bool) -> Void) {
         if willPropagateCancel {
             // If the subsequent swap fails, that means we've already resolved (or started
             // resolving) the promise, so the observer count modification is harmless.
@@ -2369,7 +2394,7 @@ internal class PromiseSeal<T,E>: NSObject {
             guard let result = box.result else {
                 fatalError("Callback list empty but state isn't actually resolved")
             }
-            callback(result)
+            callback(result, true)
         }
     }
 }

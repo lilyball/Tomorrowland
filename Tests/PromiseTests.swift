@@ -1790,6 +1790,132 @@ final class PromiseTests: XCTestCase {
     }
 }
 
+final class PromiseNowOrTests: XCTestCase {
+    static let queueKey = DispatchSpecificKey<Int>()
+    static let queueOne = DispatchQueue(label: "test queue 1")
+    static let queueTwo = DispatchQueue(label: "test queue 2")
+    
+    override class func setUp() {
+        super.setUp()
+        queueOne.setSpecific(key: queueKey, value: 1)
+        queueTwo.setSpecific(key: queueKey, value: 2)
+    }
+    
+    func testPromiseInitUsingNowOr() {
+        // Promise.init will treat it as now
+        let expectation = XCTestExpectation()
+        Self.queueOne.sync {
+            _ = Promise<Int,String>(on: .nowOr(.queue(Self.queueTwo)), { (resolver) in
+                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                resolver.fulfill(with: 42)
+            }).always(on: .immediate, { _ in expectation.fulfill() })
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testStdPromiseThrowingInitUsingNowOr() {
+        // Throwing Promise.init will treat it as now
+        let expectation = XCTestExpectation()
+        struct DummyError: Error {}
+        Self.queueOne.sync {
+            _ = Promise<Int,Error>(on: .nowOr(.queue(Self.queueTwo)), { (resolver) in
+                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                throw DummyError()
+            }).always(on: .immediate, { _ in expectation.fulfill() })
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testOnRequestCancelUsingNowOr() {
+        // Not yet cancelled
+        do {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
+                resolver.onRequestCancel(on: .nowOr(.queue(Self.queueTwo))) { _ in
+                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+                    resolver.cancel() // capture outer resolver
+                }
+                sema.signal()
+            })
+            sema.wait()
+            promise.requestCancel()
+            let expectation = XCTestExpectation(onCancel: promise)
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Already cancelled
+        do {
+            let expectation = XCTestExpectation()
+            let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
+                resolver.cancel()
+                resolver.onRequestCancel(on: .nowOr(.queue(Self.queueTwo))) { _ in
+                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                    resolver.cancel() // capture outer resolver
+                    expectation.fulfill()
+                }
+            })
+            promise.requestCancel()
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testThenNowOr() {
+        // Not yet resolved
+        do {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).then(on: .nowOr(.queue(Self.queueTwo)), { (_) in
+                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+            })
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Already resolved
+        do {
+            let promise = Self.queueOne.sync {
+                return Promise<Int,String>(fulfilled: 42).then(on: .nowOr(.queue(Self.queueTwo)), { (_) in
+                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                })
+            }
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testMapNowOr() {
+        // Not yet resolved
+        do {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).map(on: .nowOr(.queue(Self.queueTwo)), { (_) -> Int in
+                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+                return 1
+            })
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 1)
+            sema.signal()
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Already resolved
+        do {
+            let promise = Self.queueOne.sync {
+                return Promise<Int,String>(fulfilled: 42).map(on: .nowOr(.queue(Self.queueTwo)), { (_) -> Int in
+                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                    return 1
+                })
+            }
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 1)
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+}
+
 final class PromiseResultTests: XCTestCase {
     func testValue() {
         XCTAssertEqual(PromiseResult<Int,String>.value(42).value, 42)

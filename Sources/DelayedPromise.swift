@@ -87,7 +87,7 @@ internal class DelayedPromiseBox<T,E>: PromiseBox<T,E> {
             let resolver = Promise<T,E>.Resolver(box: self)
             let (context, callback) = _promiseInfo.unsafelyUnwrapped
             _promiseInfo = nil
-            context.execute {
+            context.execute(isSynchronous: false) {
                 callback(resolver)
             }
         }

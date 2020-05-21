@@ -187,6 +187,20 @@
     [self waitForExpectations:@[expectation] timeout:0.5];
 }
 
+- (void)testDelayUsingNowOrContext {
+    // +nowOrContext: is ignored with delay
+    __auto_type queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
+    const void * const kKey = &kKey;
+    dispatch_queue_set_specific(queue, kKey, (void *)(intptr_t)1, NULL);
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        [resolver fulfillWithValue:@42];
+    }] delay:0.01 onContext:[TWLContext nowOrContext:[TWLContext queue:queue]]];
+    __auto_type expectation = TWLExpectationSuccessWithHandlerOnContext(TWLContext.immediate, promise, ^(NSNumber * _Nonnull value) {
+        XCTAssert(dispatch_get_specific(kKey) != NULL, @"promise did not resolve on the queue");
+    });
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 // MARK: -
 
 - (void)testTimeout {
@@ -338,6 +352,22 @@
     [self waitForExpectations:@[expectation] timeout:0.5];
 }
 
+- (void)testTimeoutUsingNowOrContext {
+    // +nowOrContext: is ignored with timeout
+    __auto_type queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
+    const void * const kKey = &kKey;
+    dispatch_queue_set_specific(queue, kKey, (void *)(intptr_t)1, NULL);
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(50 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            [resolver fulfillWithValue:@42];
+        });
+    }] timeoutOnContext:[TWLContext queue:queue] withDelay:0.01];
+    __auto_type expectation = TWLExpectationErrorWithHandlerOnContext(TWLContext.immediate, promise, ^(NSString * _Nonnull error) {
+        XCTAssert(dispatch_get_specific(kKey) != NULL, @"timeout did not occur on the expected queue");
+    });
+    [self waitForExpectations:@[expectation] timeout:0.5];
+}
+
 // MARK: -
 
 - (void)testInitFulfilledAfter {
@@ -458,6 +488,18 @@
         // behind us.
         [NSThread sleepForTimeInterval:1];
     }];
+    [self waitForExpectations:@[expectation] timeout:0.5];
+}
+
+- (void)testInitFulfilledAfterUsingNowOrContext {
+    // +nowOrContext: is ignored in this scenario
+    __auto_type queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
+    const void * const kKey = &kKey;
+    dispatch_queue_set_specific(queue, kKey, (void *)(intptr_t)1, NULL);
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> newFulfilledOnContext:[TWLContext nowOrContext:[TWLContext queue:queue]] withValue:@42 afterDelay:0.01];
+    __auto_type expectation = TWLExpectationSuccessWithHandlerOnContext(TWLContext.immediate, promise, ^(NSNumber * _Nonnull value) {
+        XCTAssert(dispatch_get_specific(kKey) != NULL, @"promise did not resolve on the expected queue");
+    });
     [self waitForExpectations:@[expectation] timeout:0.5];
 }
 

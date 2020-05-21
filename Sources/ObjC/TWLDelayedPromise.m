@@ -42,7 +42,7 @@
         TWLContext *context = _context;
         _context = nil;
         _callback = nil;
-        [context executeBlock:^{
+        [context executeIsSynchronous:NO block:^{
             callback(resolver);
         }];
     }

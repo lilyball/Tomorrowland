@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TWLContext ()
 @property (atomic, readonly) BOOL isImmediate;
-- (void)executeBlock:(dispatch_block_t)block;
+- (void)executeIsSynchronous:(BOOL)isSynchronous block:(dispatch_block_t)block;
 /// Returns the destination for the context.
 ///
 /// Either the \c outQueue or the \c outOperationQueue will be non-<tt>nil</tt>.

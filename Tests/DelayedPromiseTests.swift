@@ -88,6 +88,17 @@ final class DelayedPromiseTests: XCTestCase {
         dp = nil
         wait(for: [dropExpectation], timeout: 0) // dropSpy should be dropped now
     }
+    
+    func testDelayedPromiseUsingNowOr() {
+        // .nowOr doesn't ever run now when used with DelayedPromise
+        let expectation = XCTestExpectation()
+        let dp = DelayedPromise<Int,String>(on: .nowOr(.utility), { [thread=Thread.current] (resolver) in
+            XCTAssertNotEqual(Thread.current, thread)
+            expectation.fulfill()
+        })
+        _ = dp.promise
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 private class DropSpy {

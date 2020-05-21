@@ -403,6 +403,22 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add `PromiseContext.nowOr(context)` (`+[TWLContext nowOrContext:]` in Obj-C) that runs the callback synchronously when registered if the promise
+  has already resolved, otherwise registers the callback to run on `context`. This can be used to replace code that previously would have required checking
+  `promise.result` prior to registering the callback ([#34][]).
+  
+  For example:
+  
+  ```swift
+  networkImagePromise.then(on: .nowOr(.main), { [weak button] (image) in
+      button?.setImage(image, for: .normal)
+  })
+  ```
+
+[#34]: https://github.com/lilyball/Tomorrowland/issues/34 "Add a .mainImmediate context"
+
 ### v1.1.1
 
 - Fix memory leaks in `PromiseInvalidationToken.requestCancelOnInvalidate(_:)` and

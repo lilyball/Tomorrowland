@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 - (instancetype)initDelayed NS_DESIGNATED_INITIALIZER;
 
-- (void)enqueueCallbackWithoutOneshot:(void (^)(ValueType _Nullable value, ErrorType _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel;
+- (void)enqueueCallbackWithoutOneshot:(void (^)(ValueType _Nullable value, ErrorType _Nullable error, BOOL isSynchronous))callback
+                  willPropagateCancel:(BOOL)willPropagateCancel;
 @end
 
 @interface TWLResolver<ValueType,ErrorType> ()
@@ -46,18 +47,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if __cplusplus
 namespace {
-    template<class ValueType, class ErrorType, class OneshotType>
-    inline void enqueueCallback(TWLPromise<ValueType, ErrorType> * _Nonnull promise, BOOL willPropagateCancel, OneshotType value, void (^ _Nonnull callback)(ValueType _Nullable value, ErrorType _Nullable error, OneshotType (^ _Nonnull oneshot)(void))) {
-        __block OneshotType oneshotValue = value;
-        OneshotType (^oneshot)(void) = ^{
-            OneshotType value = oneshotValue;
-            oneshotValue = nil;
-            return value;
-        };
-        [promise enqueueCallbackWithoutOneshot:^(ValueType _Nullable value, ErrorType _Nullable error) {
-            callback(value, error, oneshot);
-        } willPropagateCancel:willPropagateCancel];
-    }
+template<class ValueType, class ErrorType, class OneshotType>
+inline void enqueueCallback(TWLPromise<ValueType, ErrorType> * _Nonnull promise, BOOL willPropagateCancel,
+                            OneshotType value, void (^ _Nonnull callback)(ValueType _Nullable value, ErrorType _Nullable error,
+                                                                          OneshotType (^ _Nonnull oneshot)(void), BOOL isSynchronous))
+{
+    __block OneshotType oneshotValue = value;
+    OneshotType (^oneshot)(void) = ^{
+        OneshotType value = oneshotValue;
+        oneshotValue = nil;
+        return value;
+    };
+    [promise enqueueCallbackWithoutOneshot:^(ValueType _Nullable value, ErrorType _Nullable error, BOOL isSynchronous) {
+        callback(value, error, oneshot, isSynchronous);
+    } willPropagateCancel:willPropagateCancel];
+}
 }
 #endif
 

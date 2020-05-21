@@ -50,6 +50,17 @@ NS_ASSUME_NONNULL_BEGIN
 /// Execute on the specified operation queue.
 + (TWLContext *)operationQueue:(NSOperationQueue *)operationQueue;
 
+/// Execute synchronously if the promise is already resolved, otherwise use another context.
+///
+/// This is a convenience for a pattern where you check a promise's \c result to see if it's already
+/// resolved and only attach a callback if it hasn't resolved yet. Passing this context to a
+/// callback will execute it synchronously before returning to the caller if and only if the promise
+/// has already resolved.
+///
+/// If this is passed to a promise initializer it acts like \c .immediate. If passed to a
+/// \c TWLDelayedPromise initializer it acts like the given context.
++ (TWLContext *)nowOrContext:(TWLContext *)context;
+
 /// Returns \c .main when accessed from the main thread, otherwise <tt>.defaultQoS</tt>.
 @property (class, readonly) TWLContext *automatic;
 
@@ -60,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithOperationQueue:(NSOperationQueue *)operationQueue NS_DESIGNATED_INITIALIZER;
+- (instancetype)initAsNowOrContext:(TWLContext *)context NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 @end
 

@@ -262,6 +262,20 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
+    func testDelayUsingNowOr() {
+        // .nowOr is ignored with delay
+        let queue = DispatchQueue(label: "test queue")
+        let key = DispatchSpecificKey<()>()
+        queue.setSpecific(key: key, value: ())
+        let promise = Promise<Int,String>(on: .utility, { (resolver) in
+            resolver.fulfill(with: 42)
+        }).delay(on: .nowOr(.queue(queue)), 0.01)
+        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (_) in
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "promise did not resolve on the queue")
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
     // MARK: -
     
     func testTimeout() {
@@ -624,6 +638,22 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
+    func testTimeoutUsingNowOr() {
+        // .nowOr is ignored with timeout
+        let queue = DispatchQueue(label: "test queue")
+        let key = DispatchSpecificKey<()>()
+        queue.setSpecific(key: key, value: ())
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .queue(queue), delay: 0.01)
+        let expectation = XCTestExpectation(on: .immediate, onError: promise) { (_) in
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "timeout did not occur on the expected queue")
+        }
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
     // MARK: -
     
     func testInitFulfilledAfter() {
@@ -748,6 +778,18 @@ final class UtilityTests: XCTestCase {
             // block the queue for 1 second. This ensures the test will fail if the delay operation
             // is behind us.
             Thread.sleep(forTimeInterval: 1)
+        }
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
+    func testInitResultAfterUsingNowOr() {
+        // .nowOr is ignored in this scenario
+        let queue = DispatchQueue(label: "test queue")
+        let key = DispatchSpecificKey<()>()
+        queue.setSpecific(key: key, value: ())
+        let promise = Promise<Int,String>(on: .nowOr(.queue(queue)), with: .value(42), after: 0.01)
+        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (_) in
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "promise did not resolve on the expected queue")
         }
         wait(for: [expectation], timeout: 0.5)
     }

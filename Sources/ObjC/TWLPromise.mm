@@ -75,7 +75,7 @@
     if ((self = [super init])) {
         _box = [[TWLObjCPromiseBox alloc] init];
         TWLResolver *resolver = [[TWLResolver alloc] initWithBox:_box];
-        [context executeBlock:^{
+        [context executeIsSynchronous:YES block:^{
             block(resolver);
         }];
     }
@@ -139,9 +139,9 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id), BOOL isSynchronous){
         if (value) {
-            [context executeBlock:^{
+            [context executeIsSynchronous:isSynchronous block:^{
                 auto handler = oneshot();
                 if (!tokenBox || generation == tokenBox.generation) {
                     handler(value);
@@ -171,9 +171,9 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id), BOOL isSynchronous){
         if (value) {
-            [context executeBlock:^{
+            [context executeIsSynchronous:isSynchronous block:^{
                 auto handler = oneshot();
                 if (tokenBox && generation != tokenBox.generation) {
                     [resolver cancel];
@@ -209,11 +209,11 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id)){
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id), BOOL isSynchronous){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
-            [context executeBlock:^{
+            [context executeIsSynchronous:isSynchronous block:^{
                 auto handler = oneshot();
                 if (!tokenBox || generation == tokenBox.generation) {
                     handler(error);
@@ -241,11 +241,11 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id)){
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, id (^(^oneshot)(void))(id), BOOL isSynchronous){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
-            [context executeBlock:^{
+            [context executeIsSynchronous:isSynchronous block:^{
                 auto handler = oneshot();
                 if (tokenBox && generation != tokenBox.generation) {
                     [resolver cancel];
@@ -279,8 +279,8 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
-        [context executeBlock:^{
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id), BOOL isSynchronous){
+        [context executeIsSynchronous:isSynchronous block:^{
             auto handler = oneshot();
             if (!tokenBox || generation == tokenBox.generation) {
                 handler(value, error);
@@ -305,8 +305,8 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, TWLPromise *(^(^oneshot)(void))(id,id)){
-        [context executeBlock:^{
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, TWLPromise *(^(^oneshot)(void))(id,id), BOOL isSynchronous){
+        [context executeIsSynchronous:isSynchronous block:^{
             auto handler = oneshot();
             if (tokenBox && generation != tokenBox.generation) {
                 [resolver cancel];
@@ -331,8 +331,8 @@
 - (TWLPromise *)tapOnContext:(TWLContext *)context token:(TWLInvalidationToken *)token handler:(void (^)(id _Nullable, id _Nullable))handler {
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, NO, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id)){
-        [context executeBlock:^{
+    enqueueCallback(self, NO, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(id,id), BOOL isSynchronous){
+        [context executeIsSynchronous:isSynchronous block:^{
             auto handler = oneshot();
             if (!tokenBox || generation == tokenBox.generation) {
                 handler(value, error);
@@ -345,7 +345,7 @@
 - (TWLPromise *)tap {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:NO];
     return promise;
@@ -364,13 +364,13 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void)){
+    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void), BOOL isSynchronous){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
             [resolver rejectWithError:error];
         } else {
-            [context executeBlock:^{
+            [context executeIsSynchronous:isSynchronous block:^{
                 auto handler = oneshot();
                 if (!tokenBox || generation == tokenBox.generation) {
                     handler();
@@ -386,7 +386,7 @@
 - (TWLPromise *)propagatingCancellationOnContext:(TWLContext *)context cancelRequestedHandler:(void (^)(TWLPromise<id,id> *promise))cancelRequested {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:YES];
     // Replicate the "oneshot" behavior from enqueueCallback, as -whenCancelRequestedOnContext: does not have this same behavior.
@@ -455,7 +455,7 @@
 - (TWLPromise *)ignoringCancel {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:YES];
     return promise;
@@ -467,7 +467,7 @@
 
 #pragma mark - Private
 
-- (void)enqueueCallbackWithoutOneshot:(void (^)(id _Nullable value, id _Nullable error))callback willPropagateCancel:(BOOL)willPropagateCancel {
+- (void)enqueueCallbackWithoutOneshot:(void (^)(id _Nullable value, id _Nullable error, BOOL isSynchronous))callback willPropagateCancel:(BOOL)willPropagateCancel {
     if (willPropagateCancel) {
         // If the subsequent swap fails, that means we've already resolved (or started resolving)
         // the promise, so the observer count modification is harmless.
@@ -489,12 +489,12 @@
             case TWLPromiseBoxStateCancelling:
                 @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"TWLPromise callback list empty but state isn't actually resolved" userInfo:nil];
         }
-        callback(_box->_value, _box->_error);
+        callback(_box->_value, _box->_error, YES);
     }
 }
 
 - (void)pipeToResolver:(nonnull TWLResolver *)resolver {
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error) {
+    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
         [resolver resolveWithValue:value error:error];
     } willPropagateCancel:YES];
     __weak TWLObjCPromiseBox *box = _box;
@@ -560,9 +560,9 @@ namespace {
     };
     
     struct CallbackNode: LinkedListNode<CallbackNode> {
-        void (^ _Nonnull callback)(id _Nullable value, id _Nullable error);
+        void (^ _Nonnull callback)(id _Nullable value, id _Nullable error, BOOL isSynchronous);
         
-        CallbackNode(void (^ _Nonnull callback)(id _Nullable,id _Nullable)) : LinkedListNode(), callback(callback) {}
+        CallbackNode(void (^ _Nonnull callback)(id _Nullable,id _Nullable, BOOL isSynchronous)) : LinkedListNode(), callback(callback) {}
     };
     
     struct RequestCancelNode: LinkedListNode<RequestCancelNode> {
@@ -577,7 +577,7 @@ namespace {
                 this->callback(resolver);
             } else {
                 auto callback = this->callback;
-                [this->context executeBlock:^{
+                [this->context executeIsSynchronous:NO block:^{
                     switch (resolver->_box.unfencedState) {
                         case TWLPromiseBoxStateDelayed:
                         case TWLPromiseBoxStateEmpty:
@@ -638,7 +638,7 @@ namespace {
         switch (_box.unfencedState) {
             case TWLPromiseBoxStateCancelling:
             case TWLPromiseBoxStateCancelled: {
-                [context executeBlock:^{
+                [context executeIsSynchronous:YES block:^{
                     handler(self);
                 }];
                 break;
@@ -730,7 +730,7 @@ handleCallbacks:
         nodePtr = CallbackNode::reverseList(nodePtr);
         @try {
             for (auto current = nodePtr; current; current = current->next) {
-                current->callback(value,error);
+                current->callback(value,error,NO);
             }
         } @finally {
             CallbackNode::destroyPointer(nodePtr);
@@ -796,7 +796,7 @@ handleCallbacks:
         nodePtr = CallbackNode::reverseList(nodePtr);
         @try {
             for (auto current = nodePtr; current; current = current->next) {
-                current->callback(nil,nil);
+                current->callback(nil,nil,NO);
             }
         } @finally {
             CallbackNode::destroyPointer(nodePtr);
