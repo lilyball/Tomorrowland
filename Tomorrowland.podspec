@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "Tomorrowland"
-  s.version      = "1.1.1"
+  s.version      = "1.2.0"
   s.summary      = "Lightweight Promises for Swift and Obj-C"
 
   s.description  = <<-DESC
