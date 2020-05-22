@@ -304,6 +304,17 @@ public struct Promise<Value,Error> {
             }
         }
         
+        /// Returns whether the promise has already been requested to cancel.
+        ///
+        /// This can be used when a promise init method does long-running work that can't easily be
+        /// interrupted with a `onRequestCancel` handler.
+        public var hasRequestedCancel: Bool {
+            switch _box.unfencedState {
+            case .cancelling, .cancelled: return true
+            case .delayed, .empty, .resolving, .resolved: return false
+            }
+        }
+        
         internal func propagateCancellation<T,E>(to promise: Promise<T,E>) {
             onRequestCancel(on: .immediate) { [weak box=promise._box] (_) in
                 box?.propagateCancel()

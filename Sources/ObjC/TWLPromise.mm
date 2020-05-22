@@ -652,6 +652,19 @@ namespace {
     }
 }
 
+- (BOOL)cancelRequested {
+    switch (_box.unfencedState) {
+        case TWLPromiseBoxStateCancelling:
+        case TWLPromiseBoxStateCancelled:
+            return YES;
+        case TWLPromiseBoxStateDelayed:
+        case TWLPromiseBoxStateEmpty:
+        case TWLPromiseBoxStateResolving:
+        case TWLPromiseBoxStateResolved:
+            return NO;
+    }
+}
+
 - (void (^)(id _Nullable, id _Nullable))handleCallback {
     return [self handleCallbackWithCancelPredicate:^(id _Nonnull error) { return NO; }];
 }

@@ -609,6 +609,12 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \param handler The callback to invoke.
 - (void)whenCancelRequestedOnContext:(TWLContext *)context handler:(void (^)(TWLResolver<ValueType,ErrorType> *resolver))handler NS_SWIFT_NAME(onRequestCancel(on:_:));
 
+/// Returns whether the promise has already been requested to cancel.
+///
+/// This can be used when a promise init method does long-running work that can't easily be
+/// interrupted with a \c whenCancelRequested handler.
+@property (atomic, readonly) BOOL cancelRequested;
+
 /// Convenience method for handling framework callbacks.
 ///
 /// This method returns a block that can be passed to a framework method as a callback in order to

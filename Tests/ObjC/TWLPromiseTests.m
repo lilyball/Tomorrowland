@@ -1054,6 +1054,61 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testResolverRequestedCancel {
+    // Same thread
+    {
+        TWLResolver<NSNumber*,NSString*> *resolver;
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+        XCTAssertFalse(resolver.cancelRequested);
+        [promise requestCancel];
+        XCTAssertTrue(resolver.cancelRequested);
+    }
+    
+    // Different thread
+    {
+        __auto_type sema = dispatch_semaphore_create(0);
+        __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            XCTAssertTrue(resolver.cancelRequested);
+            [resolver fulfillWithValue:@42];
+            XCTAssertFalse(resolver.cancelRequested);
+        }];
+        __auto_type expectation = TWLExpectationSuccessWithValue(promise, @42);
+        [promise requestCancel];
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    
+    // In callback
+    {
+        TWLResolver<NSNumber*,NSString*> *resolver;
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+        [resolver whenCancelRequestedOnContext:TWLContext.defaultQoS handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+            XCTAssertTrue(innerResolver.cancelRequested);
+            XCTAssertTrue(resolver.cancelRequested);
+            [resolver fulfillWithValue:@42];
+            XCTAssertFalse(resolver.cancelRequested);
+            XCTAssertFalse(innerResolver.cancelRequested);
+        }];
+        __auto_type expectation = TWLExpectationSuccessWithValue(promise, @42);
+        XCTAssertFalse(resolver.cancelRequested);
+        [promise requestCancel];
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+    
+    // Cancelled without request
+    {
+        __auto_type expectation = [XCTestExpectation new];
+        (void)[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            XCTAssertFalse(resolver.cancelRequested);
+            [resolver cancel];
+            XCTAssertTrue(resolver.cancelRequested);
+            [expectation fulfill];
+        }];
+        [self waitForExpectations:@[expectation] timeout:1];
+    }
+}
+
 - (void)testLeavingPromiseUnresolvedTriggersCancel {
     dispatch_queue_t queue = dispatch_queue_create("test queue", DISPATCH_QUEUE_SERIAL);
     NSMutableArray<XCTestExpectation *> *expectations = [NSMutableArray array];

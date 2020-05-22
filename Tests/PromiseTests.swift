@@ -1433,6 +1433,59 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testResolverHasRequestedCancel() {
+        // Same thread
+        do {
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            XCTAssertFalse(resolver.hasRequestedCancel)
+            promise.requestCancel()
+            XCTAssertTrue(resolver.hasRequestedCancel)
+        }
+        
+        // Different thread
+        do {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,String>(on: .default) { (resolver) in
+                sema.wait()
+                XCTAssertTrue(resolver.hasRequestedCancel)
+                resolver.fulfill(with: 42)
+                XCTAssertFalse(resolver.hasRequestedCancel)
+            }
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            promise.requestCancel()
+            sema.signal()
+            self.wait(for: [expectation], timeout: 1)
+        }
+        
+        // In callback
+        do {
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            resolver.onRequestCancel(on: .default) { (innerResolver) in
+                XCTAssertTrue(innerResolver.hasRequestedCancel)
+                XCTAssertTrue(resolver.hasRequestedCancel)
+                resolver.fulfill(with: 42) // keep promise alive
+                XCTAssertFalse(resolver.hasRequestedCancel)
+                XCTAssertFalse(innerResolver.hasRequestedCancel)
+            }
+            let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
+            XCTAssertFalse(resolver.hasRequestedCancel)
+            promise.requestCancel()
+            self.wait(for: [expectation], timeout: 1)
+        }
+        
+        // Cancelled without request
+        do {
+            let expectation = XCTestExpectation()
+            _ = Promise<Int,String>(on: .default, { (resolver) in
+                XCTAssertFalse(resolver.hasRequestedCancel)
+                resolver.cancel()
+                XCTAssertTrue(resolver.hasRequestedCancel)
+                expectation.fulfill()
+            })
+            self.wait(for: [expectation], timeout: 1)
+        }
+    }
+    
     func testLeavingPromiseUnresolvedTriggersCancel() {
         let queue = DispatchQueue(label: "test queue")
         let expectations = (1...3).map({ XCTestExpectation(description: "promise \($0) cancel") })
