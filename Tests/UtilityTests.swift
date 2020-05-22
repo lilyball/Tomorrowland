@@ -647,7 +647,7 @@ final class UtilityTests: XCTestCase {
             DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
                 resolver.fulfill(with: 42)
             }
-        }).timeout(on: .queue(queue), delay: 0.01)
+        }).timeout(on: .nowOr(.queue(queue)), delay: 0.01)
         let expectation = XCTestExpectation(on: .immediate, onError: promise) { (_) in
             XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "timeout did not occur on the expected queue")
         }

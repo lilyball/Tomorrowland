@@ -361,7 +361,7 @@
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(50 * NSEC_PER_MSEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
             [resolver fulfillWithValue:@42];
         });
-    }] timeoutOnContext:[TWLContext queue:queue] withDelay:0.01];
+    }] timeoutOnContext:[TWLContext nowOrContext:[TWLContext queue:queue]] withDelay:0.01];
     __auto_type expectation = TWLExpectationErrorWithHandlerOnContext(TWLContext.immediate, promise, ^(NSString * _Nonnull error) {
         XCTAssert(dispatch_get_specific(kKey) != NULL, @"timeout did not occur on the expected queue");
     });
