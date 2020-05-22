@@ -416,9 +416,9 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
       button?.setImage(image, for: .normal)
   })
   ```
-  - Add `Promise.Resolver.hasRequestedCancel` (`TWLResolver.cancelRequested` in Obj-C) that returns `true` if the promise has been requested to
-    cancel or is already cancelled, or `false` if it hasn't been requested to cancel or is fulfilled or rejected. This can be used when a promise initializer takes
-    significant time in a manner not easily interrupted by an `onRequestCancel` handler ([#47][]).
+- Add `Promise.Resolver.hasRequestedCancel` (`TWLResolver.cancelRequested` in Obj-C) that returns `true` if the promise has been requested to
+  cancel or is already cancelled, or `false` if it hasn't been requested to cancel or is fulfilled or rejected. This can be used when a promise initializer takes
+  significant time in a manner not easily interrupted by an `onRequestCancel` handler ([#47][]).
 
 [#34]: https://github.com/lilyball/Tomorrowland/issues/34 "Add a .mainImmediate context"
 [#47]: https://github.com/lilyball/Tomorrowland/issues/47 "Add Promise.Resolver.isCancelled property"
