@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="index.html">Tomorrowland 1.2.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.1.1-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.2.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -469,6 +469,31 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-2-0' class='heading'>v1.2.0</h3>
+
+<ul>
+<li>Add <code>PromiseContext.nowOr(context)</code> (<code>+[TWLContext nowOrContext:]</code> in Obj-C) that runs the callback synchronously when registered if the promise
+has already resolved, otherwise registers the callback to run on <code>context</code>. This can be used to replace code that previously would have required checking
+<code>promise.result</code> prior to registering the callback (<a href="https://github.com/lilyball/Tomorrowland/issues/34" title="Add a .mainImmediate context">#34</a>).</li>
+</ul>
+
+<p>For example:</p>
+<pre class="highlight swift"><code>  <span class="n">networkImagePromise</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="nf">nowOr</span><span class="p">(</span><span class="o">.</span><span class="n">main</span><span class="p">),</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="n">button</span><span class="p">]</span> <span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="k">in</span>
+      <span class="n">button</span><span class="p">?</span><span class="o">.</span><span class="nf">setImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="nv">for</span><span class="p">:</span> <span class="o">.</span><span class="n">normal</span><span class="p">)</span>
+  <span class="p">})</span>
+</code></pre>
+
+<ul>
+<li>Add <code><a href="Structs/Promise/Resolver.html#/s:12Tomorrowland7PromiseV8ResolverV18hasRequestedCancelSbvp">Promise.Resolver.hasRequestedCancel</a></code> (<code>TWLResolver.cancelRequested</code> in Obj-C) that returns <code>true</code> if the promise has been requested to
+cancel or is already cancelled, or <code>false</code> if it hasn&rsquo;t been requested to cancel or is fulfilled or rejected. This can be used when a promise initializer takes
+significant time in a manner not easily interrupted by an <code>onRequestCancel</code> handler (<a href="https://github.com/lilyball/Tomorrowland/issues/47" title="Add Promise.Resolver.isCancelled property">#47</a>).</li>
+<li>Change <code>Promise.timeout</code>&rsquo;s default context from <code>.auto</code> to <code>.nowOr(.auto)</code>. This behaves the same as <code>.auto</code> in most cases, except if the receiver has
+already been resolved this will cause the returned promise to likewise already be resolved (<a href="https://github.com/lilyball/Tomorrowland/issues/50" title="Consider changing timeout&#39;s default context to .nowOr(.auto)">#50</a>).</li>
+<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when5first15cancelRemainingAA7PromiseVyxq_GSayAGG_Sbtr0_lF">when(first:cancelRemaining:)</a></code> returns an already-cancelled promise if all input promises were previously cancelled, instead of cancelling the
+returned promise asynchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/51" title="when(first:cancelRemaining:) won&#39;t cancel synchronously if all inputs have cancelled">#51</a>).</li>
+<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when9fulfilled3qos15cancelOnFailureAA7PromiseVySayxGq_GSayAGyxq_GG_8Dispatch0I3QoSV0J6SClassOSbtr0_lF">when(fulfilled:qos:cancelOnFailure:)</a></code> returns an already-resolved promise if either all input promises were previously fulfliled or any input
+promise was previously rejected or cancelled (<a href="https://github.com/lilyball/Tomorrowland/issues/52" title="when(fulfilled:…) should be able to resolve synchronously">#52</a>).</li>
+</ul>
 <h3 id='v1-1-1' class='heading'>v1.1.1</h3>
 
 <ul>
@@ -627,8 +652,8 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-21)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

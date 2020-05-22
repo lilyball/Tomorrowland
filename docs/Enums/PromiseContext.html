@@ -14,7 +14,7 @@
     <a title="PromiseContext Enumeration Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="../index.html">Tomorrowland 1.2.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -304,7 +304,7 @@ promise to resolve first.
                     <code>
                     <a name="/s:12Tomorrowland14PromiseContextO5queueyACSo012OS_dispatch_D0CcACmF"></a>
                     <a name="//apple_ref/swift/Element/queue(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO5queueyACSo012OS_dispatch_D0CcACmF">queue(_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO5queueyACSo012OS_dispatch_D0CcACmF">queue(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -331,7 +331,7 @@ promise to resolve first.
                     <code>
                     <a name="/s:12Tomorrowland14PromiseContextO14operationQueueyACSo011NSOperationE0CcACmF"></a>
                     <a name="//apple_ref/swift/Element/operationQueue(_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO14operationQueueyACSo011NSOperationE0CcACmF">operationQueue(_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO14operationQueueyACSo011NSOperationE0CcACmF">operationQueue(_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -397,6 +397,41 @@ network task to cancel, e.g.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:12Tomorrowland14PromiseContextO5nowOryA2CcACmF"></a>
+                    <a name="//apple_ref/swift/Element/nowOr(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO5nowOryA2CcACmF">nowOr(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Execute synchronously if the promise is already resolved, otherwise use another context.</p>
+
+<p>This is a convenience for a pattern where you check a promise&rsquo;s <code>result</code> to see if it&rsquo;s
+already resolved and only attach a callback if it hasn&rsquo;t resolved yet. Passing this context
+to a callback will execute it synchronously before returning to the caller if and only if
+the promise has already resolved.</p>
+
+<p>If this is passed to a promise initializer it acts like <code><a href="../Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO9immediateyA2CmF">.immediate</a></code>. If passed to a
+<code><a href="../Structs/DelayedPromise.html">DelayedPromise</a></code> initializer it acts like the given context.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">indirect</span> <span class="k">case</span> <span class="nf">nowOr</span><span class="p">(</span><span class="kt">PromiseContext</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:12Tomorrowland14PromiseContextO4autoACvpZ"></a>
                     <a name="//apple_ref/swift/Variable/auto" class="dashAnchor"></a>
                     <a class="token" href="#/s:12Tomorrowland14PromiseContextO4autoACvpZ">auto</a>
@@ -426,7 +461,7 @@ network task to cancel, e.g.</p>
                     <code>
                     <a name="/s:12Tomorrowland14PromiseContextO3qosAC8Dispatch0E3QoSV0F6SClassO_tcfc"></a>
                     <a name="//apple_ref/swift/Method/init(qos:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO3qosAC8Dispatch0E3QoSV0F6SClassO_tcfc">init(qos:)</a>
+                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO3qosAC8Dispatch0E3QoSV0F6SClassO_tcfc">init(qos:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -455,7 +490,7 @@ network task to cancel, e.g.</p>
                     <code>
                     <a name="/s:12Tomorrowland14PromiseContextO2eeoiySbAC_ACtFZ"></a>
                     <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO2eeoiySbAC_ACtFZ">==(_:_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland14PromiseContextO2eeoiySbAC_ACtFZ">==(_:<wbr>_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -516,8 +551,8 @@ network task to cancel, e.g.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-21)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>

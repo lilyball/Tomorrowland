@@ -14,7 +14,7 @@
     <a title="Resolver Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../../index.html">Tomorrowland Docs</a> (100% documented)</p>
+        <p><a href="../../index.html">Tomorrowland 1.2.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="../../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -131,7 +131,7 @@
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverV7fulfill4withyx_tF"></a>
                     <a name="//apple_ref/swift/Method/fulfill(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7fulfill4withyx_tF">fulfill(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7fulfill4withyx_tF">fulfill(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -160,7 +160,7 @@
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverV6reject4withyq__tF"></a>
                     <a name="//apple_ref/swift/Method/reject(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV6reject4withyq__tF">reject(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV6reject4withyq__tF">reject(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -218,7 +218,7 @@
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyAA0B6ResultOyxq_G_tF"></a>
                     <a name="//apple_ref/swift/Method/resolve(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyAA0B6ResultOyxq_G_tF">resolve(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyAA0B6ResultOyxq_G_tF">resolve(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -247,7 +247,7 @@
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyACyxq_G_tF"></a>
                     <a name="//apple_ref/swift/Method/resolve(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyACyxq_G_tF">resolve(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyACyxq_G_tF">resolve(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -282,7 +282,7 @@ this is not desired, then either use <code>resolve(with: promise.ignoringCancel(
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverV15onRequestCancel0D0_yAA0B7ContextO_yAEyxq__GctF"></a>
                     <a name="//apple_ref/swift/Method/onRequestCancel(on:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV15onRequestCancel0D0_yAA0B7ContextO_yAEyxq__GctF">onRequestCancel(on:_:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV15onRequestCancel0D0_yAA0B7ContextO_yAEyxq__GctF">onRequestCancel(on:<wbr>_:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -346,6 +346,36 @@ resolved.</p>
                     </section>
                   </div>
                 </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12Tomorrowland7PromiseV8ResolverV18hasRequestedCancelSbvp"></a>
+                    <a name="//apple_ref/swift/Property/hasRequestedCancel" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverV18hasRequestedCancelSbvp">hasRequestedCancel</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Returns whether the promise has already been requested to cancel.</p>
+
+<p>This can be used when a promise init method does long-running work that can&rsquo;t easily be
+interrupted with a <code>onRequestCancel</code> handler.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">hasRequestedCancel</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
               </ul>
             </div>
             <div class="task-group">
@@ -364,7 +394,7 @@ resolved.</p>
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE7resolve4withyAA0B6ResultOyxqd__G_tsAFRd__lF"></a>
                     <a name="//apple_ref/swift/Method/resolve(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE7resolve4withyAA0B6ResultOyxqd__G_tsAFRd__lF">resolve(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE7resolve4withyAA0B6ResultOyxqd__G_tsAFRd__lF">resolve(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -393,7 +423,7 @@ resolved.</p>
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE14handleCallback08isCancelD0yxSg_sAF_pSgtcSbsAF_pc_tF"></a>
                     <a name="//apple_ref/swift/Method/handleCallback(isCancelError:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE14handleCallback08isCancelD0yxSg_sAF_pSgtcSbsAF_pc_tF">handleCallback(isCancelError:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5Error_pRs_rlE14handleCallback08isCancelD0yxSg_sAF_pSgtcSbsAF_pc_tF">handleCallback(isCancelError:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -467,7 +497,7 @@ errors represent cancellation.</p>
                     <code>
                     <a name="/s:12Tomorrowland7PromiseV8ResolverVAAs5ErrorR_rlE7resolve4withys6ResultOyxq_G_tF"></a>
                     <a name="//apple_ref/swift/Method/resolve(with:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5ErrorR_rlE7resolve4withys6ResultOyxq_G_tF">resolve(with:)</a>
+                    <a class="token" href="#/s:12Tomorrowland7PromiseV8ResolverVAAs5ErrorR_rlE7resolve4withys6ResultOyxq_G_tF">resolve(with:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -496,8 +526,8 @@ errors represent cancellation.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-04-01)</p>
-          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.1</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-21)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
     </div>
