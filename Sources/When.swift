@@ -54,26 +54,28 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     var resultBuffer = UnsafeMutablePointer<Value?>.allocate(capacity: count)
     resultBuffer.initialize(repeating: nil, count: count)
     let group = DispatchGroup()
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     for (i, promise) in promises.enumerated() {
         group.enter()
         promise._seal._enqueue { (result, isSynchronous) in
-            context.execute(isSynchronous: isSynchronous) {
-                switch result {
-                case .value(let value):
-                    resultBuffer[i] = value
-                case .error(let error):
+            switch result {
+            case .value(let value):
+                resultBuffer[i] = value
+            case .error(let error):
+                context.execute(isSynchronous: isSynchronous) {
                     resolver.reject(with: error)
-                    cancelAllInput?.invoke()
-                case .cancelled:
-                    resolver.cancel()
-                    cancelAllInput?.invoke()
                 }
-                group.leave()
+                cancelAllInput?.invoke()
+            case .cancelled:
+                context.execute(isSynchronous: isSynchronous) {
+                    resolver.cancel()
+                }
+                cancelAllInput?.invoke()
             }
+            group.leave()
         }
     }
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         defer {
             resultBuffer.deinitialize(count: count)
             resultBuffer.deallocate()
@@ -90,9 +92,14 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
         }
         resolver.fulfill(with: Array(results))
     }
-    resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
-        for box in boxes {
-            box.value?.propagateCancel()
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
+            for box in boxes {
+                box.value?.propagateCancel()
+            }
         }
     }
     return resultPromise
@@ -161,7 +168,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
         }
     }
     
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     group.enter()
     tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
@@ -175,23 +182,28 @@ public func when<Value1,Value2,Value3,Value4,Value5,Value6,Error>(fulfilled a: P
     group.enter()
     tap(f, on: context, { resolver.handleResult($0, output: &fResult, cancelAllInput: cancelAllInput); group.leave() })
     
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult, let e = eResult, let f = fResult else {
             // Must have had a rejected or cancelled promise
             return
         }
         resolver.fulfill(with: (a,b,c,d,e,f))
     }
-    resolver.onRequestCancel(on: .immediate, {
-        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box, weak boxF=f._box]
-        (resolver) in
-        boxA?.propagateCancel()
-        boxB?.propagateCancel()
-        boxC?.propagateCancel()
-        boxD?.propagateCancel()
-        boxE?.propagateCancel()
-        boxF?.propagateCancel()
-    })
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate, {
+            [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box, weak boxF=f._box]
+            (resolver) in
+            boxA?.propagateCancel()
+            boxB?.propagateCancel()
+            boxC?.propagateCancel()
+            boxD?.propagateCancel()
+            boxE?.propagateCancel()
+            boxF?.propagateCancel()
+        })
+    }
     return resultPromise
 }
 
@@ -254,7 +266,7 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
         }
     }
     
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     group.enter()
     tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
@@ -266,22 +278,27 @@ public func when<Value1,Value2,Value3,Value4,Value5,Error>(fulfilled a: Promise<
     group.enter()
     tap(e, on: context, { resolver.handleResult($0, output: &eResult, cancelAllInput: cancelAllInput); group.leave() })
     
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult, let e = eResult else {
             // Must have had a rejected or cancelled promise
             return
         }
         resolver.fulfill(with: (a,b,c,d,e))
     }
-    resolver.onRequestCancel(on: .immediate, {
-        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box]
-        (resolver) in
-        boxA?.propagateCancel()
-        boxB?.propagateCancel()
-        boxC?.propagateCancel()
-        boxD?.propagateCancel()
-        boxE?.propagateCancel()
-    })
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate, {
+            [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box, weak boxE=e._box]
+            (resolver) in
+            boxA?.propagateCancel()
+            boxB?.propagateCancel()
+            boxC?.propagateCancel()
+            boxD?.propagateCancel()
+            boxE?.propagateCancel()
+        })
+    }
     return resultPromise
 }
 
@@ -341,7 +358,7 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
         }
     }
     
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     group.enter()
     tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
@@ -351,21 +368,26 @@ public func when<Value1,Value2,Value3,Value4,Error>(fulfilled a: Promise<Value1,
     group.enter()
     tap(d, on: context, { resolver.handleResult($0, output: &dResult, cancelAllInput: cancelAllInput); group.leave() })
     
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         guard let a = aResult, let b = bResult, let c = cResult, let d = dResult else {
             // Must have had a rejected or cancelled promise
             return
         }
         resolver.fulfill(with: (a,b,c,d))
     }
-    resolver.onRequestCancel(on: .immediate, {
-        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box]
-        (resolver) in
-        boxA?.propagateCancel()
-        boxB?.propagateCancel()
-        boxC?.propagateCancel()
-        boxD?.propagateCancel()
-    })
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate, {
+            [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box, weak boxD=d._box]
+            (resolver) in
+            boxA?.propagateCancel()
+            boxB?.propagateCancel()
+            boxC?.propagateCancel()
+            boxD?.propagateCancel()
+        })
+    }
     return resultPromise
 }
 
@@ -422,7 +444,7 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
         }
     }
     
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     group.enter()
     tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
@@ -430,20 +452,25 @@ public func when<Value1,Value2,Value3,Error>(fulfilled a: Promise<Value1,Error>,
     group.enter()
     tap(c, on: context, { resolver.handleResult($0, output: &cResult, cancelAllInput: cancelAllInput); group.leave() })
     
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         guard let a = aResult, let b = bResult, let c = cResult else {
             // Must have had a rejected or cancelled promise
             return
         }
         resolver.fulfill(with: (a,b,c))
     }
-    resolver.onRequestCancel(on: .immediate, {
-        [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box]
-        (resolver) in
-        boxA?.propagateCancel()
-        boxB?.propagateCancel()
-        boxC?.propagateCancel()
-    })
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate, {
+            [weak boxA=a._box, weak boxB=b._box, weak boxC=c._box]
+            (resolver) in
+            boxA?.propagateCancel()
+            boxB?.propagateCancel()
+            boxC?.propagateCancel()
+        })
+    }
     return resultPromise
 }
 
@@ -497,25 +524,30 @@ public func when<Value1,Value2,Error>(fulfilled a: Promise<Value1,Error>,
         }
     }
     
-    let context = PromiseContext(qos: qos)
+    let context = PromiseContext.nowOr(.init(qos: qos))
     group.enter()
     tap(a, on: context, { resolver.handleResult($0, output: &aResult, cancelAllInput: cancelAllInput); group.leave() })
     group.enter()
     tap(b, on: context, { resolver.handleResult($0, output: &bResult, cancelAllInput: cancelAllInput); group.leave() })
     
-    group.notify(queue: .global(qos: qos)) {
+    let handler: @convention(block) () -> Void = {
         guard let a = aResult, let b = bResult else {
             // Must have had a rejected or cancelled promise
             return
         }
         resolver.fulfill(with: (a,b))
     }
-    resolver.onRequestCancel(on: .immediate, {
-        [weak boxA=a._box, weak boxB=b._box]
-        (resolver) in
-        boxA?.propagateCancel()
-        boxB?.propagateCancel()
-    })
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
+        handler()
+    } else {
+        group.notify(queue: .global(qos: qos), execute: handler)
+        resolver.onRequestCancel(on: .immediate, {
+            [weak boxA=a._box, weak boxB=b._box]
+            (resolver) in
+            boxA?.propagateCancel()
+            boxB?.propagateCancel()
+        })
+    }
     return resultPromise
 }
 
@@ -585,15 +617,14 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
     // DispatchTime(uptimeNanoseconds: 0) produces DISPATCH_TIME_NOW and is faster than using .now()
     if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
         resolver.cancel()
-        return newPromise
     } else {
         group.notify(queue: .global(qos: .utility)) {
             resolver.cancel()
         }
-    }
-    resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
-        for box in boxes {
-            box.value?.propagateCancel()
+        resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
+            for box in boxes {
+                box.value?.propagateCancel()
+            }
         }
     }
     return newPromise

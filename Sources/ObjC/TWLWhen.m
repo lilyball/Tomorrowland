@@ -50,26 +50,28 @@
     NSUInteger count = promises.count;
     id _Nullable __unsafe_unretained * _Nonnull resultBuffer = (id _Nullable __unsafe_unretained *)calloc((size_t)count, sizeof(id));
     dispatch_group_t group = dispatch_group_create();
-    TWLContext *context = [TWLContext contextForQoS:qosClass];
+    TWLContext *context = [TWLContext nowOrContext:[TWLContext contextForQoS:qosClass]];
     for (NSUInteger i = 0; i < count; ++i) {
         TWLPromise *promise = promises[i];
         dispatch_group_enter(group);
         [promise enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
-            [context executeIsSynchronous:isSynchronous block:^{
-                if (value) {
-                    resultBuffer[i] = (__bridge id)CFBridgingRetain(value);
-                } else if (error) {
+            if (value) {
+                resultBuffer[i] = (__bridge id)CFBridgingRetain(value);
+            } else if (error) {
+                [context executeIsSynchronous:isSynchronous block:^{
                     [resolver rejectWithError:error];
-                    [cancelAllInput invoke];
-                } else {
+                }];
+                [cancelAllInput invoke];
+            } else {
+                [context executeIsSynchronous:isSynchronous block:^{
                     [resolver cancel];
-                    [cancelAllInput invoke];
-                }
-                dispatch_group_leave(group);
-            }];
+                }];
+                [cancelAllInput invoke];
+            }
+            dispatch_group_leave(group);
         } willPropagateCancel:YES];
     }
-    dispatch_group_notify(group, dispatch_get_global_queue(qosClass, 0), ^{
+    dispatch_block_t handler = ^{
         @try {
             for (NSUInteger i = 0; i < count; ++i) {
                 if (resultBuffer[i] == NULL) {
@@ -84,16 +86,21 @@
                 (void)CFBridgingRelease((__bridge CFTypeRef)(resultBuffer[i]));
             }
         }
-    });
-    NSHashTable *boxes = [NSHashTable weakObjectsHashTable];
-    for (TWLPromise *promise in promises) {
-        [boxes addObject:promise->_box];
-    }
-    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-        for (TWLObjCPromiseBox *box in boxes) {
-            [box propagateCancel];
+    };
+    if (dispatch_group_wait(group, DISPATCH_TIME_NOW) == 0) {
+        handler();
+    } else {
+        dispatch_group_notify(group, dispatch_get_global_queue(qosClass, 0), handler);
+        NSHashTable *boxes = [NSHashTable weakObjectsHashTable];
+        for (TWLPromise *promise in promises) {
+            [boxes addObject:promise->_box];
         }
-    }];
+        [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+            for (TWLObjCPromiseBox *box in boxes) {
+                [box propagateCancel];
+            }
+        }];
+    }
     return resultPromise;
 }
 

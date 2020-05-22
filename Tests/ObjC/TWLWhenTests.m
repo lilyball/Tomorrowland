@@ -215,6 +215,55 @@
     [self waitForExpectations:expectations timeout:1];
 }
 
+- (void)testWhenWithPreFulfilledInput {
+    // If all inputs have already fulfilled, return a pre-fulfilled promise
+    NSMutableArray<TWLPromise<NSNumber*,NSString*>*> *promises = [NSMutableArray new];
+    for (NSUInteger i = 0; i < 3; ++i) {
+        [promises addObject:[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@(i)]];
+    }
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises qos:QOS_CLASS_BACKGROUND];
+    NSArray<NSNumber*> *value;
+    XCTAssertTrue([promise getValue:&value error:NULL]);
+    XCTAssertEqualObjects(value, (@[@0,@1,@2]));
+}
+
+- (void)testWhenWithPreRejectedInput {
+    // If any input has already rejected, return a pre-rejected promise
+    NSMutableArray<TWLPromise<NSNumber*,NSString*>*> *promises = [NSMutableArray new];
+    for (NSUInteger i = 0; i < 3; ++i) {
+        [promises addObject:(i == 2
+                             ? [TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"]
+                             : [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+                [resolver cancel]; // capture resolver
+            }];
+        }])];
+    }
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises qos:QOS_CLASS_BACKGROUND];
+    NSString *error;
+    XCTAssertTrue([promise getValue:NULL error:&error]);
+    XCTAssertEqualObjects(error, @"foo");
+}
+
+- (void)testWhenWithPreCancelledInput {
+    // If any input has already cancelled, return a pre-cancelled promise
+    NSMutableArray<TWLPromise<NSNumber*,NSString*>*> *promises = [NSMutableArray new];
+    for (NSUInteger i = 0; i < 3; ++i) {
+        [promises addObject:(i == 2
+                             ? [TWLPromise<NSNumber*,NSString*> newCancelled]
+                             : [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+                [resolver cancel]; // capture resolver
+            }];
+        }])];
+    }
+    __auto_type promise = [TWLPromise<NSNumber*,NSString*> whenFulfilled:promises qos:QOS_CLASS_BACKGROUND];
+    id value, error;
+    XCTAssertTrue([promise getValue:&value error:&error]);
+    XCTAssertNil(value);
+    XCTAssertNil(error);
+}
+
 #pragma mark -
 
 - (void)testRace {

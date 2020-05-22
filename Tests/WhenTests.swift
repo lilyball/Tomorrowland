@@ -227,6 +227,53 @@ final class WhenArrayTests: XCTestCase {
         sema.signal()
         wait(for: expectations, timeout: 1)
     }
+    
+    func testWhenWithPreFulfilledInput() {
+        // If all inputs have already fulfilled, return a pre-fulfilled promise
+        let promises = (1...3).map(Promise<Int,String>.init(fulfilled:))
+        let promise = when(fulfilled: promises, qos: .background)
+        XCTAssertEqual(promise.result, .value([1,2,3]))
+    }
+    
+    func testWhenWithPreRejectedInput() {
+        // If any input has already rejected, return a pre-rejected promise
+        let promises = (1...3).map({ (i) in
+            return i == 2
+                ? Promise<Int,String>(rejected: "foo")
+                : Promise<Int,String>(on: .default, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate, { _ in
+                        resolver.cancel() // capture resolver
+                    })
+                })
+        })
+        addTeardownBlock {
+            for promise in promises {
+                promise.requestCancel() // just in case
+            }
+        }
+        let promise = when(fulfilled: promises, qos: .background, cancelOnFailure: true)
+        XCTAssertEqual(promise.result, .error("foo"))
+    }
+     
+    func testWhenWithPreCancelledInput() {
+        // If any input has already cancelled, return a pre-cancelled promise
+        let promises = (1...3).map({ (i) in
+            return i == 2
+                ? Promise<Int,String>(with: .cancelled)
+                : Promise<Int,String>(on: .default, { (resolver) in
+                    resolver.onRequestCancel(on: .immediate, { _ in
+                        resolver.cancel() // capture resolver
+                    })
+                })
+        })
+        addTeardownBlock {
+            for promise in promises {
+                promise.requestCancel() // just in case
+            }
+        }
+        let promise = when(fulfilled: promises, qos: .background, cancelOnFailure: true)
+        XCTAssertEqual(promise.result, .cancelled)
+    }
 }
 
 final class WhenTupleTests: XCTestCase {
@@ -501,6 +548,89 @@ final class WhenTupleTests: XCTestCase {
         helper(n: 4, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], cancelOnFailure: true) }, splat: splat)
         helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], cancelOnFailure: true) }, splat: splat)
         helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1], cancelOnFailure: true) }, splat: splat)
+    }
+    
+    func testWhenWithPreFulfilledInput() {
+        // If all inputs have already fulfilled, return a pre-fulfilled promise
+        func helper<Value>(n: Int, when: ([Promise<Int,String>]) -> Promise<Value,String>, splat: @escaping (Value) -> [Int]) {
+            let promises = (1...n).map(Promise<Int,String>.init(fulfilled:))
+            let promise = when(promises)
+            switch promise.result {
+            case .value(let values):
+                XCTAssertEqual(splat(values), Array(1...n), "promise values")
+            case let result:
+                XCTFail("Expected values, got \(result as Any)")
+            }
+        }
+        helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 4, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1], qos: .background, cancelOnFailure: true) }, splat: splat)
+    }
+    
+    func testWhenWithPreRejectedInput() {
+        // If any input has already rejected, return a pre-rejected promise
+        func helper<Value>(n: Int, when: ([Promise<Int,String>]) -> Promise<Value,String>, splat: @escaping (Value) -> [Int]) {
+            let promises = (1...n).map({ (i) in
+                return i == 2
+                    ? Promise<Int,String>(rejected: "foo")
+                    : Promise<Int,String>(on: .default, { (resolver) in
+                        resolver.onRequestCancel(on: .immediate, { _ in
+                            resolver.cancel() // capture resolver
+                        })
+                    })
+            })
+            addTeardownBlock {
+                for promise in promises {
+                    promise.requestCancel() // just in case
+                }
+            }
+            let promise = when(promises)
+            switch promise.result {
+            case .error(let error):
+                XCTAssertEqual(error, "foo", "promise error")
+            case let result:
+                XCTFail("Expected error, got \(result as Any)")
+            }
+        }
+        helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 4, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1], qos: .background, cancelOnFailure: true) }, splat: splat)
+    }
+    
+    func testWhenWithPreCancelledInput() {
+        // If any input has already cancelled, return a pre-cancelled promise
+        func helper<Value>(n: Int, when: ([Promise<Int,String>]) -> Promise<Value,String>, splat: @escaping (Value) -> [Int]) {
+            let promises = (1...n).map({ (i) in
+                return i == 2
+                    ? Promise<Int,String>(with: .cancelled)
+                    : Promise<Int,String>(on: .default, { (resolver) in
+                        resolver.onRequestCancel(on: .immediate, { _ in
+                            resolver.cancel() // capture resolver
+                        })
+                    })
+            })
+            addTeardownBlock {
+                for promise in promises {
+                    promise.requestCancel() // just in case
+                }
+            }
+            let promise = when(promises)
+            switch promise.result {
+            case .cancelled:
+                break
+            case let result:
+                XCTFail("Expected cancelled, got \(result as Any)")
+            }
+        }
+        helper(n: 6, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], ps[5], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 5, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], ps[4], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 4, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], ps[3], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 3, when: { ps in when(fulfilled: ps[0], ps[1], ps[2], qos: .background, cancelOnFailure: true) }, splat: splat)
+        helper(n: 2, when: { ps in when(fulfilled: ps[0], ps[1], qos: .background, cancelOnFailure: true) }, splat: splat)
     }
 }
 

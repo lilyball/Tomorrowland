@@ -423,11 +423,14 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   already been resolved this will cause the returned promise to likewise already be resolved ([#50][]).
 - Ensure `when(first:cancelRemaining:)` returns an already-cancelled promise if all input promises were previously cancelled, instead of cancelling the
   returned promise asynchronously ([#51][]).
+- Ensure `when(fulfilled:qos:cancelOnFailure:)` returns an already-resolved promise if either all input promises were previously fulfliled or any input
+  promise was previously rejected or cancelled ([#52][]).
 
 [#34]: https://github.com/lilyball/Tomorrowland/issues/34 "Add a .mainImmediate context"
 [#47]: https://github.com/lilyball/Tomorrowland/issues/47 "Add Promise.Resolver.isCancelled property"
 [#50]: https://github.com/lilyball/Tomorrowland/issues/50 "Consider changing timeout's default context to .nowOr(.auto)"
 [#51]: https://github.com/lilyball/Tomorrowland/issues/51 "when(first:cancelRemaining:) won't cancel synchronously if all inputs have cancelled"
+[#52]: https://github.com/lilyball/Tomorrowland/issues/52 "when(fulfilled:…) should be able to resolve synchronously"
 
 ### v1.1.1
 
