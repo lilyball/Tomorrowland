@@ -654,6 +654,13 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
+    func testTimeoutAlreadyResolvedWithDefaultContext() {
+        // timeout on an already-resolved promise when using the default context should return an
+        // already-resolved promise.
+        let promise = Promise<Int,String>(fulfilled: 42).timeout(delay: 0.05)
+        XCTAssertEqual(promise.result, PromiseResult.value(42))
+    }
+    
     // MARK: -
     
     func testInitFulfilledAfter() {

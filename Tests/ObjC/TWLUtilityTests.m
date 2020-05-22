@@ -368,6 +368,15 @@
     [self waitForExpectations:@[expectation] timeout:0.5];
 }
 
+- (void)testTimeoutAlreadyResolvedWithDefaultContext {
+    // timeout on an already-resolved promise when using the default context should return an
+    // already-resolved promise.
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] timeoutWithDelay:0.05];
+    NSNumber *value;
+    XCTAssertTrue([promise getValue:&value error:NULL]);
+    XCTAssertEqualObjects(value, @42);
+}
+
 // MARK: -
 
 - (void)testInitFulfilledAfter {

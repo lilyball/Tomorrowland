@@ -153,7 +153,7 @@ static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Non
 }
 
 - (TWLPromise *)timeoutWithDelay:(NSTimeInterval)delay {
-    return [self timeoutOnContext:TWLContext.automatic withDelay:delay];
+    return [self timeoutOnContext:[TWLContext nowOrContext:TWLContext.automatic] withDelay:delay];
 }
 
 - (TWLPromise *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay {

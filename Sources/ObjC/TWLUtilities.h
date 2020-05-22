@@ -212,9 +212,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// the receiver is rejected, the returned promise will be rejected with a \c TWLTimeoutError where
 /// the \c .rejectedError property contains the underlying promise's rejection value.
 ///
-/// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
-/// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
-/// use \c -timeoutOnContext:withDelay: instead.
+/// \note This method assumes a context of <tt>[TWLContext nowOrContext:TWLContext.automatic]</tt>,
+/// where \c .automatic evaluates to \c .main when invoked on the main thread, otherwise
+/// <tt>.defaultQoS</tt>. The usage of \c +nowOrContext: here means that if the receiver has already
+/// been resolved when this method is called, the returned promise will likewise already be
+/// resolved. If the receiver has not already resolved then this behaves the same as passing
+/// <tt>.automatic</tt>. If you want to specify the context, use \c -timeoutOnContext:withDelay:
+/// instead.
 ///
 /// \param delay The delay before the returned promise times out. If less than or equal to zero, the
 /// returned promise will be timed out at once unless the receiver is already resolved.
