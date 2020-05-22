@@ -322,7 +322,7 @@
     TWLPromise *promise = [TWLPromise race:promises cancelRemaining:YES];
     XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @6);
     [expectations addObject:expectation];
-    [self waitForExpectations:@[expectation] timeout:1];
+    [self waitForExpectations:expectations timeout:1];
     dispatch_semaphore_signal(sema);
 }
 
