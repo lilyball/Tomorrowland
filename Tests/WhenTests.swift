@@ -675,6 +675,32 @@ final class WhenFirstTests: XCTestCase {
         sema.signal()
         wait(for: expectations, timeout: 1)
     }
+    
+    func testWhenWithPreResolvedInput() {
+        // If any input has already fulfilled
+        do {
+            let promises = (1...3).map(Promise<Int,String>.init(fulfilled:))
+            let promise = when(first: promises)
+            XCTAssertEqual(promise.result, .value(1))
+        }
+        
+        // If any input has already rejected
+        do {
+            let promises = (1...3).map(Promise<String,Int>.init(rejected:))
+            let promise = when(first: promises)
+            XCTAssertEqual(promise.result, .error(1))
+        }
+    }
+    
+    func testWhenWithAllInputsPreCancelled() {
+        // If all inputs were already cancelled, when should return a cancelled promise.
+        // Note: This is a fairly crappy test in that when implicitly uses the .utility QoS to
+        // process asynchronous cancellation. There's nothing we can do to prevent the race with it,
+        // so this test exists just in case it ever trips.
+        let promises = (1...3).map({ _ in Promise<Int,String>(with: .cancelled) })
+        let promise = when(first: promises)
+        XCTAssertEqual(promise.result, .cancelled)
+    }
 }
 
 private func splat<T>(_ a: T, _ b: T, _ c: T, _ d: T, _ e: T, _ f: T) -> [T] {

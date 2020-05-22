@@ -582,8 +582,14 @@ public func when<Value,Error>(first promises: [Promise<Value,Error>], cancelRema
             group.leave()
         }
     }
-    group.notify(queue: .global(qos: .utility)) {
+    // DispatchTime(uptimeNanoseconds: 0) produces DISPATCH_TIME_NOW and is faster than using .now()
+    if group.wait(timeout: DispatchTime(uptimeNanoseconds: 0)) == .success {
         resolver.cancel()
+        return newPromise
+    } else {
+        group.notify(queue: .global(qos: .utility)) {
+            resolver.cancel()
+        }
     }
     resolver.onRequestCancel(on: .immediate) { [boxes=promises.map({ Weak($0._box) })] (resolver) in
         for box in boxes {

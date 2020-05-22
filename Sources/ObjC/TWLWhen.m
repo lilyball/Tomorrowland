@@ -132,9 +132,14 @@
             dispatch_group_leave(group);
         } willPropagateCancel:YES];
     }
-    dispatch_group_notify(group, dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+    if (dispatch_group_wait(group, DISPATCH_TIME_NOW) == 0) {
         [resolver cancel];
-    });
+        return newPromise;
+    } else {
+        dispatch_group_notify(group, dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+            [resolver cancel];
+        });
+    }
     NSHashTable *boxes = [NSHashTable weakObjectsHashTable];
     for (TWLPromise *promise in promises) {
         [boxes addObject:promise->_box];

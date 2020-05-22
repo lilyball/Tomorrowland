@@ -15,6 +15,7 @@
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
 @import Tomorrowland;
+#import <stdatomic.h>
 
 @interface TWLWhenTests : XCTestCase
 
@@ -366,6 +367,48 @@
     [promise requestCancel];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:expectations timeout:1];
+}
+
+- (void)testRaceWithPreResolvedInput {
+    // If any input has already fulfilled
+    {
+        NSMutableArray<TWLPromise<NSNumber*,NSString*>*> *promises = [NSMutableArray new];
+        for (NSUInteger i = 0; i < 3; ++i) {
+            [promises addObject:[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@(i)]];
+        }
+        __auto_type promise = [TWLPromise<NSNumber*,NSString*> race:promises];
+        NSNumber *value;
+        XCTAssertTrue([promise getValue:&value error:NULL]);
+        XCTAssertEqualObjects(value, @0);
+    }
+    // If any input has already rejected
+    {
+        NSMutableArray<TWLPromise<NSString*,NSNumber*>*> *promises = [NSMutableArray new];
+        for (NSUInteger i = 0; i < 3; ++i) {
+            [promises addObject:[TWLPromise<NSString*,NSNumber*> newRejectedWithError:@(i)]];
+        }
+        __auto_type promise = [TWLPromise<NSString*,NSNumber*> race:promises];
+        NSNumber *error;
+        XCTAssertTrue([promise getValue:NULL error:&error]);
+        XCTAssertEqualObjects(error, @0);
+    }
+}
+
+- (void)testRaceWithAllInputsPreCancelled {
+    // If all inputs were already cancelled, when should return a cancelled promise.
+    // Note: This is a fairly crappy test in that when implicitly uses the .utility QoS to process
+    // asynchronous cancellation. There's nothing we can do to prevent the race with it, so this
+    // test exists just in case it ever trips.
+    NSMutableArray<TWLPromise<NSString*,NSNumber*>*> *promises = [NSMutableArray new];
+    for (NSUInteger i = 0; i < 3; ++i) {
+        [promises addObject:[TWLPromise<NSString*,NSNumber*> newCancelled]];
+    }
+    __auto_type promise = [TWLPromise<NSString*,NSNumber*> race:promises];
+    NSString *value;
+    NSNumber *error;
+    XCTAssertTrue([promise getValue:&value error:&error]);
+    XCTAssertNil(value);
+    XCTAssertNil(error);
 }
 
 @end
