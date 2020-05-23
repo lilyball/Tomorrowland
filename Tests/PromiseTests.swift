@@ -1844,14 +1844,22 @@ final class PromiseTests: XCTestCase {
 }
 
 final class PromiseNowOrTests: XCTestCase {
-    static let queueKey = DispatchSpecificKey<Int>()
+    static let queueKey = DispatchSpecificKey<Queue>()
     static let queueOne = DispatchQueue(label: "test queue 1")
     static let queueTwo = DispatchQueue(label: "test queue 2")
     
+    enum Queue {
+        case one, two
+    }
+    
     override class func setUp() {
         super.setUp()
-        queueOne.setSpecific(key: queueKey, value: 1)
-        queueTwo.setSpecific(key: queueKey, value: 2)
+        queueOne.setSpecific(key: queueKey, value: .one)
+        queueTwo.setSpecific(key: queueKey, value: .two)
+    }
+    
+    private static func assertOnQueue(_ queue: Queue, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertEqual(DispatchQueue.getSpecific(key: queueKey), queue, file: file, line: line)
     }
     
     func testPromiseInitUsingNowOr() {
@@ -1859,7 +1867,7 @@ final class PromiseNowOrTests: XCTestCase {
         let expectation = XCTestExpectation()
         Self.queueOne.sync {
             _ = Promise<Int,String>(on: .nowOr(.queue(Self.queueTwo)), { (resolver) in
-                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                Self.assertOnQueue(.one)
                 resolver.fulfill(with: 42)
             }).always(on: .immediate, { _ in expectation.fulfill() })
         }
@@ -1872,7 +1880,7 @@ final class PromiseNowOrTests: XCTestCase {
         struct DummyError: Error {}
         Self.queueOne.sync {
             _ = Promise<Int,Error>(on: .nowOr(.queue(Self.queueTwo)), { (resolver) in
-                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                Self.assertOnQueue(.one)
                 throw DummyError()
             }).always(on: .immediate, { _ in expectation.fulfill() })
         }
@@ -1885,7 +1893,7 @@ final class PromiseNowOrTests: XCTestCase {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
                 resolver.onRequestCancel(on: .nowOr(.queue(Self.queueTwo))) { _ in
-                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+                    Self.assertOnQueue(.two)
                     resolver.cancel() // capture outer resolver
                 }
                 sema.signal()
@@ -1902,7 +1910,7 @@ final class PromiseNowOrTests: XCTestCase {
             let promise = Promise<Int,String>(on: .queue(Self.queueOne), { (resolver) in
                 resolver.cancel()
                 resolver.onRequestCancel(on: .nowOr(.queue(Self.queueTwo))) { _ in
-                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                    Self.assertOnQueue(.one)
                     resolver.cancel() // capture outer resolver
                     expectation.fulfill()
                 }
@@ -1920,7 +1928,7 @@ final class PromiseNowOrTests: XCTestCase {
                 sema.wait()
                 resolver.fulfill(with: 42)
             }).then(on: .nowOr(.queue(Self.queueTwo)), { (_) in
-                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+                Self.assertOnQueue(.two)
             })
             let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
             sema.signal()
@@ -1931,7 +1939,7 @@ final class PromiseNowOrTests: XCTestCase {
         do {
             let promise = Self.queueOne.sync {
                 return Promise<Int,String>(fulfilled: 42).then(on: .nowOr(.queue(Self.queueTwo)), { (_) in
-                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                    Self.assertOnQueue(.one)
                 })
             }
             let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
@@ -1947,7 +1955,7 @@ final class PromiseNowOrTests: XCTestCase {
                 sema.wait()
                 resolver.fulfill(with: 42)
             }).map(on: .nowOr(.queue(Self.queueTwo)), { (_) -> Int in
-                XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 2)
+                Self.assertOnQueue(.two)
                 return 1
             })
             let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 1)
@@ -1959,11 +1967,65 @@ final class PromiseNowOrTests: XCTestCase {
         do {
             let promise = Self.queueOne.sync {
                 return Promise<Int,String>(fulfilled: 42).map(on: .nowOr(.queue(Self.queueTwo)), { (_) -> Int in
-                    XCTAssertEqual(DispatchQueue.getSpecific(key: Self.queueKey), 1)
+                    Self.assertOnQueue(.one)
                     return 1
                 })
             }
             let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 1)
+            wait(for: [expectation], timeout: 1)
+        }
+    }
+    
+    func testOnRequestCancelUsingNowOrWithPromiseChaining() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        let parentPromise = Promise<Int,String>(fulfilled: 42)
+        let expectation = XCTestExpectation()
+        Self.queueOne.sync {
+            resolver.onRequestCancel(on: .nowOr(.queue(Self.queueTwo))) { (_) in
+                Self.assertOnQueue(.two)
+                resolver.cancel() // capture resolver
+                expectation.fulfill()
+            }
+            parentPromise.always(on: .nowOr(.queue(Self.queueTwo))) { (_) in
+                Self.assertOnQueue(.one) // This runs now
+                promise.requestCancel()
+            }
+        }
+        wait(for: [expectation], timeout: 1)
+    }
+    
+    func testThenNowOrWithPromiseChaining() {
+        // Chained from another promise using resolve(with:)
+        // resolve(with:) doesn't use a context at all.
+        do {
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            let parentPromise = Promise<Int,String>(fulfilled: 42)
+            let expectation = XCTestExpectation()
+            Self.queueOne.sync {
+                _ = promise.then(on: .nowOr(.queue(Self.queueTwo))) { (_) in
+                    Self.assertOnQueue(.two)
+                    expectation.fulfill()
+                }
+                resolver.resolve(with: parentPromise)
+            }
+            wait(for: [expectation], timeout: 1)
+        }
+        
+        // Chained from another promise using .always(on: .nowOr)
+        do {
+            let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+            let parentPromise = Promise<Int,String>(fulfilled: 42)
+            let expectation = XCTestExpectation()
+            Self.queueOne.sync {
+                _ = promise.then(on: .nowOr(.queue(Self.queueTwo))) { (_) in
+                    Self.assertOnQueue(.two)
+                    expectation.fulfill()
+                }
+                parentPromise.always(on: .nowOr(.queue(Self.queueTwo))) { (result) in
+                    Self.assertOnQueue(.one) // This runs now
+                    resolver.resolve(with: result)
+                }
+            }
             wait(for: [expectation], timeout: 1)
         }
     }
