@@ -29,3 +29,13 @@ void TWLEnqueueThreadLocalBlock(dispatch_block_t _Nonnull block);
 /// Blocks are dequeued in FIFO order.
 dispatch_block_t _Nullable TWLDequeueThreadLocalBlock(void);
 
+#pragma mark -
+
+/// Gets the synchronous context thread local flag.
+BOOL TWLGetSynchronousContextThreadLocalFlag(void);
+
+/// Executes a block with hte synchronous context thread local flag set to the given value, and
+/// restores the previous value afterwards.
+///
+/// This guarantees the previous value will be restored even if an exception occurs.
+BOOL TWLExecuteBlockWithSynchronousContextThreadLocalFlag(BOOL value, NS_NOESCAPE dispatch_block_t _Nonnull block);

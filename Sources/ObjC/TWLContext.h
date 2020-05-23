@@ -64,6 +64,24 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns \c .main when accessed from the main thread, otherwise <tt>.defaultQoS</tt>.
 @property (class, readonly) TWLContext *automatic;
 
+/// Returns whether a \c +nowOrContext: context is executing synchronously.
+///
+/// When accessed from within a callback registered with \c +nowOrContext: this returns \c YES if
+/// the callback is executing synchronously or \c NO if it's executing on the wrapped context. When
+/// accessed from within a callback (including <tt>[TWLPromise newOnContext:withBlock:]</tt>
+/// registered with \c .immediate this returns \c YES if and only if the callback is executing
+/// synchronously and is nested within a \c +nowOrContext: context that is executing synchronously.
+/// When accessed from any other scenario this always returns \c NO.
+///
+/// \note The behavior of \c .immediate is intended to allow <tt>[TWLPromise
+/// newOnContext:withBlock:]</tt> registered with \c .immediate to query the synchronous state of
+/// its surrounding scope.
+///
+/// \note This flag will return \c NO when executed from within a dispatch sync to the main queue
+/// nested inside a \c +nowOrContext: callback, or any similar construct that blocks the current
+/// thread and runs code on another thread.
+@property (class, readonly) BOOL isExecutingNow;
+
 /// Returns the \c TWLContext that corresponds to a given Dispatch QoS class.
 ///
 /// If the given QoS is \c QOS_CLASS_UNSPECIFIED then \c QOS_CLASS_DEFAULT is assumed.

@@ -74,6 +74,25 @@ public enum PromiseContext: Equatable, Hashable {
         }
     }
     
+    /// Returns whether a `.nowOr(_:)` context is executing synchronously.
+    ///
+    /// When accessed from within a callback registered with `.nowOr(_:)` this returns `true` if the
+    /// callback is executing synchronously or `false` if it's executing on the wrapped context.
+    /// When accessed from within a callback (including `Promise.init(on:_:)` registered with
+    /// `.immediate` this returns `true` if and only if the callback is executing synchronously and
+    /// is nested within a `.nowOr(_:)` context that is executing synchronously. When accessed from
+    /// any other scenario this always returns `false`.
+    ///
+    /// - Remark: The behavior of `.immediate` is intended to allow `Promise(on: .immediate, { … })`
+    ///   to query the synchronous state of its surrounding scope.
+    ///
+    /// - Note: This flag will return `false` when executed from within `DispatchQueue.main.sync`
+    ///   nested inside a `.nowOr` callback, or any similar construct that blocks the current thread
+    ///   and runs code on another thread.
+    public static var isExecutingNow: Bool {
+        return TWLGetSynchronousContextThreadLocalFlag()
+    }
+    
     /// Returns the `PromiseContext` that corresponds to a given Dispatch QoS class.
     ///
     /// If the given QoS is `.unspecified` then `.default` is assumed.
@@ -152,10 +171,15 @@ public enum PromiseContext: Equatable, Hashable {
         case .operationQueue(let queue):
             queue.addOperation(f)
         case .immediate:
-            f()
+            if isSynchronous {
+                // Inherit the synchronous context flag from our current scope
+                f()
+            } else {
+                TWLExecuteBlockWithSynchronousContextThreadLocalFlag(false, f)
+            }
         case .nowOr(let context):
             if isSynchronous {
-                f()
+                TWLExecuteBlockWithSynchronousContextThreadLocalFlag(true, f)
             } else {
                 context.execute(isSynchronous: false, f)
             }

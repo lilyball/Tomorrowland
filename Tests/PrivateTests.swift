@@ -16,7 +16,7 @@ import XCTest
 import Tomorrowland.Private
 
 final class PrivateTests: XCTestCase {
-    func testThreadLocalFlag() {
+    func testMainContextThreadLocalFlag() {
         defer { TWLSetMainContextThreadLocalFlag(false) }
         
         let expectation = XCTestExpectation(description: "done")
@@ -32,5 +32,33 @@ final class PrivateTests: XCTestCase {
             }
         }
         wait(for: [expectation], timeout: 1)
+    }
+    
+    func testSynchronousContextThreadLocalFlag() {
+        XCTAssertFalse(TWLGetSynchronousContextThreadLocalFlag())
+        TWLExecuteBlockWithSynchronousContextThreadLocalFlag(true) {
+            XCTAssertTrue(TWLGetSynchronousContextThreadLocalFlag())
+            // Nesting identical values should work
+            TWLExecuteBlockWithSynchronousContextThreadLocalFlag(true) {
+                XCTAssertTrue(TWLGetSynchronousContextThreadLocalFlag())
+                // Nesting changed values should work
+                TWLExecuteBlockWithSynchronousContextThreadLocalFlag(false) {
+                    XCTAssertFalse(TWLGetSynchronousContextThreadLocalFlag())
+                }
+                XCTAssertTrue(TWLGetSynchronousContextThreadLocalFlag())
+            }
+            XCTAssertTrue(TWLGetSynchronousContextThreadLocalFlag())
+            
+            let expectation = XCTestExpectation()
+            DispatchQueue.global(qos: .default).async {
+                // Different thread
+                XCTAssertFalse(TWLGetSynchronousContextThreadLocalFlag())
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 1)
+            // Sanity check
+            XCTAssertTrue(TWLGetSynchronousContextThreadLocalFlag())
+        }
+        XCTAssertFalse(TWLGetSynchronousContextThreadLocalFlag())
     }
 }

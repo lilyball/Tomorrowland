@@ -9,29 +9,35 @@
 #import "TWLThreadLocal.h"
 
 #if __has_feature(c_thread_local)
-_Thread_local BOOL flag = NO;
+_Thread_local BOOL mainContextFlag = NO;
+_Thread_local BOOL synchronousContextFlag = NO;
 #else
 #include <pthread.h>
-static pthread_key_t flagKey;
-__attribute__((constructor)) static void constructFlagKey() {
-    int err = pthread_key_create(&flagKey, NULL);
+static pthread_key_t mainContextFlagKey;
+static pthread_key_t synchronousContextFlagKey;
+__attribute__((constructor)) static void constructFlagKeys() {
+    int err = pthread_key_create(&mainContextFlagKey, NULL);
+    assert(err == 0);
+    err = pthread_key_create(&synchronousContextFlagKey, NULL);
     assert(err == 0);
 }
 #endif
 
+#pragma mark -
+
 BOOL TWLGetMainContextThreadLocalFlag(void) {
 #if __has_feature(c_thread_local)
-    return flag;
+    return mainContextFlag;
 #else
-    return pthread_getspecific(flagKey) != NULL;
+    return pthread_getspecific(mainContextFlagKey) != NULL;
 #endif
 }
 
 void TWLSetMainContextThreadLocalFlag(BOOL value) {
 #if __has_feature(c_thread_local)
-    flag = value;
+    mainContextFlag = value;
 #else
-    int err = pthread_setspecific(flagKey, value ? kCFBooleanTrue : NULL);
+    int err = pthread_setspecific(mainContextFlagKey, value ? kCFBooleanTrue : NULL);
     assert(err == 0);
 #endif
 }
@@ -109,5 +115,34 @@ dispatch_block_t _Nullable TWLDequeueThreadLocalBlock(void) {
         return block;
     } else {
         return nil;
+    }
+}
+
+#pragma mark -
+
+BOOL TWLGetSynchronousContextThreadLocalFlag(void) {
+#if __has_feature(c_thread_local)
+    return synchronousContextFlag;
+#else
+    return pthread_getspecific(synchronousContextFlagKey) != NULL;
+#endif
+}
+
+static void TWLSetSynchronousContextThreadLocalFlag(BOOL value) {
+    #if __has_feature(c_thread_local)
+        synchronousContextFlag = value;
+    #else
+        int err = pthread_setspecific(synchronousContextFlagKey, value ? kCFBooleanTrue : NULL);
+        assert(err == 0);
+    #endif
+}
+
+BOOL TWLExecuteBlockWithSynchronousContextThreadLocalFlag(BOOL value, NS_NOESCAPE dispatch_block_t _Nonnull block) {
+    BOOL previousValue = TWLGetSynchronousContextThreadLocalFlag();
+    TWLSetSynchronousContextThreadLocalFlag(value);
+    @try {
+        block();
+    } @finally {
+        TWLSetSynchronousContextThreadLocalFlag(previousValue);
     }
 }

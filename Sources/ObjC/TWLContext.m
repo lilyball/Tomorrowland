@@ -105,6 +105,10 @@
     }
 }
 
++ (BOOL)isExecutingNow {
+    return TWLGetSynchronousContextThreadLocalFlag();
+}
+
 + (TWLContext *)queue:(dispatch_queue_t)queue {
     return [[self alloc] initWithQueue:queue];
 }
@@ -169,7 +173,7 @@
 
 - (void)executeIsSynchronous:(BOOL)isSynchronous block:(dispatch_block_t)block {
     if (isSynchronous && _canRunNow) {
-        block();
+        TWLExecuteBlockWithSynchronousContextThreadLocalFlag(YES, block);
     } else if (_queue) {
         if (_isMain) {
             if (TWLGetMainContextThreadLocalFlag()) {
@@ -204,7 +208,12 @@
         [_operationQueue addOperationWithBlock:block];
     } else {
         // immediate
-        block();
+        if (isSynchronous) {
+            // Inherit the synchronous context flag from our current scope
+            block();
+        } else {
+            TWLExecuteBlockWithSynchronousContextThreadLocalFlag(NO, block);
+        }
     }
 }
 

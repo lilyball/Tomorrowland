@@ -403,6 +403,15 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Add `PromiseContext.isExecutingNow` (`TWLPromiseContext.isExecutingNow` in Obj-C) that returns `true` if accessed from within a callback registered
+  with `.nowOr(_:)` and executing synchronously, or `false` otherwise. If accessed from within a callback (or `Promise.init(on:_:)`) registered with
+  `.immediate` and running synchronously, it inherits the surrounding scope's `PromiseContext.isExecutingNow` flag. This is intended to allow
+  `Promise(on: .immediate, { … })` to query the surrounding scope's flag ([#53][]).
+
+[#53]: https://github.com/lilyball/Tomorrowland/issues/53 "Can we add something like PromiseContext.isExecutingNow?"
+
 ### v1.2.0
 
 - Add `PromiseContext.nowOr(context)` (`+[TWLContext nowOrContext:]` in Obj-C) that runs the callback synchronously when registered if the promise

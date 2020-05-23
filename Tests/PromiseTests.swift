@@ -1847,11 +1847,17 @@ final class PromiseNowOrTests: XCTestCase {
     func testPromiseInitUsingNowOr() {
         // Promise.init will treat it as now
         let expectation = XCTestExpectation()
+        XCTAssertFalse(PromiseContext.isExecutingNow)
         TestQueue.one.async {
+            XCTAssertFalse(PromiseContext.isExecutingNow)
             _ = Promise<Int,String>(on: .nowOr(.queue(TestQueue.two)), { (resolver) in
                 TestQueue.assert(on: .one)
+                XCTAssertTrue(PromiseContext.isExecutingNow)
                 resolver.fulfill(with: 42)
-            }).always(on: .immediate, { _ in expectation.fulfill() })
+            }).always(on: .immediate, { _ in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
+                expectation.fulfill()
+            })
         }
         wait(for: [expectation], timeout: 1)
     }
@@ -1861,10 +1867,15 @@ final class PromiseNowOrTests: XCTestCase {
         let expectation = XCTestExpectation()
         struct DummyError: Error {}
         TestQueue.one.async {
+            XCTAssertFalse(PromiseContext.isExecutingNow)
             _ = Promise<Int,Error>(on: .nowOr(.queue(TestQueue.two)), { (resolver) in
+                XCTAssertTrue(PromiseContext.isExecutingNow)
                 TestQueue.assert(on: .one)
                 throw DummyError()
-            }).always(on: .immediate, { _ in expectation.fulfill() })
+            }).always(on: .immediate, { _ in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
+                expectation.fulfill()
+            })
         }
         wait(for: [expectation], timeout: 1)
     }
@@ -1874,7 +1885,9 @@ final class PromiseNowOrTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(on: .queue(TestQueue.one), { (resolver) in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 resolver.onRequestCancel(on: .nowOr(.queue(TestQueue.two))) { _ in
+                    XCTAssertFalse(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .two)
                     resolver.cancel() // capture outer resolver
                 }
@@ -1891,7 +1904,9 @@ final class PromiseNowOrTests: XCTestCase {
             let expectation = XCTestExpectation()
             let promise = Promise<Int,String>(on: .queue(TestQueue.one), { (resolver) in
                 resolver.cancel()
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 resolver.onRequestCancel(on: .nowOr(.queue(TestQueue.two))) { _ in
+                    XCTAssertTrue(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .one)
                     resolver.cancel() // capture outer resolver
                     expectation.fulfill()
@@ -1907,9 +1922,11 @@ final class PromiseNowOrTests: XCTestCase {
         do {
             let sema = DispatchSemaphore(value: 0)
             let promise = Promise<Int,String>(on: .queue(TestQueue.one), { (resolver) in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 sema.wait()
                 resolver.fulfill(with: 42)
             }).then(on: .nowOr(.queue(TestQueue.two)), { (_) in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 TestQueue.assert(on: .two)
             })
             let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
@@ -1921,7 +1938,9 @@ final class PromiseNowOrTests: XCTestCase {
         do {
             let expectation = XCTestExpectation()
             TestQueue.one.async {
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 let promise = Promise<Int,String>(fulfilled: 42).then(on: .nowOr(.queue(TestQueue.two)), { (_) in
+                    XCTAssertTrue(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .one)
                 })
                 expectation.fulfill(onSuccess: promise, expectedValue: 42)
@@ -1938,6 +1957,7 @@ final class PromiseNowOrTests: XCTestCase {
                 sema.wait()
                 resolver.fulfill(with: 42)
             }).map(on: .nowOr(.queue(TestQueue.two)), { (_) -> Int in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 TestQueue.assert(on: .two)
                 return 1
             })
@@ -1951,6 +1971,7 @@ final class PromiseNowOrTests: XCTestCase {
             let expectation = XCTestExpectation()
             TestQueue.one.async {
                 let promise = Promise<Int,String>(fulfilled: 42).map(on: .nowOr(.queue(TestQueue.two)), { (_) -> Int in
+                    XCTAssertTrue(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .one)
                     return 1
                 })
@@ -1966,11 +1987,13 @@ final class PromiseNowOrTests: XCTestCase {
         let expectation = XCTestExpectation()
         TestQueue.one.async {
             resolver.onRequestCancel(on: .nowOr(.queue(TestQueue.two))) { (_) in
+                XCTAssertFalse(PromiseContext.isExecutingNow)
                 TestQueue.assert(on: .two)
                 resolver.cancel() // capture resolver
                 expectation.fulfill()
             }
             parentPromise.always(on: .nowOr(.queue(TestQueue.two))) { (_) in
+                XCTAssertTrue(PromiseContext.isExecutingNow)
                 TestQueue.assert(on: .one) // This runs now
                 promise.requestCancel()
             }
@@ -1987,6 +2010,7 @@ final class PromiseNowOrTests: XCTestCase {
             let expectation = XCTestExpectation()
             TestQueue.one.async {
                 _ = promise.then(on: .nowOr(.queue(TestQueue.two))) { (_) in
+                    XCTAssertFalse(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .two)
                     expectation.fulfill()
                 }
@@ -2002,16 +2026,54 @@ final class PromiseNowOrTests: XCTestCase {
             let expectation = XCTestExpectation()
             TestQueue.one.async {
                 _ = promise.then(on: .nowOr(.queue(TestQueue.two))) { (_) in
+                    XCTAssertFalse(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .two)
                     expectation.fulfill()
                 }
                 parentPromise.always(on: .nowOr(.queue(TestQueue.two))) { (result) in
+                    XCTAssertTrue(PromiseContext.isExecutingNow)
                     TestQueue.assert(on: .one) // This runs now
                     resolver.resolve(with: result)
                 }
             }
             wait(for: [expectation], timeout: 1)
         }
+    }
+    
+    func testImmediateNestedInNowOr() {
+        _ = Promise<Int,String>(on: .immediate, { (resolver) in
+            XCTAssertFalse(PromiseContext.isExecutingNow)
+        })
+        let expectation = XCTestExpectation()
+        _ = Promise<Int,String>(on: .nowOr(.default), { (resolver) in
+            XCTAssertTrue(PromiseContext.isExecutingNow)
+            _ = Promise<Int,String>(on: .immediate, { (resolver) in
+                // We're nested in a .nowOr so we inherit its flag
+                XCTAssertTrue(PromiseContext.isExecutingNow)
+            })
+            // Also test a chained callback
+            _ = Promise<Int,String>(fulfilled: 42).then(on: .immediate, { (_) in
+                XCTAssertTrue(PromiseContext.isExecutingNow)
+            })
+            expectation.fulfill() // just in case
+        })
+        wait(for: [expectation], timeout: 0)
+    }
+    
+    func testImmediateChainedFromNowOr() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        let expectation = XCTestExpectation(on: .immediate, onSuccess: promise) { (_) in
+            XCTAssertFalse(PromiseContext.isExecutingNow)
+        }
+        let expectation2 = XCTestExpectation()
+        Promise<Int,String>(fulfilled: 42).always(on: .nowOr(.default)) { (result) in
+            XCTAssertTrue(PromiseContext.isExecutingNow)
+            resolver.resolve(with: result)
+            self.wait(for: [expectation], timeout: 0)
+            XCTAssertTrue(PromiseContext.isExecutingNow)
+            expectation2.fulfill()
+        }
+        wait(for: [expectation2], timeout: 0) // Just in case
     }
 }
 
