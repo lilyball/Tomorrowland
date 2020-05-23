@@ -338,6 +338,37 @@ func loadResource(at url: URL) {
 }
 ```
 
+### The special `.nowOr(_:)` context
+
+There is a special context `PromiseContext.nowOr(_:)` that behaves a bit differently than other contexts. This context is special in that its callback executes
+differently depending on whether the promise it's being registered on has already resolved by the time the callback is registered. If the promise has already
+resolved then `.nowOr(context)` behaves like `.immediate`, otherwise it behaves like the wrapped `context`. This context is intended to be used to replace
+code that would otherwise check if the `promise.result` is non-`nil` prior to registering a callback.
+
+If this context is used in `Promise.init(on:_:)` it always behaves like `.immediate`, and if it's used in `DelayedPromise.init(on:_:)` it always behaves
+like the wrapped context.
+
+There is a property `PromiseContext.isExecutingNow` that can be accessed from within a callback registered with `.nowOr(_:)` to determine if the callback
+is executing synchronously or asynchronously. When accessed from any other context it returns `false`. When registering a callback with `.immediate` from
+within a callback where `PromiseContext.isExecutingNow` is `true`, the nested callback will inherit the `PromiseContext.isExecutingNow` flag if and only
+if the nested callback is also executing synchronously. This is a bit subtle but is intended to allow `Promise(on: .immediate, { … })` to inherit the flag from
+its surrounding scope.
+
+An example of how this context might be used is when populating an image view from a network request:
+
+```swift
+createNetworkRequestAsPromise()
+    .then(on: .nowOr(.main), { [weak imageView] (image) in
+        guard let imageView = imageView else { return }
+        let duration: TimeInterval = PromiseContext.isExecutingNow
+            ? 0 // no transition if we're synchronous
+            : 0.25
+        UIView.transition(with: imageView, duration: duration, options: .transitionCrossDissolve, animations: {
+            imageView.image = image
+        })
+    })
+```
+
 ### Promise Helpers
 
 There are a few helper functions that can be used to deal with multiple promises.
