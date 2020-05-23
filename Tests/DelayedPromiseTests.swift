@@ -99,6 +99,22 @@ final class DelayedPromiseTests: XCTestCase {
         _ = dp.promise
         wait(for: [expectation], timeout: 1)
     }
+    
+    func testDelayedPromiseUsingNowOrAccessedOnNowOr() {
+        // .nowOr shouldn't run now even if the promise is accessed from a .nowOr context
+        let expectation = XCTestExpectation()
+        let dp = DelayedPromise<Int,String>(on: .nowOr(.queue(TestQueue.two)), { (resolver) in
+            TestQueue.assert(on: .two)
+            expectation.fulfill()
+        })
+        TestQueue.one.async {
+            _ = Promise<Int,String>(fulfilled: 42).then(on: .nowOr(.queue(TestQueue.two)), { (_) in
+                TestQueue.assert(on: .one) // This runs now
+                _ = dp.promise
+            })
+        }
+        self.wait(for: [expectation], timeout: 1)
+    }
 }
 
 private class DropSpy {

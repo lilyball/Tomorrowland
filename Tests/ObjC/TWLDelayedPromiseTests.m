@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
+#import "XCTestCase+Helpers.h"
 @import Tomorrowland;
 
 @interface TWLDelayedPromiseTests : XCTestCase
@@ -79,6 +80,33 @@
     (void)dp.promise;
     [self waitForExpectations:@[dropExpectation] timeout:1];
     (void)dp;
+}
+
+- (void)testDelayedPromiseUsingNowOrContext {
+    // +nowOrContext: doesn't ever run now when used with TWLDelayedPromise
+    __auto_type expectation = [XCTestExpectation new];
+    __auto_type dp = [TWLDelayedPromise<NSNumber*,NSString*> newOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        AssertOnTestQueue(2);
+        [expectation fulfill];
+    }];
+    (void)dp.promise;
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testDelayedPromiseUsingNowOrContextAccessedOnNowOrContext {
+    // +nowOrContext: shouldn't run now even if the promise is accessed from a +nowOrContext: context
+    __auto_type expectation = [XCTestExpectation new];
+    __auto_type dp = [TWLDelayedPromise<NSNumber*,NSString*> newOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        AssertOnTestQueue(2);
+        [expectation fulfill];
+    }];
+    dispatch_async(TestQueue.one, ^{
+        [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
+            AssertOnTestQueue(1); // This runs now
+            (void)dp.promise;
+        }];
+    });
+    [self waitForExpectations:@[expectation] timeout:1];
 }
 
 @end
