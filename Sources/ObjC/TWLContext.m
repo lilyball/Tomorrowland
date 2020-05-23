@@ -224,20 +224,22 @@
     if (![object isKindOfClass:[TWLContext class]]) return NO;
     TWLContext *other = object;
     return (_queue == other->_queue
-            && _operationQueue == other->_operationQueue);
+            && _operationQueue == other->_operationQueue
+            && _canRunNow == other->_canRunNow);
 }
 
 - (NSUInteger)hash {
-    return 17 ^ _queue.hash ^ _operationQueue.hash;
+    return 17 ^ _queue.hash ^ _operationQueue.hash ^ (NSUInteger)_canRunNow;
 }
 
 - (NSString *)description {
+    NSString *nowOr = _canRunNow ? @"now or " : @"";
     if (_queue) {
-        return [NSString stringWithFormat:@"<%@: %p queue=%@>", NSStringFromClass([self class]), self, _queue];
+        return [NSString stringWithFormat:@"<%@: %p %@queue=%@>", NSStringFromClass([self class]), self, nowOr, _queue];
     } else if (_operationQueue) {
-        return [NSString stringWithFormat:@"<%@: %p queue=%@>", NSStringFromClass([self class]), self, _operationQueue];
+        return [NSString stringWithFormat:@"<%@: %p %@queue=%@>", NSStringFromClass([self class]), self, nowOr, _operationQueue];
     } else {
-        return [NSString stringWithFormat:@"<%@: %p immediate>", NSStringFromClass([self class]), self];
+        return [NSString stringWithFormat:@"<%@: %p %@immediate>", NSStringFromClass([self class]), self, nowOr];
     }
 }
 
