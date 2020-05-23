@@ -92,8 +92,8 @@ final class DelayedPromiseTests: XCTestCase {
     func testDelayedPromiseUsingNowOr() {
         // .nowOr doesn't ever run now when used with DelayedPromise
         let expectation = XCTestExpectation()
-        let dp = DelayedPromise<Int,String>(on: .nowOr(.utility), { [thread=Thread.current] (resolver) in
-            XCTAssertNotEqual(Thread.current, thread)
+        let dp = DelayedPromise<Int,String>(on: .nowOr(.queue(TestQueue.two)), { (resolver) in
+            TestQueue.assert(on: .two)
             expectation.fulfill()
         })
         _ = dp.promise

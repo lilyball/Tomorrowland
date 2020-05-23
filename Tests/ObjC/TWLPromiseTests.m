@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
+#import "XCTestCase+Helpers.h"
 #import "TWLDeallocSpy.h"
 @import Tomorrowland;
 
@@ -1470,27 +1471,14 @@
 @interface TWLPromiseNowOrContextTests : XCTestCase
 @end
 
-@implementation TWLPromiseNowOrContextTests {
-    dispatch_queue_t _queueOne;
-    dispatch_queue_t _queueTwo;
-}
-
-- (void)setUp {
-    [super setUp];
-    _queueOne = dispatch_queue_create("test queue 1", DISPATCH_QUEUE_SERIAL);
-    _queueTwo = dispatch_queue_create("test queue 2", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_set_specific(_queueOne, (__bridge void *)self, (void *)(intptr_t)1, NULL);
-    dispatch_queue_set_specific(_queueTwo, (__bridge void *)self, (void *)(intptr_t)2, NULL);
-}
-
-#define AssertOnQueue(num) XCTAssertEqual((intptr_t)dispatch_get_specific((__bridge void *)self), num, @"current queue")
+@implementation TWLPromiseNowOrContextTests
 
 - (void)testPromiseInitUsingNowOrContext {
     // +[TWLPromise new…] will treat it as now
     __auto_type expectation = [XCTestExpectation new];
-    dispatch_sync(_queueOne, ^{
-        [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-            AssertOnQueue(1);
+    dispatch_sync(TestQueue.one, ^{
+        [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            AssertOnTestQueue(1);
         }] inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
             [expectation fulfill];
         }];
@@ -1502,9 +1490,9 @@
     // Not yet cancelled
     {
         __auto_type sema = dispatch_semaphore_create(0);
-        __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:_queueOne] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-            [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:self->_queueTwo]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
-                AssertOnQueue(2);
+        __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:TestQueue.one] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+                AssertOnTestQueue(2);
                 [resolver cancel]; // capture outer resolver here
             }];
             dispatch_semaphore_signal(sema);
@@ -1518,10 +1506,10 @@
     // Already cancelled
     {
         __auto_type expectation = [XCTestExpectation new];
-        __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:_queueOne] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        __auto_type promise = [TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:TestQueue.one] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
             [resolver cancel];
-            [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:self->_queueTwo]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
-                AssertOnQueue(1);
+            [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+                AssertOnTestQueue(1);
                 [resolver cancel]; // capture outer resolver here
                 [expectation fulfill];
             }];
@@ -1535,11 +1523,11 @@
     // Not yet resolved
     {
         __auto_type sema = dispatch_semaphore_create(0);
-        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:_queueOne] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:TestQueue.one] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
             [resolver fulfillWithValue:@42];
-        }] thenOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(NSNumber * _Nonnull value) {
-            AssertOnQueue(2);
+        }] thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
+            AssertOnTestQueue(2);
         }];
         __auto_type expectation = TWLExpectationSuccess(promise);
         dispatch_semaphore_signal(sema);
@@ -1549,9 +1537,9 @@
     // Already resolved
     {
         __block TWLPromise<NSNumber*,NSString*> *promise;
-        dispatch_sync(_queueOne, ^{
-            promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] thenOnContext:[TWLContext nowOrContext:[TWLContext queue:self->_queueTwo]] handler:^(NSNumber * _Nonnull value) {
-                AssertOnQueue(1);
+        dispatch_sync(TestQueue.one, ^{
+            promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
+                AssertOnTestQueue(1);
             }];
         });
         __auto_type expectation = TWLExpectationSuccess(promise);
@@ -1563,11 +1551,11 @@
     // Not yet resolved
     {
         __auto_type sema = dispatch_semaphore_create(0);
-        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:_queueOne] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext queue:TestQueue.one] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
             [resolver fulfillWithValue:@42];
-        }] mapOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^id _Nonnull(NSNumber * _Nonnull value) {
-            AssertOnQueue(2);
+        }] mapOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^id _Nonnull(NSNumber * _Nonnull value) {
+            AssertOnTestQueue(2);
             return @1;
         }];
         __auto_type expectation = TWLExpectationSuccessWithValue(promise, @1);
@@ -1578,9 +1566,9 @@
     // Already resolved
     {
         __block TWLPromise<NSNumber*,NSString*> *promise;
-        dispatch_sync(_queueOne, ^{
-            promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:[TWLContext nowOrContext:[TWLContext queue:self->_queueTwo]] handler:^id _Nonnull(NSNumber * _Nonnull value) {
-                AssertOnQueue(1);
+        dispatch_sync(TestQueue.one, ^{
+            promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^id _Nonnull(NSNumber * _Nonnull value) {
+                AssertOnTestQueue(1);
                 return @1;
             }];
         });
@@ -1594,14 +1582,14 @@
     __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
     __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
     __auto_type expectation = [XCTestExpectation new];
-    dispatch_sync(_queueOne, ^{
-        [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
-            AssertOnQueue(2);
+    dispatch_sync(TestQueue.one, ^{
+        [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
+            AssertOnTestQueue(2);
             [resolver cancel]; // capture resolver
             [expectation fulfill];
         }];
-        [parentPromise inspectOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
-            AssertOnQueue(1); // This runs now
+        [parentPromise inspectOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+            AssertOnTestQueue(1); // This runs now
             [promise requestCancel];
         }];
     });
@@ -1616,9 +1604,9 @@
         __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
         __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
         __auto_type expectation = [XCTestExpectation new];
-        dispatch_sync(_queueOne, ^{
-            [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(NSNumber * _Nonnull value) {
-                AssertOnQueue(2);
+        dispatch_sync(TestQueue.one, ^{
+            [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
+                AssertOnTestQueue(2);
                 [expectation fulfill];
             }];
             [resolver resolveWithPromise:parentPromise];
@@ -1632,21 +1620,19 @@
         __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
         __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
         __auto_type expectation = [XCTestExpectation new];
-        dispatch_sync(_queueOne, ^{
-            [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(NSNumber * _Nonnull value) {
-                AssertOnQueue(2);
+        dispatch_sync(TestQueue.one, ^{
+            [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
+                AssertOnTestQueue(2);
                 [expectation fulfill];
             }];
-            [parentPromise inspectOnContext:[TWLContext nowOrContext:[TWLContext queue:_queueTwo]] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
-                AssertOnQueue(1); // This runs now
+            [parentPromise inspectOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
+                AssertOnTestQueue(1); // This runs now
                 [resolver resolveWithValue:value error:error];
             }];
         });
         [self waitForExpectations:@[expectation] timeout:1];
     }
 }
-
-#undef AssertOnQueue
 
 @end
 
