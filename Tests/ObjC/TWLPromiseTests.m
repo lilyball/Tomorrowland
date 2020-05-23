@@ -1476,7 +1476,7 @@
 - (void)testPromiseInitUsingNowOrContext {
     // +[TWLPromise new…] will treat it as now
     __auto_type expectation = [XCTestExpectation new];
-    dispatch_sync(TestQueue.one, ^{
+    dispatch_async(TestQueue.one, ^{
         [[TWLPromise<NSNumber*,NSString*> newOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
             AssertOnTestQueue(1);
         }] inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
@@ -1582,7 +1582,7 @@
     __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
     __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
     __auto_type expectation = [XCTestExpectation new];
-    dispatch_sync(TestQueue.one, ^{
+    dispatch_async(TestQueue.one, ^{
         [resolver whenCancelRequestedOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull innerResolver) {
             AssertOnTestQueue(2);
             [resolver cancel]; // capture resolver
@@ -1604,7 +1604,7 @@
         __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
         __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
         __auto_type expectation = [XCTestExpectation new];
-        dispatch_sync(TestQueue.one, ^{
+        dispatch_async(TestQueue.one, ^{
             [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
                 AssertOnTestQueue(2);
                 [expectation fulfill];
@@ -1620,7 +1620,7 @@
         __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
         __auto_type parentPromise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
         __auto_type expectation = [XCTestExpectation new];
-        dispatch_sync(TestQueue.one, ^{
+        dispatch_async(TestQueue.one, ^{
             [promise thenOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.two]] handler:^(NSNumber * _Nonnull value) {
                 AssertOnTestQueue(2);
                 [expectation fulfill];
