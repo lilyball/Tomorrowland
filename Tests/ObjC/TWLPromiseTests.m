@@ -165,7 +165,7 @@
 }
 
 - (void)testThen {
-    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"catch"];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"then handler invoked"];
     [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] thenOnContext:TWLContext.utility handler:^(NSNumber * _Nonnull value) {
         XCTAssertEqualObjects(value, @42);
         [expectation fulfill];
