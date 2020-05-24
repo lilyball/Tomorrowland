@@ -248,7 +248,11 @@ extension Promise where Error == Swift.Error {
     /// will be rejected with the same error.
     ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
-    ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
+    ///   `.nowOr(.auto)`, which evaluates to `.nowOr(.main)` when invoked on the main thread,
+    ///   otherwise `.nowOr(.default)`. The usage of `.nowOr` here means that if the receiver has
+    ///   already been resolved when this method is called, the returned promise will likewise
+    ///   already be resolved. If the receiver has not already resolved then this behaves the same
+    ///   as passing `.auto`.
     ///
     ///   If the promise times out, the returned promise will be rejected using the same context. In
     ///   this event, `.immediate` is treated the same as `.auto`. If provided as `.operationQueue`
@@ -258,7 +262,7 @@ extension Promise where Error == Swift.Error {
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
     /// - Returns: A new `Promise`.
-    public func timeout(on context: PromiseContext = .auto, delay: TimeInterval) -> Promise<Value,Swift.Error> {
+    public func timeout(on context: PromiseContext = .nowOr(.auto), delay: TimeInterval) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let propagateCancelBlock = TWLOneshotBlock(block: { [weak _box] in
             _box?.propagateCancel()
