@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v1.2.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -434,7 +434,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v1.3.0
 
 - Add `PromiseContext.isExecutingNow` (`TWLPromiseContext.isExecutingNow` in Obj-C) that returns `true` if accessed from within a callback registered
   with `.nowOr(_:)` and executing synchronously, or `false` otherwise. If accessed from within a callback (or `Promise.init(on:_:)`) registered with
