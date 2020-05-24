@@ -453,6 +453,29 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
+    func testTimeoutUsingNowOr() {
+        // .nowOr is ignored with timeout
+        let queue = DispatchQueue(label: "test queue")
+        let key = DispatchSpecificKey<()>()
+        queue.setSpecific(key: key, value: ())
+        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
+                resolver.fulfill(with: 42)
+            }
+        }).timeout(on: .nowOr(.queue(queue)), delay: 0.01)
+        let expectation = XCTestExpectation(on: .immediate, onError: promise) { (_) in
+            XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "timeout did not occur on the expected queue")
+        }
+        wait(for: [expectation], timeout: 0.5)
+    }
+    
+    func testTimeoutAlreadyResolvedWithDefaultContext() {
+        // timeout on an already-resolved promise when using the default context should return an
+        // already-resolved promise.
+        let promise = Promise<Int,String>(fulfilled: 42).timeout(delay: 0.05)
+        XCTAssertEqual(promise.result, PromiseResult.value(42))
+    }
+    
     // MARK: Error variant
     
     func testErrorTimeout() {
@@ -638,27 +661,32 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation], timeout: 0.5)
     }
     
-    func testTimeoutUsingNowOr() {
+    func testErrorTimeoutUsingNowOr() {
         // .nowOr is ignored with timeout
         let queue = DispatchQueue(label: "test queue")
         let key = DispatchSpecificKey<()>()
         queue.setSpecific(key: key, value: ())
-        let promise = Promise<Int,String>(on: .immediate, { (resolver) in
+        let promise = Promise<Int,Error>(on: .immediate, { (resolver) in
             DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.05) {
                 resolver.fulfill(with: 42)
             }
         }).timeout(on: .nowOr(.queue(queue)), delay: 0.01)
+        let _: Promise<Int,Error> = promise // type assertion
         let expectation = XCTestExpectation(on: .immediate, onError: promise) { (_) in
             XCTAssertNotNil(DispatchQueue.getSpecific(key: key), "timeout did not occur on the expected queue")
         }
         wait(for: [expectation], timeout: 0.5)
     }
     
-    func testTimeoutAlreadyResolvedWithDefaultContext() {
+    func testErrorTimeoutAlreadyResolvedWithDefaultContext() {
         // timeout on an already-resolved promise when using the default context should return an
         // already-resolved promise.
-        let promise = Promise<Int,String>(fulfilled: 42).timeout(delay: 0.05)
-        XCTAssertEqual(promise.result, PromiseResult.value(42))
+        let promise = Promise<Int,Error>(fulfilled: 42).timeout(delay: 0.05)
+        let _: Promise<Int,Error> = promise // type assertion
+        switch promise.result {
+        case .value(let value): XCTAssertEqual(value, 42)
+        case let result: XCTFail("Expected promise success, got \(result as Any)")
+        }
     }
     
     // MARK: -
