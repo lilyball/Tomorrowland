@@ -398,6 +398,30 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation, cancelExpectation], timeout: 1)
     }
     
+    func testTimeoutPropagateCancelZeroDelay() {
+        // Timeouts with zero delay still need to propagate cancellation when the context isn't
+        // .immediate or .nowOr
+        let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+        
+        let expectation = XCTestExpectation()
+        TestQueue.one.async {
+            let origPromise = Promise<Int,String>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            })
+            let promise = origPromise.timeout(on: .queue(TestQueue.one), delay: 0)
+            promise.requestCancel()
+            XCTAssertNil(origPromise.result) // not yet cancelled
+            expectation.fulfill(onCancel: promise)
+        }
+        wait(for: [expectation, cancelExpectation], timeout: 1)
+    }
+    
     func testZeroDelayAlreadyResolved() {
         let promise = Promise<Int,String>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
         let expectation = XCTestExpectation(onSuccess: promise, expectedValue: 42)
@@ -474,6 +498,40 @@ final class UtilityTests: XCTestCase {
         // already-resolved promise.
         let promise = Promise<Int,String>(fulfilled: 42).timeout(delay: 0.05)
         XCTAssertEqual(promise.result, PromiseResult.value(42))
+    }
+    
+    func testTimeoutImmediateZeroDelayAlreadyResolved() {
+        let promise = Promise<Int,String>(fulfilled: 42).timeout(on: .immediate, delay: 0)
+        XCTAssertEqual(promise.result, .value(42))
+    }
+    
+    func testTimeoutImmediateZeroDelayNotYetResolved() {
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,String>(on: .default, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        }).timeout(on: .immediate, delay: 0)
+        sema.signal()
+        XCTAssertEqual(promise.result, .error(.timedOut))
+    }
+    
+    func testTimeoutNowOrZeroDelayAlreadyResolved() {
+        TestQueue.one.sync {
+            let promise = Promise<Int,String>(fulfilled: 42).timeout(on: .nowOr(.queue(TestQueue.one)), delay: 0)
+            XCTAssertEqual(promise.result, .value(42))
+        }
+    }
+    
+    func testTimeoutNowOrZeroDelayNotYetResolved() {
+        TestQueue.one.sync {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,String>(on: .default, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).timeout(on: .nowOr(.queue(TestQueue.one)), delay: 0)
+            sema.signal()
+            XCTAssertEqual(promise.result, .error(.timedOut))
+        }
     }
     
     // MARK: Error variant
@@ -601,6 +659,31 @@ final class UtilityTests: XCTestCase {
         wait(for: [expectation, cancelExpectation], timeout: 1)
     }
     
+    func testErrorTimeoutPropagateCancelZeroDelay() {
+        // Timeouts with zero delay still need to propagate cancellation when the context isn't
+        // .immediate or .nowOr
+        let cancelExpectation = XCTestExpectation(description: "promise cancelled")
+        
+        let expectation = XCTestExpectation()
+        TestQueue.one.async {
+            let origPromise = Promise<Int,Error>(on: .immediate, { (resolver) in
+                resolver.onRequestCancel(on: .immediate, { (resolver) in
+                    cancelExpectation.fulfill()
+                    resolver.cancel()
+                })
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2) {
+                    resolver.fulfill(with: 42)
+                }
+            })
+            let promise = origPromise.timeout(on: .queue(TestQueue.one), delay: 0)
+            let _: Promise<Int,Error> = promise // type assertion
+            promise.requestCancel()
+            XCTAssertNil(origPromise.result) // not yet cancelled
+            expectation.fulfill(onCancel: promise)
+        }
+        wait(for: [expectation, cancelExpectation], timeout: 1)
+    }
+    
     func testErrorZeroDelayAlreadyResolved() {
         let promise = Promise<Int,Error>.init(fulfilled: 42).timeout(on: .utility, delay: 0)
         let _: Promise<Int,Error> = promise // type assertion
@@ -686,6 +769,56 @@ final class UtilityTests: XCTestCase {
         switch promise.result {
         case .value(let value): XCTAssertEqual(value, 42)
         case let result: XCTFail("Expected promise success, got \(result as Any)")
+        }
+    }
+    
+    func testErrorTimeoutImmediateZeroDelayAlreadyResolved() {
+        let promise = Promise<Int,Error>(fulfilled: 42).timeout(on: .immediate, delay: 0)
+        let _: Promise<Int,Error> = promise // type assertion
+        switch promise.result {
+        case .value(let value): XCTAssertEqual(value, 42)
+        case let result: XCTFail("Expected success, got \(result as Any)")
+        }
+    }
+    
+    func testErrorTimeoutImmediateZeroDelayNotYetResolved() {
+        let sema = DispatchSemaphore(value: 0)
+        let promise = Promise<Int,Error>(on: .default, { (resolver) in
+            sema.wait()
+            resolver.fulfill(with: 42)
+        }).timeout(on: .immediate, delay: 0)
+        let _: Promise<Int,Error> = promise // type assertion
+        sema.signal()
+        switch promise.result {
+        case .error(PromiseTimeoutError<Error>.timedOut): break
+        case let result: XCTFail("Expected PromiseTimeoutError.timedOut, got \(result as Any)")
+        }
+    }
+    
+    func testErrorTimeoutNowOrZeroDelayAlreadyResolved() {
+        TestQueue.one.sync {
+            let promise = Promise<Int,Error>(fulfilled: 42).timeout(on: .nowOr(.queue(TestQueue.one)), delay: 0)
+            let _: Promise<Int,Error> = promise // type assertion
+            switch promise.result {
+            case .value(let value): XCTAssertEqual(value, 42)
+            case let result: XCTFail("Expected success, got \(result as Any)")
+            }
+        }
+    }
+    
+    func testErrorTimeoutNowOrZeroDelayNotYetResolved() {
+        TestQueue.one.sync {
+            let sema = DispatchSemaphore(value: 0)
+            let promise = Promise<Int,Error>(on: .default, { (resolver) in
+                sema.wait()
+                resolver.fulfill(with: 42)
+            }).timeout(on: .nowOr(.queue(TestQueue.one)), delay: 0)
+            let _: Promise<Int,Error> = promise // type assertion
+            sema.signal()
+            switch promise.result {
+            case .error(PromiseTimeoutError<Error>.timedOut): break
+            case let result: XCTFail("Expected PromiseTimeoutError.timedOut, got \(result as Any)")
+            }
         }
     }
     

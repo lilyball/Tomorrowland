@@ -14,6 +14,7 @@
 
 #import <XCTest/XCTest.h>
 #import "XCTestCase+TWLPromise.h"
+#import "XCTestCase+Helpers.h"
 #include <mach/mach_time.h>
 @import Tomorrowland;
 
@@ -303,6 +304,30 @@
     [self waitForExpectations:@[expectation, cancelExpectation] timeout:1];
 }
 
+- (void)testTimeoutPropagateCancelZeroDelay {
+    // Timeouts with zero delay still need to propagate cancellation when the context isn't
+    // .immediate or +nowOrContext:
+    __auto_type cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"promise cancelled"];
+    
+    __block XCTestExpectation *expectation;
+    dispatch_sync(TestQueue.one, ^{
+        __auto_type origPromise = [TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.immediate withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+                [cancelExpectation fulfill];
+                [resolver cancel];
+            }];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
+                [resolver fulfillWithValue:@42];
+            });
+        }];
+        __auto_type promise = [origPromise timeoutOnContext:[TWLContext queue:TestQueue.one] withDelay:0];
+        [promise requestCancel];
+        XCTAssertFalse([origPromise getValue:NULL error:NULL]);
+        expectation = TWLExpectationCancel(promise);
+    });
+    [self waitForExpectations:@[expectation] timeout:1];
+}
+
 - (void)testZeroDelayAlreadyResolved {
     TWLPromise *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] timeoutOnContext:TWLContext.utility withDelay:0];
     XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @42);
@@ -375,6 +400,48 @@
     NSNumber *value;
     XCTAssertTrue([promise getValue:&value error:NULL]);
     XCTAssertEqualObjects(value, @42);
+}
+
+- (void)testTimeoutImmediateZeroDelayAlreadyResolved {
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] timeoutOnContext:TWLContext.immediate withDelay:0];
+    NSNumber *value;
+    XCTAssertTrue([promise getValue:&value error:NULL]);
+    XCTAssertEqualObjects(value, @42);
+}
+
+- (void)testTimeoutImmediateZeroDelayNotYetResolved {
+    __auto_type sema = dispatch_semaphore_create(0);
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        [resolver fulfillWithValue:@42];
+    }] timeoutOnContext:TWLContext.immediate withDelay:0];
+    dispatch_semaphore_signal(sema);
+    TWLTimeoutError<NSString*> *error;
+    XCTAssertTrue([promise getValue:NULL error:&error]);
+    XCTAssertEqualObjects(error, TWLTimeoutError.newTimedOut);
+}
+
+- (void)testTimeoutNowOrZeroDelayAlreadyResolved {
+    dispatch_sync(TestQueue.one, ^{
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] timeoutOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.one]] withDelay:0];
+        NSNumber *value;
+        XCTAssertTrue([promise getValue:&value error:NULL]);
+        XCTAssertEqualObjects(value, @42);
+    });
+}
+
+- (void)testTimeoutNowOrZeroDelayNotYetResolved {
+    dispatch_sync(TestQueue.one, ^{
+        __auto_type sema = dispatch_semaphore_create(0);
+        __auto_type promise = [[TWLPromise<NSNumber*,NSString*> newOnContext:TWLContext.defaultQoS withBlock:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            [resolver fulfillWithValue:@42];
+        }] timeoutOnContext:[TWLContext nowOrContext:[TWLContext queue:TestQueue.one]] withDelay:0];
+        dispatch_semaphore_signal(sema);
+        TWLTimeoutError<NSString*> *error;
+        XCTAssertTrue([promise getValue:NULL error:&error]);
+        XCTAssertEqualObjects(error, TWLTimeoutError.newTimedOut);
+    });
 }
 
 // MARK: -

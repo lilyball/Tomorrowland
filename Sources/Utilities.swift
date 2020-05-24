@@ -183,6 +183,11 @@ extension Promise {
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
     /// - Returns: A new `Promise`.
+    ///
+    /// - Note: If the `delay` is less than or equal to zero and the `context` is `.immediate` or
+    ///   `.nowOr(_:)` then the returned promise will already be resolved; if the receiver is
+    ///   already resolved the returned promise will adopt the same result, otherwise it will be
+    ///   rejected with `.timedOut`.
     public func timeout(on context: PromiseContext = .nowOr(.auto), delay: TimeInterval) -> Promise<Value,PromiseTimeoutError<Error>> {
         let (promise, resolver) = Promise<Value,PromiseTimeoutError<Error>>.makeWithResolver()
         let propagateCancelBlock = TWLOneshotBlock(block: { [weak _box] in
@@ -201,13 +206,17 @@ extension Promise {
             propagateCancelBlock.invoke()
         }
         let destination: TimeoutDestination
-        switch context.getDestination() {
-        case .queue(let queue): destination = .queue(queue)
-        case .operationQueue(let operationQueue):
-            let operation = TWLBlockOperation {
-                timeoutBlock.perform()
+        if delay <= 0 {
+            destination = .noDelay
+        } else {
+            switch context.getDestination() {
+            case .queue(let queue): destination = .queue(queue)
+            case .operationQueue(let operationQueue):
+                let operation = TWLBlockOperation {
+                    timeoutBlock.perform()
+                }
+                destination = .operationQueue(operation, operationQueue)
             }
-            destination = .operationQueue(operation, operationQueue)
         }
         _seal._enqueue { (result, isSynchronous) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
@@ -215,7 +224,7 @@ extension Promise {
                 resolver.resolve(with: result.mapError({ .rejected($0) }))
             }
             switch destination {
-            case .queue: break
+            case .noDelay, .queue: break
             case .operationQueue(let operation, _):
                 // Clean up the operation early
                 operation.cancel()
@@ -226,6 +235,10 @@ extension Promise {
             propagateCancelBlock.invoke()
         }
         switch destination {
+            case .noDelay:
+                context.execute(isSynchronous: true) {
+                    timeoutBlock.perform()
+                }
         case .queue(let queue):
             queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         case let .operationQueue(operation, queue):
@@ -262,6 +275,11 @@ extension Promise where Error == Swift.Error {
     ///   zero, the returned `Promise` will be timed out at once unless the receiver is already
     ///   resolved.
     /// - Returns: A new `Promise`.
+    ///
+    /// - Note: If the `delay` is less than or equal to zero and the `context` is `.immediate` or
+    ///   `.nowOr(_:)` then the returned promise will already be resolved; if the receiver is
+    ///   already resolved the returned promise will adopt the same result, otherwise it will be
+    ///   rejected with `.timedOut`.
     public func timeout(on context: PromiseContext = .nowOr(.auto), delay: TimeInterval) -> Promise<Value,Swift.Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let propagateCancelBlock = TWLOneshotBlock(block: { [weak _box] in
@@ -280,13 +298,17 @@ extension Promise where Error == Swift.Error {
             propagateCancelBlock.invoke()
         }
         let destination: TimeoutDestination
-        switch context.getDestination() {
-        case .queue(let queue): destination = .queue(queue)
-        case .operationQueue(let operationQueue):
-            let operation = TWLBlockOperation {
-                timeoutBlock.perform()
+        if delay <= 0 {
+            destination = .noDelay
+        } else {
+            switch context.getDestination() {
+            case .queue(let queue): destination = .queue(queue)
+            case .operationQueue(let operationQueue):
+                let operation = TWLBlockOperation {
+                    timeoutBlock.perform()
+                }
+                destination = .operationQueue(operation, operationQueue)
             }
-            destination = .operationQueue(operation, operationQueue)
         }
         _seal._enqueue { (result, isSynchronous) in
             timeoutBlock.cancel() // make sure we can't timeout merely because it raced our context switch
@@ -294,7 +316,7 @@ extension Promise where Error == Swift.Error {
                 resolver.resolve(with: result)
             }
             switch destination {
-            case .queue: break
+            case .noDelay, .queue: break
             case .operationQueue(let operation, _):
                 // Clean up the operation early
                 operation.cancel()
@@ -305,6 +327,10 @@ extension Promise where Error == Swift.Error {
             propagateCancelBlock.invoke()
         }
         switch destination {
+        case .noDelay:
+            context.execute(isSynchronous: true) {
+                timeoutBlock.perform()
+            }
         case .queue(let queue):
             queue.asyncAfter(deadline: .now() + delay, execute: timeoutBlock)
         case let .operationQueue(operation, queue):
@@ -398,6 +424,7 @@ extension PromiseTimeoutError: Hashable where Error: Hashable {
 // MARK: -
 
 private enum TimeoutDestination {
+    case noDelay
     case queue(DispatchQueue)
     case operationQueue(TWLBlockOperation, OperationQueue)
 }

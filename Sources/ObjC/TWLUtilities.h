@@ -223,6 +223,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// \param delay The delay before the returned promise times out. If less than or equal to zero, the
 /// returned promise will be timed out at once unless the receiver is already resolved.
 /// \returns A new <tt>TWLPromise</tt>.
+///
+/// \note If the \c delay is less than or equal to zero and the \c context is \c .immediate or \c
+/// +nowOrContext: then the returned promise will already be resolved; if the receiver is already
+/// resolved the returned promise will adopt the same result, otherwise it will be rejected with
+/// \c TWLTimeoutError where \c .timedOut is <tt>YES</tt>.
 - (TWLPromise<ValueType,TWLTimeoutError<ErrorType>*> *)timeoutWithDelay:(NSTimeInterval)delay TWL_WARN_UNUSED_RESULT;
 /// Returns a \c TWLPromise that is rejected with an error if the receiver does not resolve within
 /// the given interval.
@@ -241,6 +246,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// \param delay The delay before the returned promise times out. If less than or equal to zero, the
 /// returned promise will be timed out at once unless the receiver is already resolved.
 /// \returns A new <tt>TWLPromise</tt>.
+///
+/// \note If the \c delay is less than or equal to zero and the \c context is \c .immediate or \c
+/// +nowOrContext: then the returned promise will already be resolved; if the receiver is already
+/// resolved the returned promise will adopt the same result, otherwise it will be rejected with
+/// \c TWLTimeoutError where \c .timedOut is <tt>YES</tt>.
 - (TWLPromise<ValueType,TWLTimeoutError<ErrorType>*> *)timeoutOnContext:(TWLContext *)context withDelay:(NSTimeInterval)delay TWL_WARN_UNUSED_RESULT;
 
 @end

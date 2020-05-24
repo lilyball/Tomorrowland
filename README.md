@@ -442,8 +442,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   `Promise(on: .immediate, { … })` to query the surrounding scope's flag ([#53][]).
 - Add convenience methods to Obj-C for doing then+catch together, as this is a common pattern and chaining Obj-C methods is a little awkward ([#45][]).
 - Change `Promise.timeout`'s default context to `.nowOr(.auto)` for the `Error` overload as well.
+- Change the behavior of `Promise.timeout(on:delay:)` when the `delay` is less than or equal to zero, the `context` is `.immediate` or `.nowOr(_:)`, and the
+  upstream promise hasn't resolved yet. Previously the timeout would occur asynchronously and the upstream promise would get a chance to race the timeout. With
+  the new behavior the timeout occurs synchronously ([#49][]).
 
 [#45]: https://github.com/lilyball/Tomorrowland/issues/45 "Add convenience methods to Obj-C for then+catch"
+[#49]: https://github.com/lilyball/Tomorrowland/issues/49 "timeout should skip the timer if the delay is <= 0"
 [#53]: https://github.com/lilyball/Tomorrowland/issues/53 "Can we add something like PromiseContext.isExecutingNow?"
 
 ### v1.2.0

@@ -185,9 +185,11 @@ static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Non
     dispatch_queue_t queue;
     NSOperationQueue *operationQueue;
     TWLBlockOperation *operation;
-    [context getDestinationQueue:&queue operationQueue:&operationQueue];
-    if (operationQueue) {
-        operation = [TWLBlockOperation blockOperationWithBlock:timeoutBlock];
+    if (delay > 0) {
+        [context getDestinationQueue:&queue operationQueue:&operationQueue];
+        if (operationQueue) {
+            operation = [TWLBlockOperation blockOperationWithBlock:timeoutBlock];
+        }
     }
     [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
         dispatch_block_cancel(timeoutBlock);
@@ -205,11 +207,14 @@ static void resolveAfterDelay(TWLResolver * _Nonnull resolver, TWLContext * _Non
     }];
     if (queue) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), queue, timeoutBlock);
-    } else {
+    } else if (operationQueue) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * (NSTimeInterval)NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
             [operation markReady];
         });
         [operationQueue addOperation:operation];
+    } else {
+        // Delay must have been <= 0
+        [context executeIsSynchronous:YES block:timeoutBlock];
     }
     return promise;
 }
