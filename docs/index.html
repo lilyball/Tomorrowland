@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland 1.2.0 Docs</a> (100% documented)</p>
+        <p><a href="index.html">Tomorrowland 1.3.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,7 +115,7 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.2.0-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.3.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
@@ -412,6 +412,34 @@ example of this might look like:</p>
     <span class="k">return</span> <span class="n">promise</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">immediate</span><span class="p">,</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span> <span class="p">})</span>
 <span class="p">}</span>
 </code></pre>
+<h3 id='the-special-code-nowor-_-code-context' class='heading'>The special <code>.nowOr(_:)</code> context</h3>
+
+<p>There is a special context <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO5nowOryA2CcACmF">PromiseContext.nowOr(_:)</a></code> that behaves a bit differently than other contexts. This context is special in that its callback executes
+differently depending on whether the promise it&rsquo;s being registered on has already resolved by the time the callback is registered. If the promise has already
+resolved then <code>.nowOr(context)</code> behaves like <code>.immediate</code>, otherwise it behaves like the wrapped <code>context</code>. This context is intended to be used to replace
+code that would otherwise check if the <code>promise.result</code> is non-<code>nil</code> prior to registering a callback.</p>
+
+<p>If this context is used in <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code> it always behaves like <code>.immediate</code>, and if it&rsquo;s used in <code><a href="Structs/DelayedPromise.html#/s:12Tomorrowland14DelayedPromiseV2on_ACyxq_GAA0C7ContextO_yAA0C0V8ResolverVyxq__Gctcfc">DelayedPromise.init(on:_:)</a></code> it always behaves
+like the wrapped context.</p>
+
+<p>There is a property <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> that can be accessed from within a callback registered with <code>.nowOr(_:)</code> to determine if the callback
+is executing synchronously or asynchronously. When accessed from any other context it returns <code>false</code>. When registering a callback with <code>.immediate</code> from
+within a callback where <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> is <code>true</code>, the nested callback will inherit the <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag if and only
+if the nested callback is also executing synchronously. This is a bit subtle but is intended to allow <code>Promise(on: .immediate, { … })</code> to inherit the flag from
+its surrounding scope.</p>
+
+<p>An example of how this context might be used is when populating an image view from a network request:</p>
+<pre class="highlight swift"><code><span class="nf">createNetworkRequestAsPromise</span><span class="p">()</span>
+    <span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="nf">nowOr</span><span class="p">(</span><span class="o">.</span><span class="n">main</span><span class="p">),</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="n">imageView</span><span class="p">]</span> <span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="k">in</span>
+        <span class="k">guard</span> <span class="k">let</span> <span class="nv">imageView</span> <span class="o">=</span> <span class="n">imageView</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+        <span class="k">let</span> <span class="nv">duration</span><span class="p">:</span> <span class="kt">TimeInterval</span> <span class="o">=</span> <span class="kt">PromiseContext</span><span class="o">.</span><span class="n">isExecutingNow</span>
+            <span class="p">?</span> <span class="mi">0</span> <span class="c1">// no transition if we're synchronous</span>
+            <span class="p">:</span> <span class="mf">0.25</span>
+        <span class="kt">UIView</span><span class="o">.</span><span class="nf">transition</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">imageView</span><span class="p">,</span> <span class="nv">duration</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="o">.</span><span class="n">transitionCrossDissolve</span><span class="p">,</span> <span class="nv">animations</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">imageView</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+</code></pre>
 <h3 id='promise-helpers' class='heading'>Promise Helpers</h3>
 
 <p>There are a few helper functions that can be used to deal with multiple promises.</p>
@@ -469,6 +497,19 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-3-0' class='heading'>v1.3.0</h3>
+
+<ul>
+<li>Add <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> (<code>TWLPromiseContext.isExecutingNow</code> in Obj-C) that returns <code>true</code> if accessed from within a callback registered
+with <code>.nowOr(_:)</code> and executing synchronously, or <code>false</code> otherwise. If accessed from within a callback (or <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code>) registered with
+<code>.immediate</code> and running synchronously, it inherits the surrounding scope&rsquo;s <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag. This is intended to allow
+<code>Promise(on: .immediate, { … })</code> to query the surrounding scope&rsquo;s flag (<a href="https://github.com/lilyball/Tomorrowland/issues/53" title="Can we add something like PromiseContext.isExecutingNow?">#53</a>).</li>
+<li>Add convenience methods to Obj-C for doing then+catch together, as this is a common pattern and chaining Obj-C methods is a little awkward (<a href="https://github.com/lilyball/Tomorrowland/issues/45" title="Add convenience methods to Obj-C for then+catch">#45</a>).</li>
+<li>Change <code>Promise.timeout</code>&rsquo;s default context to <code>.nowOr(.auto)</code> for the <code>Error</code> overload as well.</li>
+<li>Change the behavior of <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> when the <code>delay</code> is less than or equal to zero, the <code>context</code> is <code>.immediate</code> or <code>.nowOr(_:)</code>, and the
+upstream promise hasn&rsquo;t resolved yet. Previously the timeout would occur asynchronously and the upstream promise would get a chance to race the timeout. With
+the new behavior the timeout occurs synchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/49" title="timeout should skip the timer if the delay is &lt;= 0">#49</a>).</li>
+</ul>
 <h3 id='v1-2-0' class='heading'>v1.2.0</h3>
 
 <ul>
@@ -652,7 +693,7 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-21)</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>

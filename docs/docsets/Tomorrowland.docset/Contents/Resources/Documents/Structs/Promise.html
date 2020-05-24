@@ -14,7 +14,7 @@
     <a title="Promise Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">Tomorrowland 1.2.0 Docs</a> (100% documented)</p>
+        <p><a href="../index.html">Tomorrowland 1.3.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -2677,6 +2677,14 @@ the receiver is rejected, the returned promise will be rejected with
   this event, <code>.immediate</code> is treated the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
   it enqueues an operation on the operation queue immediately that becomes ready when the
   promise times out.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>If the <code>delay</code> is less than or equal to zero and the <code>context</code> is <code>.immediate</code> or
+<code>.nowOr(_:)</code> then the returned promise will already be resolved; if the receiver is
+already resolved the returned promise will adopt the same result, otherwise it will be
+rejected with <code>.timedOut</code>.</p>
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -3314,13 +3322,21 @@ will be rejected with the same error.</p>
   this event, <code>.immediate</code> is treated the same as <code>.auto</code>. If provided as <code>.operationQueue</code>
   it enqueues an operation on the operation queue immediately that becomes ready when the
   promise times out.</p>
+<div class="aside aside-note">
+    <p class="aside-title">Note</p>
+    <p>If the <code>delay</code> is less than or equal to zero and the <code>context</code> is <code>.immediate</code> or
+<code>.nowOr(_:)</code> then the returned promise will already be resolved; if the receiver is
+already resolved the returned promise will adopt the same result, otherwise it will be
+rejected with <code>.timedOut</code>.</p>
+
+</div>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">timeout</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="n">auto</span><span class="p">,</span> <span class="nv">delay</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">timeout</span><span class="p">(</span><span class="n">on</span> <span class="nv">context</span><span class="p">:</span> <span class="kt"><a href="../Enums/PromiseContext.html">PromiseContext</a></span> <span class="o">=</span> <span class="o">.</span><span class="nf">nowOr</span><span class="p">(</span><span class="o">.</span><span class="n">auto</span><span class="p">),</span> <span class="nv">delay</span><span class="p">:</span> <span class="kt">TimeInterval</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Value</span><span class="p">,</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
@@ -3337,7 +3353,11 @@ will be rejected with the same error.</p>
                               <td>
                                 <div>
                                   <p>The context to invoke the callback on. If not provided, defaults to
-<code>.auto</code>, which evaluates to <code>.main</code> when invoked on the main thread, otherwise <code>.default</code>.</p>
+<code>.nowOr(.auto)</code>, which evaluates to <code>.nowOr(.main)</code> when invoked on the main thread,
+otherwise <code>.nowOr(.default)</code>. The usage of <code>.nowOr</code> here means that if the receiver has
+already been resolved when this method is called, the returned promise will likewise
+already be resolved. If the receiver has not already resolved then this behaves the same
+as passing <code>.auto</code>.</p>
                                 </div>
                               </td>
                             </tr>
@@ -3370,7 +3390,7 @@ resolved.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-21)</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-23)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
