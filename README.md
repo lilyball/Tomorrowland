@@ -434,6 +434,10 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
+### Development
+
+- Slightly optimized stack usage when chaining one promise to another.
+
 ### v1.3.0
 
 - Add `PromiseContext.isExecutingNow` (`TWLPromiseContext.isExecutingNow` in Obj-C) that returns `true` if accessed from within a callback registered

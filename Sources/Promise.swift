@@ -277,11 +277,7 @@ public struct Promise<Value,Error> {
         ///
         /// If the promise has already been resolved or cancelled, this does nothing.
         public func resolve(with result: PromiseResult<Value,Error>) {
-            switch result {
-            case .value(let value): fulfill(with: value)
-            case .error(let error): reject(with: error)
-            case .cancelled: cancel()
-            }
+            _box.resolveOrCancel(with: result)
         }
         
         /// Resolves the promise with another promise.
