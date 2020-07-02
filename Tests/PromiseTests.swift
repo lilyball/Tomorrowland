@@ -472,6 +472,75 @@ final class PromiseTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testExtremeChaining() {
+        // Piping one promise to another should support extreme recursion without blowing the stack.
+        
+        // We don't want to have to wait an excessive amount of time to run the test, so we'll do it
+        // inside a new thread with a small stack size.
+        let expectation = XCTestExpectation(description: "thread exited")
+        let thread = BlockThread {
+            defer { expectation.fulfill() }
+            
+            let count = 2000 // This is more than enough for the tiny stack
+            
+            // Test basic chaining
+            do {
+                var (promise, resolver) = Promise<Int,String>.makeWithResolver()
+                for _ in 0..<count {
+                    promise = promise.tap()
+                }
+                resolver.fulfill(with: 42)
+                XCTAssertEqual(promise.result, .value(42))
+            }
+            
+            // Test basic chaining with flatMap() too
+            do {
+                var (promise, resolver) = Promise<Int,String>.makeWithResolver()
+                for _ in 0..<count {
+                    promise = Promise(fulfilled: 42).flatMap(on: .immediate, { [promise] _ in
+                        return promise
+                    })
+                }
+                XCTAssertNil(promise.result)
+                resolver.fulfill(with: 42)
+                XCTAssertEqual(promise.result, .value(42))
+            }
+            
+            // Test chaining with other callbacks around the chain
+            do {
+                // Note: Using XCTestExpectation here makes the test rather slow so we'll assert by hand instead.
+                // Everything executes synchronously so we can just use a counter.
+                var idx = 0
+                func makeHandler(expected: Int, line: UInt = #line) -> (PromiseResult<Int,String>) -> Void {
+                    return { _ in
+                        XCTAssertEqual(idx, expected, "callback index", line: line)
+                        idx += 1
+                    }
+                }
+                var (promise, resolver) = Promise<Int,String>.makeWithResolver()
+                for i in 0..<count {
+                    // Each promise invokes callbacks in turn. So the one we attach before the chain
+                    // runs first. Then the chained promise resolves and invokes its callbacks
+                    // (recursing all the way to the tail promise), and then any callbacks we attach
+                    // after the chain will run in effectively reverse order.
+                    promise.always(on: .immediate, makeHandler(expected: i))
+                    let nextPromise = promise.tap()
+                    promise.always(on: .immediate, makeHandler(expected: count + (count - i)))
+                    promise = nextPromise
+                }
+                promise.always(on: .immediate, makeHandler(expected: count))
+                resolver.fulfill(with: 42)
+                XCTAssertEqual(idx, count * 2 + 1)
+            }
+        }
+        // stackSize has to be multiple of 4kB. Let's try 32kB
+        thread.stackSize = 32 * 1024
+        thread.qualityOfService = .userInitiated
+        thread.name = "\(#function)"
+        thread.start()
+        wait(for: [expectation], timeout: 30)
+    }
+    
     // MARK: -
     
     func testPropagatingCancellation() {

@@ -1081,9 +1081,7 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap(on:token:_:)`, `ignoringCancel()`
     public func tap() -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal._enqueue(willPropagateCancel: false) { (result, _) in
-            resolver.resolve(with: result)
-        }
+        _seal._enqueue(willPropagateCancel: false, box: resolver._box)
         return promise
     }
     
@@ -1149,9 +1147,7 @@ public struct Promise<Value,Error> {
     /// - Returns: A new promise that will resolve to the same value as the receiver.
     public func propagatingCancellation(on context: PromiseContext, cancelRequested: @escaping (_ promise: Promise<Value,Error>) -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
-        _seal._enqueue { (result, _) in
-            resolver.resolve(with: result)
-        }
+        _seal._enqueue(box: resolver._box)
         // Replicate the "oneshot" behavior from _seal.enqueue, as resolver.onRequestCancel does not have this same behavior.
         var callback = Optional.some(cancelRequested)
         let oneshot: () -> (Promise<Value,Error>) -> Void = {
@@ -1239,16 +1235,12 @@ public struct Promise<Value,Error> {
     /// - SeeAlso: `tap()`
     public func ignoringCancel() -> Promise<Value,Error> {
         let (promise, resolver) = Promise.makeWithResolver()
-        _seal._enqueue { (result, _) in
-            resolver.resolve(with: result)
-        }
+        _seal._enqueue(box: resolver._box)
         return promise
     }
     
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
-        _seal._enqueue { (result, _) in
-            resolver.resolve(with: result)
-        }
+        _seal._enqueue(box: resolver._box)
         resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
             cancellable.requestCancel()
         }
@@ -2159,7 +2151,12 @@ private class PromiseInvalidationTokenBox: TWLPromiseInvalidationTokenBox {
 internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
     struct CallbackNode: NodeProtocol {
         var next: UnsafeMutablePointer<CallbackNode>?
-        var callback: (PromiseResult<T,E>, _ isSynchronous: Bool) -> Void
+        var value: Value
+        
+        enum Value {
+            case callback((PromiseResult<T,E>, _ isSynchronous: Bool) -> Void)
+            case box(PromiseBox<T,E>)
+        }
     }
     
     struct RequestCancelNode: NodeProtocol {
@@ -2188,25 +2185,9 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
     }
     
     deinit {
-        if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
-            // If we actually have a callback list, we must not have been resolved, so inform our
-            // callbacks that we've cancelled.
-            // NB: No need to actually transition to the cancelled state first, if anyone still had
-            // a reference to us to look at that, we wouldn't be in deinit.
-            nodePtr = CallbackNode.reverseList(nodePtr)
-            defer { CallbackNode.destroyPointer(nodePtr) }
-            for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                nodePtr.pointee.callback(.cancelled, false)
-            }
-        }
-        if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
-            // NB: We can't fire these callbacks because they take a Resolver and we can't have them
-            // resurrecting ourselves. We could work around this, but the only reason to even have
-            // these callbacks at this point is if the promise handler drops the last reference to
-            // the resolver, and since that means it's a buggy implementation, we don't need to
-            // support it.
-            RequestCancelNode.destroyPointer(nodePtr)
-        }
+        // If we haven't been resolved yet, we should inform all our callbacks that we've cancelled.
+        // This will do nothing if we've already resolved.
+        resolveOrCancel(with: .cancelled)
         _value = nil // make sure this is destroyed after the fence
     }
     
@@ -2250,17 +2231,34 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
     ///
     /// If the promise has already been resolved or cancelled, this does nothing.
     func resolveOrCancel(with result: PromiseResult<T,E>) {
-        func handleCallbacks() {
+        guard var nodePtr = _resolveOrCancel(with: result) else { return }
+        nodePtr = CallbackNode.reverseList(nodePtr)
+        defer { CallbackNode.destroyPointer(nodePtr) }
+        
+        for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
+            switch nodePtr.pointee.value {
+            case .callback(let callback):
+                callback(result, false)
+            case .box(let box):
+                // Transition the nested box by hand and stitch its callbacks into ours
+                if var boxNodePtr = box._resolveOrCancel(with: result) {
+                    let tailPtr = boxNodePtr // this becomes the tail after we reverse it
+                    boxNodePtr = CallbackNode.reverseList(boxNodePtr)
+                    assert(tailPtr.pointee.next == nil)
+                    tailPtr.pointee.next = nodePtr.pointee.next
+                    nodePtr.pointee.next = boxNodePtr
+                    // nodePtr.next now points to the box's nodes, and chains back into the rest of our list
+                }
+            }
+        }
+    }
+    
+    private func _resolveOrCancel(with result: PromiseResult<T,E>) -> UnsafeMutablePointer<CallbackNode>? {
+        func swapCallbacks() -> UnsafeMutablePointer<CallbackNode>? {
             if let nodePtr = RequestCancelNode.castPointer(swapRequestCancelLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
                 RequestCancelNode.destroyPointer(nodePtr)
             }
-            if var nodePtr = CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil)) {
-                nodePtr = CallbackNode.reverseList(nodePtr)
-                defer { CallbackNode.destroyPointer(nodePtr) }
-                for nodePtr in sequence(first: nodePtr, next: { $0.pointee.next }) {
-                    nodePtr.pointee.callback(result, false)
-                }
-            }
+            return CallbackNode.castPointer(swapCallbackLinkedList(with: TWLLinkedListSwapFailed, linkBlock: nil))
         }
         let value: Value
         switch result {
@@ -2268,16 +2266,18 @@ internal class PromiseBox<T,E>: TWLPromiseBox, TWLCancellable {
         case .error(let err): value = .error(err)
         case .cancelled:
             if transitionState(to: .cancelled) {
-                handleCallbacks()
+                return swapCallbacks()
+            } else {
+                return nil
             }
-            return
         }
-        guard transitionState(to: .resolving) else { return }
+        guard transitionState(to: .resolving) else { return nil }
         _value = value
         if transitionState(to: .resolved) {
-            handleCallbacks()
+            return swapCallbacks()
         } else {
             assertionFailure("Couldn't transition PromiseBox to .resolved after transitioning to .resolving")
+            return nil
         }
     }
     
@@ -2408,6 +2408,20 @@ internal class PromiseSeal<T,E>: NSObject {
     /// - Important: This function should only be called if there's no user-supplied callback
     ///   involved that should be turned into a oneshot.
     func _enqueue(willPropagateCancel: Bool = true, callback: @escaping (_ value: PromiseResult<T,E>, _ isSynchronous: Bool) -> Void) {
+        _enqueue(willPropagateCancel: willPropagateCancel, value: .callback(callback))
+    }
+    
+    /// Enqueues another box onto the box's callback list.
+    ///
+    /// When the reciver is resolved, the given box will be resolved with the same value. This
+    /// should only be used when the `isSynchronous` flag doesn't matter.
+    ///
+    /// If the callback list has already been consumed, the box is resolved immediately.
+    func _enqueue(willPropagateCancel: Bool = true, box chainedBox: PromiseBox<T,E>) {
+        _enqueue(willPropagateCancel: willPropagateCancel, value: .box(chainedBox))
+    }
+    
+    private func _enqueue(willPropagateCancel: Bool, value: PromiseBox<T,E>.CallbackNode.Value) {
         if willPropagateCancel {
             // If the subsequent swap fails, that means we've already resolved (or started
             // resolving) the promise, so the observer count modification is harmless.
@@ -2415,7 +2429,7 @@ internal class PromiseSeal<T,E>: NSObject {
         }
         
         let nodePtr = UnsafeMutablePointer<PromiseBox<T,E>.CallbackNode>.allocate(capacity: 1)
-        nodePtr.initialize(to: .init(next: nil, callback: callback))
+        nodePtr.initialize(to: .init(next: nil, value: value))
         if box.swapCallbackLinkedList(with: UnsafeMutableRawPointer(nodePtr), linkBlock: { (nextPtr) in
             let next = nextPtr?.assumingMemoryBound(to: PromiseBox<T,E>.CallbackNode.self)
             nodePtr.pointee.next = next
@@ -2425,8 +2439,12 @@ internal class PromiseSeal<T,E>: NSObject {
             guard let result = box.result else {
                 fatalError("Callback list empty but state isn't actually resolved")
             }
-            callback(result, true)
+            switch value {
+            case .callback(let callback): callback(result, true)
+            case .box(let box): box.resolveOrCancel(with: result)
+            }
         }
+
     }
 }
 
