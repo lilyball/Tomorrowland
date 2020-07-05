@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)enqueueCallbackWithoutOneshot:(void (^)(ValueType _Nullable value, ErrorType _Nullable error, BOOL isSynchronous))callback
                   willPropagateCancel:(BOOL)willPropagateCancel;
+- (void)enqueueCallbackWithBox:(TWLObjCPromiseBox *)box willPropagateCancel:(BOOL)willPropagateCancel;
 @end
 
 @interface TWLResolver<ValueType,ErrorType> ()

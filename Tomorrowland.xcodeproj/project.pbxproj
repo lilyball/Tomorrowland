@@ -51,7 +51,7 @@
 		0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AFF27721FE0E4FC0006D95A /* TWLPromiseBox.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		0AFF27751FE0E4FC0006D95A /* TWLPromiseBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */; };
 		0AFF636820682659006BCA29 /* ObjCBridgingGenerics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */; };
-		A01C4C1B24AD65B4005C870A /* BlockThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01C4C1924AD6563005C870A /* BlockThread.swift */; };
+		A01C4C1E24AFFECF005C870A /* TWLBlockThread.m in Sources */ = {isa = PBXBuildFile; fileRef = A01C4C1D24AFFECF005C870A /* TWLBlockThread.m */; };
 		A04B87BA2479E7A9009282B6 /* TWLPromise+Convenience.h in Headers */ = {isa = PBXBuildFile; fileRef = A04B87B82479E7A9009282B6 /* TWLPromise+Convenience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A04B87BB2479E7A9009282B6 /* TWLPromise+Convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = A04B87B92479E7A9009282B6 /* TWLPromise+Convenience.m */; };
 		A04B87BD2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A04B87BC2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m */; };
@@ -132,7 +132,8 @@
 		0AFF27731FE0E4FC0006D95A /* TWLPromiseBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseBox.m; sourceTree = "<group>"; };
 		0AFF27761FE0E50C0006D95A /* tomorrowland.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = tomorrowland.modulemap; sourceTree = "<group>"; };
 		0AFF636720682659006BCA29 /* ObjCBridgingGenerics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCBridgingGenerics.swift; sourceTree = "<group>"; };
-		A01C4C1924AD6563005C870A /* BlockThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockThread.swift; sourceTree = "<group>"; };
+		A01C4C1C24AFFECF005C870A /* TWLBlockThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLBlockThread.h; sourceTree = "<group>"; };
+		A01C4C1D24AFFECF005C870A /* TWLBlockThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLBlockThread.m; sourceTree = "<group>"; };
 		A04B87B82479E7A9009282B6 /* TWLPromise+Convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TWLPromise+Convenience.h"; sourceTree = "<group>"; };
 		A04B87B92479E7A9009282B6 /* TWLPromise+Convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TWLPromise+Convenience.m"; sourceTree = "<group>"; };
 		A04B87BC2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TWLPromise+ConvenienceTests.m"; sourceTree = "<group>"; };
@@ -182,7 +183,8 @@
 				0A81946422584C2E00CCB9C3 /* DeinitSpy.swift */,
 				0A81946722585DFB00CCB9C3 /* TWLDeallocSpy.h */,
 				0A81946822585DFB00CCB9C3 /* TWLDeallocSpy.m */,
-				A01C4C1924AD6563005C870A /* BlockThread.swift */,
+				A01C4C1C24AFFECF005C870A /* TWLBlockThread.h */,
+				A01C4C1D24AFFECF005C870A /* TWLBlockThread.m */,
 				0A8194632258469600CCB9C3 /* TomorrowlandTests-Bridging-Header.h */,
 			);
 			path = Helpers;
@@ -475,6 +477,7 @@
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				A075ABAF2478E5EB006BC9E7 /* XCTestCase+Helpers.swift in Sources */,
+				A01C4C1E24AFFECF005C870A /* TWLBlockThread.m in Sources */,
 				A04B87BD2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m in Sources */,
 				AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */,
 				0AFF636820682659006BCA29 /* ObjCBridgingGenerics.swift in Sources */,
@@ -483,7 +486,6 @@
 				0A9482191FE8F28D00EF7EFE /* XCTestExpectation+Promise.swift in Sources */,
 				0ACA1F8120020FC900A65481 /* TWLUtilityTests.m in Sources */,
 				AB1FF3E41FEDF9450029A283 /* CancelTests.swift in Sources */,
-				A01C4C1B24AD65B4005C870A /* BlockThread.swift in Sources */,
 				0ACA1F8820032DC700A65481 /* TWLWhenTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

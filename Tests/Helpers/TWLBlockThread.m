@@ -1,8 +1,8 @@
 //
-//  BlockThread.swift
-//  Tomorrowland
+//  TWLBlockThread.m
+//  TomorrowlandTests
 //
-//  Created by Lily Ballard on 7/1/20.
+//  Created by Lily Ballard on 7/3/20.
 //  Copyright © 2020 Lily Ballard. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
@@ -12,15 +12,19 @@
 //  except according to those terms.
 //
 
-import Foundation
+#import "TWLBlockThread.h"
 
-// Thread.init(block:) doesn't exist on our minimum deployment target, so we have to do it by hand.
-final class BlockThread: Thread {
-    let block: () -> Void
-    init(block: @escaping () -> Void) {
-        self.block = block
+@implementation TWLBlockThread
+
+- (instancetype)initWithBlock:(void (^)(void))block {
+    if ((self = [super init])) {
+        _block = block;
     }
-    override func main() {
-        block()
-    }
+    return self;
 }
+
+- (void)main {
+    _block();
+}
+
+@end

@@ -439,7 +439,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 - Slightly optimized stack usage when chaining one promise to another.
 - Avoid using stack space for chained promises that don't involve a callback. For example, when the promise returned from a `flatMap(on:token:_:)` resolves it
   will resolve the outer promise without using additional stack frames. You can think of it like tail calling functions. This affects not just `flatMap` but also operations
-  such as `tap()`, `ignoringCancel()`, and more.
+  such as `tap()`, `ignoringCancel()`, and more. This also applies to Obj-C (with `TWLPromise`).
   
   Note: This does not affect the variants that implicitly upcast from some `E: Swift.Error` to `Swift.Error` such as `tryFlatMap(on:token:_:)`.
 

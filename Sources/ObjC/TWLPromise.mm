@@ -345,9 +345,7 @@
 - (TWLPromise *)tap {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
-        [resolver resolveWithValue:value error:error];
-    } willPropagateCancel:NO];
+    [self enqueueCallbackWithBox:resolver->_box willPropagateCancel:NO];
     return promise;
 }
 
@@ -386,9 +384,7 @@
 - (TWLPromise *)propagatingCancellationOnContext:(TWLContext *)context cancelRequestedHandler:(void (^)(TWLPromise<id,id> *promise))cancelRequested {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
-        [resolver resolveWithValue:value error:error];
-    } willPropagateCancel:YES];
+    [self enqueueCallbackWithBox:resolver->_box willPropagateCancel:YES];
     // Replicate the "oneshot" behavior from enqueueCallback, as -whenCancelRequestedOnContext: does not have this same behavior.
     void (__block ^ _Nullable oneshotValue)(TWLPromise *) = cancelRequested;
     auto oneshot = ^{
@@ -455,9 +451,7 @@
 - (TWLPromise *)ignoringCancel {
     TWLResolver *resolver;
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
-        [resolver resolveWithValue:value error:error];
-    } willPropagateCancel:YES];
+    [self enqueueCallbackWithBox:resolver->_box willPropagateCancel:YES];
     return promise;
 }
 
@@ -467,36 +461,18 @@
 
 #pragma mark - Private
 
-- (void)enqueueCallbackWithoutOneshot:(void (^)(id _Nullable value, id _Nullable error, BOOL isSynchronous))callback willPropagateCancel:(BOOL)willPropagateCancel {
-    if (willPropagateCancel) {
-        // If the subsequent swap fails, that means we've already resolved (or started resolving)
-        // the promise, so the observer count modification is harmless.
-        [_box incrementObserverCount];
-    }
-    
-    auto nodePtr = new CallbackNode(callback);
-    if ([_box swapCallbackLinkedListWith:reinterpret_cast<void *>(nodePtr) linkBlock:^(void * _Nullable nextNode) {
-        nodePtr->next = reinterpret_cast<CallbackNode *>(nextNode);
-    }] == TWLLinkedListSwapFailed) {
-        delete nodePtr;
-        switch (_box.state) {
-            case TWLPromiseBoxStateResolved:
-            case TWLPromiseBoxStateCancelled:
-                break;
-            case TWLPromiseBoxStateDelayed:
-            case TWLPromiseBoxStateEmpty:
-            case TWLPromiseBoxStateResolving:
-            case TWLPromiseBoxStateCancelling:
-                @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"TWLPromise callback list empty but state isn't actually resolved" userInfo:nil];
-        }
-        callback(_box->_value, _box->_error, YES);
-    }
+- (void)enqueueCallbackWithoutOneshot:(void (^)(id _Nullable value, id _Nullable error, BOOL isSynchronous))callback
+                  willPropagateCancel:(BOOL)willPropagateCancel
+{
+    _enqueue(_box, willPropagateCancel, callback);
+}
+
+- (void)enqueueCallbackWithBox:(TWLObjCPromiseBox *)box willPropagateCancel:(BOOL)willPropagateCancel {
+    _enqueue(_box, willPropagateCancel, box);
 }
 
 - (void)pipeToResolver:(nonnull TWLResolver *)resolver {
-    [self enqueueCallbackWithoutOneshot:^(id _Nullable value, id _Nullable error, BOOL isSynchronous) {
-        [resolver resolveWithValue:value error:error];
-    } willPropagateCancel:YES];
+    [self enqueueCallbackWithBox:resolver->_box willPropagateCancel:YES];
     __weak TWLObjCPromiseBox *box = _box;
     [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
         [box requestCancel];
@@ -560,9 +536,35 @@ namespace {
     };
     
     struct CallbackNode: LinkedListNode<CallbackNode> {
-        void (^ _Nonnull callback)(id _Nullable value, id _Nullable error, BOOL isSynchronous);
+        struct Value {
+            using Callback = void (^ _Nonnull)(id _Nullable value, id _Nullable error, BOOL isSynchronous);
+            // Note: Can't use std::variant because it has minimum OS restrictions.
+            union {
+                Callback callback;
+                TWLObjCPromiseBox * _Nonnull box;
+            };
+            enum{CALLBACK, BOX} tag;
+            
+            Value(Callback callback) : callback{callback}, tag{CALLBACK} {}
+            Value(TWLObjCPromiseBox * _Nonnull box) : box{box}, tag{BOX} {}
+            Value(const Value& value) : tag{value.tag} {
+                switch (tag) {
+                    case CALLBACK: new(&callback) auto(value.callback); break;
+                    case BOX: new(&box) auto(value.box); break;
+                }
+            }
+            
+            ~Value() {
+                switch (tag) {
+                    case CALLBACK: callback.~Callback(); break;
+                    case BOX: box.~decltype(box)(); break;
+                }
+            }
+        };
         
-        CallbackNode(void (^ _Nonnull callback)(id _Nullable,id _Nullable, BOOL isSynchronous)) : LinkedListNode(), callback(callback) {}
+        Value value;
+        
+        CallbackNode(Value value) : LinkedListNode(), value{value} {}
     };
     
     struct RequestCancelNode: LinkedListNode<RequestCancelNode> {
@@ -596,6 +598,35 @@ namespace {
             }
         }
     };
+    
+    void _enqueue(TWLObjCPromiseBox * _Nonnull box, BOOL willPropagateCancel, CallbackNode::Value value) {
+        if (willPropagateCancel) {
+            // If the subsequent swap fails, that means we've already resolved (or started resolving)
+            // the promise, so the observer count modification is harmless.
+            [box incrementObserverCount];
+        }
+        
+        auto nodePtr = new CallbackNode(value);
+        if ([box swapCallbackLinkedListWith:reinterpret_cast<void *>(nodePtr) linkBlock:^(void * _Nullable nextNode) {
+            nodePtr->next = reinterpret_cast<CallbackNode *>(nextNode);
+        }] == TWLLinkedListSwapFailed) {
+            delete nodePtr;
+            switch (box.state) {
+                case TWLPromiseBoxStateResolved:
+                case TWLPromiseBoxStateCancelled:
+                    break;
+                case TWLPromiseBoxStateDelayed:
+                case TWLPromiseBoxStateEmpty:
+                case TWLPromiseBoxStateResolving:
+                case TWLPromiseBoxStateCancelling:
+                    @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"TWLPromise callback list empty but state isn't actually resolved" userInfo:nil];
+            }
+            switch (value.tag) {
+                case CallbackNode::Value::CALLBACK: value.callback(box->_value, box->_error, YES); break;
+                case CallbackNode::Value::BOX: [value.box resolveOrCancelWithValue:box->_value error:box->_error]; break;
+            }
+        }
+    }
 }
 
 @end
@@ -720,6 +751,33 @@ namespace {
 }
 
 - (void)resolveOrCancelWithValue:(nullable id)value error:(nullable id)error {
+    auto nodePtr = [self markResolvedOrCancelledWithValue:value error:error];
+    if (!nodePtr) return;
+    nodePtr = CallbackNode::reverseList(nodePtr);
+    @try {
+        for (auto current = nodePtr; current; current = current->next) {
+            switch (current->value.tag) {
+                case CallbackNode::Value::CALLBACK:
+                    current->value.callback(value, error, NO);
+                    break;
+                case CallbackNode::Value::BOX:
+                    // Transition the nested box by hand and stitch its callbacks into ours
+                    if (auto boxNodePtr = [current->value.box markResolvedOrCancelledWithValue:value error:error]) {
+                        auto tailPtr = boxNodePtr; // this becomes the tail after we reverse it
+                        boxNodePtr = CallbackNode::reverseList(boxNodePtr);
+                        NSAssert(tailPtr->next == nullptr, @"Reversed list tail has next pointer");
+                        tailPtr->next = current->next;
+                        current->next = boxNodePtr;
+                        // current->next now points to the box's nodes, and chains back into the rest of our list
+                    }
+            }
+        }
+    } @finally {
+        CallbackNode::destroyPointer(nodePtr);
+    }
+}
+
+- (nullable CallbackNode *)markResolvedOrCancelledWithValue:(nullable id)value error:(nullable id)error {
     if (!value && !error) {
         if ([self transitionStateTo:TWLPromiseBoxStateCancelled]) {
             goto handleCallbacks;
@@ -733,22 +791,13 @@ namespace {
             NSAssert(NO, @"Couldn't transition TWLPromiseBox to TWLPromiseBoxStateResolved after transitioning to TWLPromiseBoxStateResolving");
         }
     }
-    return;
+    return NULL;
     
 handleCallbacks:
     if (auto nodePtr = RequestCancelNode::castPointer([self swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
         RequestCancelNode::destroyPointer(nodePtr);
     }
-    if (auto nodePtr = CallbackNode::castPointer([self swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        nodePtr = CallbackNode::reverseList(nodePtr);
-        @try {
-            for (auto current = nodePtr; current; current = current->next) {
-                current->callback(value,error,NO);
-            }
-        } @finally {
-            CallbackNode::destroyPointer(nodePtr);
-        }
-    }
+    return CallbackNode::castPointer([self swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil]);
 }
 
 - (void)requestCancel {
@@ -801,27 +850,9 @@ handleCallbacks:
 }
 
 - (void)dealloc {
-    if (auto nodePtr = CallbackNode::castPointer([self swapCallbackLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        // If we actually have a callback list, we must not have been resolved, so inform our
-        // callbacks that we've cancelled.
-        // NB: No need to actually transition to the cancelled state first, if anyone still had
-        // a reference to us to look at that, we wouldn't be in deinit.
-        nodePtr = CallbackNode::reverseList(nodePtr);
-        @try {
-            for (auto current = nodePtr; current; current = current->next) {
-                current->callback(nil,nil,NO);
-            }
-        } @finally {
-            CallbackNode::destroyPointer(nodePtr);
-        }
-    }
-    if (auto nodePtr = RequestCancelNode::castPointer([self swapRequestCancelLinkedListWith:TWLLinkedListSwapFailed linkBlock:nil])) {
-        // NB: We can't fire these callbacks because they take a TWLResolver and we can't have them
-        // resurrecting ourselves. We could work around this, but the only reason to even have these
-        // callbacks at this point is if the promise handler drops the last reference to the
-        // resolver, and since that means it's a buggy implementation, we don't need to support it.
-        RequestCancelNode::destroyPointer(nodePtr);
-    }
+    // If we haven't been resolved yet, we should inform all our callbacks that we've cancelled.
+    // This will do nothing if we've already resolved.
+    [self resolveOrCancelWithValue:nil error:nil];
 }
 
 @end

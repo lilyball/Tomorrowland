@@ -16,6 +16,7 @@
 #import "XCTestCase+TWLPromise.h"
 #import "XCTestCase+Helpers.h"
 #import "TWLDeallocSpy.h"
+#import "TWLBlockThread.h"
 @import Tomorrowland;
 
 @interface TWLPromiseTests : XCTestCase
@@ -301,6 +302,82 @@
     }];
     XCTestExpectation *expectation = TWLExpectationSuccessWithValue(promise, @43);
     [self waitForExpectations:@[expectation] timeout:1];
+}
+
+- (void)testExtremeChaining {
+    // Piping one promise to another should support extreme recursion without blowing the stack.
+    
+    // We don't want to have to wait an excessive amount of time to run the test, so we'll do it
+    // inside a new thread with a small stack size.
+    __auto_type expectation = [[XCTestExpectation alloc] initWithDescription:@"thread exited"];
+    __auto_type thread = [[TWLBlockThread alloc] initWithBlock:^{
+        NSUInteger count = 2000; // This is more than enough for the tiny stack
+        
+        // Test basic chaining
+        {
+            TWLResolver<NSNumber*,NSString*> *resolver;
+            __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+            for (NSUInteger i = 0; i < count; ++i) {
+                promise = [promise tap];
+            }
+            [resolver fulfillWithValue:@42];
+            NSNumber *value;
+            XCTAssertTrue([promise getValue:&value error:NULL]);
+            XCTAssertEqualObjects(value, @42);
+        }
+        
+        // Test basic chaining with flatMap() too
+        {
+            TWLResolver<NSNumber*,NSString*> *resolver;
+            __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+            for (NSUInteger i = 0; i < count; ++i) {
+                __auto_type oldPromise = promise;
+                promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.immediate handler:^id _Nonnull(NSNumber * _Nonnull value) {
+                    return oldPromise;
+                }];
+            }
+            XCTAssertFalse([promise getValue:NULL error:NULL]);
+            [resolver fulfillWithValue:@42];
+            NSNumber *value;
+            XCTAssertTrue([promise getValue:&value error:NULL]);
+            XCTAssertEqualObjects(value, @42);
+        }
+        
+        // Test chaining with other callbacks around the chain
+        {
+            // Note: Using XCTestExpectation here makes the test rather slow so we'll assert by hand instead.
+            // Everything executes synchronously so we can just use a counter.
+            __block NSUInteger idx = 0;
+#define MAKE_HANDLER(expected) ^(NSNumber * _Nullable value, NSString * _Nullable string) { \
+    XCTAssertEqual(idx, (expected), @"callback index"); \
+    ++idx; \
+}
+            TWLResolver<NSNumber*,NSString*> *resolver;
+            __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+            for (NSUInteger i = 0; i < count; ++i) {
+                // Each promise invokes callbacks in turn. So the one we attach before the chain
+                // runs first. Then the chained promise resolves and invokes its callbacks
+                // (recursing all the way to the tail promise), and then any callbacks we attach
+                // after the chain will run in effectively reverse order.
+                [promise inspectOnContext:TWLContext.immediate handler:MAKE_HANDLER(i)];
+                __auto_type nextPromise = [promise tap];
+                [promise inspectOnContext:TWLContext.immediate handler:MAKE_HANDLER(count + (count - i))];
+                promise = nextPromise;
+            }
+            [promise inspectOnContext:TWLContext.immediate handler:MAKE_HANDLER(count)];
+#undef MAKE_HANDLER
+            [resolver fulfillWithValue:@42];
+            XCTAssertEqual(idx, count * 2 + 1);
+        }
+        
+        [expectation fulfill];
+    }];
+    // stackSize has to be multiple of 4kB. Let's try 32kB
+    thread.stackSize = 32 * 1024;
+    thread.qualityOfService = NSQualityOfServiceUserInitiated;
+    thread.name = @(__func__);
+    [thread start];
+    [self waitForExpectations:@[expectation] timeout:30];
 }
 
 #pragma mark -
