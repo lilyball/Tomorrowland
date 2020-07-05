@@ -51,7 +51,7 @@ public func when<Value,Error>(fulfilled promises: [Promise<Value,Error>], qos: D
     
     let (resultPromise, resolver) = Promise<[Value],Error>.makeWithResolver()
     let count = promises.count
-    var resultBuffer = UnsafeMutablePointer<Value?>.allocate(capacity: count)
+    let resultBuffer = UnsafeMutablePointer<Value?>.allocate(capacity: count)
     resultBuffer.initialize(repeating: nil, count: count)
     let group = DispatchGroup()
     let context = PromiseContext.nowOr(.init(qos: qos))
