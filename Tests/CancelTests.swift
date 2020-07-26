@@ -50,6 +50,46 @@ final class CancelTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
     
+    func testPropagateCancelResolveWith() {
+        XCTContext.runActivity(named: "One observer") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: Promise<Int,String>
+                (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+                let promise2 = Promise<Int,String>(on: .immediate, { (resolver) in
+                    resolver.resolve(with: promise)
+                })
+                promise2.requestCancel()
+                // no cancellation should occur yet as promise is still sealed
+                XCTAssertNil(promise.result)
+                XCTAssertNil(promise2.result)
+                expectations = [promise, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 0)
+        }
+        
+        XCTContext.runActivity(named: "More observers") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: Promise<Int,String>
+                (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+                let promise2 = Promise<Int,String>(on: .immediate, { (resolver) in
+                    resolver.resolve(with: promise)
+                })
+                let promise3 = promise.then(on: .utility, { _ in
+                    XCTFail("callback invoked")
+                })
+                expectations = [promise, promise2, promise3].map({ XCTestExpectation(onError: $0, expectedError: "foo") })
+                promise2.requestCancel()
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 1)
+        }
+    }
+    
     func testPropagateCancelThen() {
         let expectations: [XCTestExpectation]
         let sema: DispatchSemaphore
@@ -181,6 +221,46 @@ final class CancelTests: XCTestCase {
         }
         sema.signal()
         wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelToFlatMapInnerPromise() {
+        XCTContext.runActivity(named: "One observer") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: Promise<Int,String>
+                (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+                let promise2 = Promise<Void,String>(fulfilled: ()).flatMap(on: .immediate, { _ in
+                    return promise
+                })
+                promise2.requestCancel()
+                // no cancellation should occur yet as promise is still sealed
+                XCTAssertNil(promise.result)
+                XCTAssertNil(promise2.result)
+                expectations = [promise, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 0)
+        }
+        
+        XCTContext.runActivity(named: "More observers") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: Promise<Int,String>
+                (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+                let promise2 = Promise<Void,String>(fulfilled: ()).flatMap(on: .immediate, { _ in
+                    return promise
+                })
+                let promise3 = promise.then(on: .utility, { _ in
+                    XCTFail("callback invoked")
+                })
+                expectations = [promise, promise2, promise3].map({ XCTestExpectation(onError: $0, expectedError: "foo") })
+                promise2.requestCancel()
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 1)
+        }
     }
     
     func testPropgateCancelCatch() {
@@ -446,6 +526,50 @@ final class CancelTests: XCTestCase {
         }
         sema.signal()
         wait(for: expectations, timeout: 1)
+    }
+    
+    func testPropagateCancelToTryFlatMapInnerPromise() {
+        struct DummyError: Swift.Error {}
+        
+        XCTContext.runActivity(named: "One observer") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: StdPromise<Int>
+                (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
+                let promise2 = StdPromise<Void>(fulfilled: ()).tryFlatMap(on: .immediate, { _ in
+                    return promise
+                })
+                promise2.requestCancel()
+                // no cancellation should occur yet as promise is still sealed
+                XCTAssertNil(promise.result)
+                XCTAssertNil(promise2.result)
+                expectations = [promise, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 0)
+        }
+        
+        XCTContext.runActivity(named: "More observers") { _ in
+            let expectations: [XCTestExpectation]
+            let sema: DispatchSemaphore
+            do {
+                let promise: StdPromise<Int>
+                (promise, sema) = StdPromise<Int>.makeCancellablePromise(error: DummyError())
+                let promise2 = StdPromise<Void>(fulfilled: ()).tryFlatMap(on: .immediate, { _ in
+                    return promise
+                })
+                let promise3 = promise.then(on: .utility, { _ in
+                    XCTFail("callback invoked")
+                })
+                expectations = [promise, promise2, promise3].map({ XCTestExpectation(onError: $0, handler: { (error) in
+                    XCTAssert(error is DummyError, "expected DummyError, got \(error)")
+                }) })
+                promise2.requestCancel()
+            }
+            sema.signal()
+            wait(for: expectations, timeout: 1)
+        }
     }
     
     func testPropagateCancelTryRecoverThrowing() {

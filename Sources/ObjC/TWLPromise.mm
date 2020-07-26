@@ -473,10 +473,7 @@
 
 - (void)pipeToResolver:(nonnull TWLResolver *)resolver {
     [self enqueueCallbackWithBox:resolver->_box willPropagateCancel:YES];
-    __weak TWLObjCPromiseBox *box = _box;
-    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
-        [box requestCancel];
-    }];
+    propagateCancellation(resolver, self);
 }
 
 - (NSString *)debugDescription {

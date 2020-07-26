@@ -62,6 +62,47 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testPropagateCancelResolveWithPromise {
+    [XCTContext runActivityNamed:@"One observer" block:^(id<XCTActivity> _Nonnull activity) {
+        NSArray<XCTestExpectation*> *expectations;
+        dispatch_semaphore_t sema;
+        @autoreleasepool {
+            TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
+            TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
+                [resolver resolveWithPromise:promise];
+            }];
+            [promise2 requestCancel];
+            // no cancellation should occur yet as promise is still sealed
+            TWLAssertPromiseNotResolved(promise);
+            TWLAssertPromiseNotResolved(promise2);
+            expectations = @[TWLExpectationCancelOnContext(TWLContext.immediate, promise),
+                             TWLExpectationCancelOnContext(TWLContext.immediate, promise2)];
+        }
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:expectations timeout:0];
+    }];
+    
+    [XCTContext runActivityNamed:@"More observers" block:^(id<XCTActivity> _Nonnull activity) {
+        NSArray<XCTestExpectation*> *expectations;
+        dispatch_semaphore_t sema;
+        @autoreleasepool {
+            TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
+            TWLPromise *promise2 = [TWLPromise newOnContext:TWLContext.immediate withBlock:^(TWLResolver * _Nonnull resolver) {
+                [resolver resolveWithPromise:promise];
+            }];
+            TWLPromise *promise3 = [promise thenOnContext:TWLContext.utility handler:^(id  _Nonnull value) {
+                XCTFail(@"callback invoked");
+            }];
+            expectations = @[TWLExpectationErrorWithError(promise, @"foo"),
+                             TWLExpectationErrorWithError(promise2, @"foo"),
+                             TWLExpectationErrorWithError(promise3, @"foo")];
+            [promise2 requestCancel];
+        }
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:expectations timeout:1];
+    }];
+}
+
 - (void)testPropagateCancelThen {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema;
@@ -172,6 +213,47 @@
     }
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:expectations timeout:1];
+}
+
+- (void)testPropagateCancelToMapInnerPromise {
+    [XCTContext runActivityNamed:@"One observer" block:^(id<XCTActivity> _Nonnull activity) {
+        NSArray<XCTestExpectation*> *expectations;
+        dispatch_semaphore_t sema;
+        @autoreleasepool {
+            TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
+            TWLPromise *promise2 = [[TWLPromise newFulfilledWithValue:@1] mapOnContext:TWLContext.immediate handler:^TWLPromise * _Nonnull(id  _Nonnull value) {
+                return promise;
+            }];
+            [promise2 requestCancel];
+            // no cancellation should occur yet as promise is still sealed
+            TWLAssertPromiseNotResolved(promise);
+            TWLAssertPromiseNotResolved(promise2);
+            expectations = @[TWLExpectationCancelOnContext(TWLContext.immediate, promise),
+                             TWLExpectationCancelOnContext(TWLContext.immediate, promise2)];
+        }
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:expectations timeout:0];
+    }];
+    
+    [XCTContext runActivityNamed:@"More observers" block:^(id<XCTActivity> _Nonnull activity) {
+        NSArray<XCTestExpectation*> *expectations;
+        dispatch_semaphore_t sema;
+        @autoreleasepool {
+            TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
+            TWLPromise *promise2 = [[TWLPromise newFulfilledWithValue:@1] mapOnContext:TWLContext.immediate handler:^TWLPromise * _Nonnull(id  _Nonnull value) {
+                return promise;
+            }];
+            TWLPromise *promise3 = [promise thenOnContext:TWLContext.utility handler:^(id  _Nonnull value) {
+                XCTFail(@"callback invoked");
+            }];
+            expectations = @[TWLExpectationErrorWithError(promise, @"foo"),
+                             TWLExpectationErrorWithError(promise2, @"foo"),
+                             TWLExpectationErrorWithError(promise3, @"foo")];
+            [promise2 requestCancel];
+        }
+        dispatch_semaphore_signal(sema);
+        [self waitForExpectations:expectations timeout:1];
+    }];
 }
 
 - (void)testPropagateCancelCatch {

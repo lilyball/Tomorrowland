@@ -286,8 +286,9 @@ public struct Promise<Value,Error> {
         /// Otherwise the receiver will wait until `promise` is resolved and resolve to the same
         /// result.
         ///
-        /// If the receiver is cancelled, it will also propagate the cancellation to `promise`. If
-        /// this is not desired, then either use `resolve(with: promise.ignoringCancel())` or
+        /// If the receiver is cancelled, it will also propagate the cancellation to `promise` the
+        /// same way that a child promise does. If this is not desired, then either use
+        /// `resolve(with: promise.ignoringCancel())` or
         /// `promise.always(on: .immediate, resolver.resolve(with:))`.
         public func resolve(with promise: Promise<Value,Error>) {
             promise.pipe(to: self)
@@ -1241,9 +1242,7 @@ public struct Promise<Value,Error> {
     
     private func pipe(to resolver: Promise<Value,Error>.Resolver) {
         _seal._enqueue(box: resolver._box)
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
-            cancellable.requestCancel()
-        }
+        resolver.propagateCancellation(to: self)
     }
 }
 
@@ -1264,9 +1263,7 @@ extension Promise where Error: Swift.Error {
         _seal._enqueue { (result, _) in
             resolver.resolve(with: result)
         }
-        resolver.onRequestCancel(on: .immediate) { [cancellable] (_) in
-            cancellable.requestCancel()
-        }
+        resolver.propagateCancellation(to: self)
     }
 }
 

@@ -1179,17 +1179,20 @@
 - (void)testCancellingOuterPromiseCancelsInnerPromise {
     XCTestExpectation *innerExpectation = [[XCTestExpectation alloc] initWithDescription:@"inner promise"];
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    TWLPromise<NSString*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.immediate handler:^TWLPromise<NSString*,NSString*> * _Nonnull(NSNumber * _Nonnull value) {
-        TWLPromise<NSString*,NSString*> *innerPromise = [TWLPromise<NSString*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSString *,NSString *> * _Nonnull resolver) {
-            [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
-                [resolver cancel];
+    TWLPromise<NSString*,NSString*> *promise;
+    @autoreleasepool {
+        promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.immediate handler:^TWLPromise<NSString*,NSString*> * _Nonnull(NSNumber * _Nonnull value) {
+            TWLPromise<NSString*,NSString*> *innerPromise = [TWLPromise<NSString*,NSString*> newOnContext:TWLContext.utility withBlock:^(TWLResolver<NSString *,NSString *> * _Nonnull resolver) {
+                [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver<NSNumber *,NSString *> * _Nonnull resolver) {
+                    [resolver cancel];
+                }];
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+                [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(value.integerValue + 1)]];
             }];
-            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-            [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(value.integerValue + 1)]];
+            TWLFulfillExpectationForPromiseCancellation(innerExpectation, innerPromise);
+            return innerPromise;
         }];
-        TWLFulfillExpectationForPromiseCancellation(innerExpectation, innerPromise);
-        return innerPromise;
-    }];
+    }
     XCTestExpectation *outerExpectation = TWLExpectationCancel(promise);
     [promise requestCancel];
     dispatch_semaphore_signal(sema);
