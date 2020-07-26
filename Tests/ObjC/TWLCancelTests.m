@@ -139,7 +139,7 @@
     }
     [promise2 requestCancel];
     // if promise cancelled then it should have propagated to promise3 already
-    XCTAssertFalse([promise3 getValue:NULL error:NULL]);
+    TWLAssertPromiseNotResolved(promise3);
     [promise3 requestCancel];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:expectations timeout:1];

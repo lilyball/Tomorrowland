@@ -124,7 +124,7 @@
         }]];
     }];
     __auto_type outerCancelExpectation = TWLExpectationCancel(promise);
-    XCTAssertFalse([promise getValue:NULL error:NULL]);
+    TWLAssertPromiseNotResolved(promise);
     [promise requestCancel];
     dispatch_semaphore_signal(sema);
     [self waitForExpectations:@[innerCancelExpectation, outerCancelExpectation] timeout:1];
@@ -133,9 +133,7 @@
 
 - (void)testAlreadyFulfilled {
     TWLPromise<NSNumber*,NSString*> *promise = [TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42];
-    NSNumber *value;
-    XCTAssertTrue([promise getValue:&value error:NULL]);
-    XCTAssertEqualObjects(value, @42);
+    TWLAssertPromiseFulfilledWithValue(promise, @42);
     __block BOOL invoked = NO;
     [promise thenOnContext:TWLContext.immediate handler:^(id _Nonnull value) {
         invoked = YES;
@@ -145,9 +143,7 @@
 
 - (void)testAlreadyRejected {
     __auto_type promise = [TWLPromise<NSNumber*,NSString*> newRejectedWithError:@"foo"];
-    NSString *error;
-    XCTAssertTrue([promise getValue:NULL error:&error]);
-    XCTAssertEqualObjects(error, @"foo");
+    TWLAssertPromiseRejectedWithError(promise, @"foo");
     __block BOOL invoked = NO;
     [promise catchOnContext:TWLContext.immediate handler:^(NSString * _Nonnull error) {
         invoked = YES;
@@ -157,7 +153,7 @@
 
 - (void)testAlreadyCancelled {
     __auto_type promise = [TWLPromise<NSNumber*,NSString*> newCancelled];
-    XCTAssertTrue([promise getValue:NULL error:NULL]);
+    TWLAssertPromiseCancelled(promise);
     __block BOOL invoked = NO;
     [promise inspectOnContext:TWLContext.immediate handler:^(NSNumber * _Nullable value, NSString * _Nullable error) {
         invoked = YES;
@@ -237,14 +233,7 @@
     TWLPromise<NSString*,NSString*> *promise = [[TWLPromise<NSNumber*,NSString*> newFulfilledWithValue:@42] mapOnContext:TWLContext.immediate handler:^(NSNumber * _Nonnull value) {
         return [TWLPromise<NSString*,NSString*> newFulfilledWithValue:value.description];
     }];
-    NSString *value;
-    NSString *error;
-    if ([promise getValue:&value error:&error]) {
-        XCTAssertEqualObjects(value, @"42");
-        XCTAssertNil(error);
-    } else {
-        XCTFail("Promise was unfilled");
-    }
+    TWLAssertPromiseFulfilledWithValue(promise, @"42");
     __block BOOL invoked = NO;
     [promise thenOnContext:TWLContext.immediate handler:^(NSString * _Nonnull value) {
         invoked = YES;
@@ -321,9 +310,7 @@
                 promise = [promise tap];
             }
             [resolver fulfillWithValue:@42];
-            NSNumber *value;
-            XCTAssertTrue([promise getValue:&value error:NULL]);
-            XCTAssertEqualObjects(value, @42);
+            TWLAssertPromiseFulfilledWithValue(promise, @42);
         }
         
         // Test basic chaining with flatMap() too
@@ -336,11 +323,9 @@
                     return oldPromise;
                 }];
             }
-            XCTAssertFalse([promise getValue:NULL error:NULL]);
+            TWLAssertPromiseNotResolved(promise);
             [resolver fulfillWithValue:@42];
-            NSNumber *value;
-            XCTAssertTrue([promise getValue:&value error:NULL]);
-            XCTAssertEqualObjects(value, @42);
+            TWLAssertPromiseFulfilledWithValue(promise, @42);
         }
         
         // Test chaining with other callbacks around the chain
@@ -1018,12 +1003,7 @@
     XCTestExpectation *expectation2 = TWLExpectationSuccessWithValue(promise, @42);
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
-    NSNumber *value;
-    if ([promise getValue:&value error:NULL]) {
-        XCTAssertEqualObjects(value, @42);
-    } else {
-        XCTFail(@"Expected resolved promise, found unresolved");
-    }
+    TWLAssertPromiseFulfilledWithValue(promise, @42);
 }
 
 - (void)testResolvingRejectedPromise {
@@ -1039,12 +1019,7 @@
     XCTestExpectation *expectation2 = TWLExpectationErrorWithError(promise, @"error");
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
-    NSString *error;
-    if ([promise getValue:NULL error:&error]) {
-        XCTAssertEqualObjects(error, @"error");
-    } else {
-        XCTFail(@"Expected resolved promise, found unresolved");
-    }
+    TWLAssertPromiseRejectedWithError(promise, @"error");
 }
 
 - (void)testResolvingCancelledPromise {
@@ -1060,14 +1035,7 @@
     XCTestExpectation *expectation2 = TWLExpectationCancel(promise);
     [self waitForExpectations:@[expectation, expectation2] timeout:1];
     // now that the promise is resolved, check again to make sure the value is the same
-    NSNumber *value;
-    NSString *error;
-    if ([promise getValue:&value error:&error]) {
-        XCTAssertNil(value);
-        XCTAssertNil(error);
-    } else {
-        XCTFail(@"Expected resolved promise, found unresolved");
-    }
+    TWLAssertPromiseCancelled(promise);
 }
 
 - (void)testRequestCancel {
@@ -1219,9 +1187,7 @@
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
             [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(value.integerValue + 1)]];
         }];
-        [innerPromise whenCancelledOnContext:TWLContext.utility handler:^{
-            [innerExpectation fulfill];
-        }];
+        TWLFulfillExpectationForPromiseCancellation(innerExpectation, innerPromise);
         return innerPromise;
     }];
     XCTestExpectation *outerExpectation = TWLExpectationCancel(promise);
@@ -1242,10 +1208,7 @@
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
             [resolver fulfillWithValue:[NSString stringWithFormat:@"%ld", (long)(x.integerValue + 1)]];
         }] ignoringCancel];
-        [innerPromise thenOnContext:TWLContext.defaultQoS handler:^(NSString * _Nonnull x) {
-            XCTAssertEqualObjects(x, @"43");
-            [innerExpectation fulfill];
-        }];
+        TWLFulfillExpectationForPromiseSuccessWithValue(innerExpectation, innerPromise, @"43");
         return innerPromise;
     }];
     XCTestExpectation *outerExpectation = TWLExpectationSuccessWithValue(promise, @"43");
@@ -1465,16 +1428,13 @@
             [resolver fulfillWithValue:@42];
         });
     }];
-    XCTAssertFalse([promise getValue:NULL error:NULL]);
+    TWLAssertPromiseNotResolved(promise);
     @autoreleasepool {
         id object __attribute__((objc_precise_lifetime)) = [NSObject new];
         [promise requestCancelOnDealloc:object];
-        XCTAssertFalse([promise getValue:NULL error:NULL]);
+        TWLAssertPromiseNotResolved(promise);
     }
-    id value, error;
-    XCTAssertTrue([promise getValue:&value error:&error]);
-    XCTAssertNil(value);
-    XCTAssertNil(error);
+    TWLAssertPromiseCancelled(promise);
     dispatch_semaphore_signal(sema);
 }
 
