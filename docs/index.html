@@ -13,7 +13,7 @@
     <a title="Tomorrowland  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">Tomorrowland 1.3.0 Docs</a> (100% documented)</p>
+        <p><a href="index.html">Tomorrowland 1.4.0 Docs</a> (100% documented)</p>
         <p class="header-right"><a href="https://github.com/lilyball/Tomorrowland"><img src="img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -115,15 +115,14 @@
             
             <h1 id='tomorrowland' class='heading'>Tomorrowland</h1>
 
-<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.3.0-blue.svg" alt="Version"></a>
+<p><a href="https://github.com/lilyball/Tomorrowland/releases/latest"><img src="https://img.shields.io/badge/version-v1.4.0-blue.svg" alt="Version"></a>
 <img src="https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg" alt="Platforms">
 <img src="https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg" alt="Languages">
 <img src="https://img.shields.io/badge/license-MIT%2FApache-blue.svg" alt="License">
 <img src="https://img.shields.io/cocoapods/v/Tomorrowland.svg" alt="CocoaPods">
 <a href="https://github.com/carthage/carthage"><img src="https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat" alt="Carthage compatible"></a></p>
 
-<p>Tomorrowland is an implementation of <a href="https://en.wikipedia.org/wiki/Futures_and_promises">Promises</a> for Swift and Objective-C. A Promise is a wrapper around an
-asynchronous task that provides a standard way of subscribing to task resolution as well as chaining promises together.</p>
+<p>Tomorrowland is an implementation of <a href="https://en.wikipedia.org/wiki/Futures_and_promises">Promises</a> for Swift and Objective-C. A Promise is a wrapper around an asynchronous task that provides a standard way of subscribing to task resolution as well as chaining promises together.</p>
 <pre class="highlight swift"><code><span class="kt">UIApplication</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">isNetworkActivityIndicatorVisible</span> <span class="o">=</span> <span class="kc">true</span>
 <span class="kt">MyAPI</span><span class="o">.</span><span class="nf">requestFeed</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">then</span> <span class="p">{</span> <span class="p">(</span><span class="n">feedItems</span><span class="p">)</span> <span class="k">in</span>
     <span class="k">self</span><span class="o">.</span><span class="nf">refreshUI</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">feedItems</span><span class="p">)</span>
@@ -138,18 +137,11 @@ asynchronous task that provides a standard way of subscribing to task resolution
 
 <ul>
 <li>It uses atomics internally instead of creating a separate <code>DispatchQueue</code> for each promise. This means it&rsquo;s faster and uses fewer resources.</li>
-<li>It provides full support for cancellable promises. PromiseKit supports detection of &ldquo;cancelled&rdquo; errors but has no way to request cancellation of a promise. Hydra
-supports cancelling a promise, but it can&rsquo;t actually stop any work being done by the promise unless the promise body itself polls for the cancellation status (so e.g.
-a promise wrapping a network task can&rsquo;t reasonably cancel the network task). Tomorrowland improves on this by allowing the promise body to observe the
-cancelled state, and allows linking cancellation of a child promise to its parent.</li>
+<li>It provides full support for cancellable promises. PromiseKit supports detection of &ldquo;cancelled&rdquo; errors but has no way to request cancellation of a promise. Hydra supports cancelling a promise, but it can&rsquo;t actually stop any work being done by the promise unless the promise body itself polls for the cancellation status (so e.g. a promise wrapping a network task can&rsquo;t reasonably cancel the network task). Tomorrowland improves on this by allowing the promise body to observe the cancelled state, and allows linking cancellation of a child promise to its parent.</li>
 <li>Its Obj-C support makes use of generics for improved type safety and better documentation.</li>
-<li>Like Hydra but unlike PromiseKit, it provides a way to suppress a registered callback (e.g. because you don&rsquo;t care about the result anymore and don&rsquo;t want stale
-data affecting your UI). This is distinct from promise cancellation.</li>
-<li>Tomorrowland promises are fully generic over the error type, whereas both PromiseKit and Hydra only support using <code>Error</code> as the error type. This may result in
-more typing to construct a promise but it allows for much more powerful error handling. Tomorrowland also has some affordances for working with promises that
-use <code>Error</code> as the error type.</li>
-<li>Tomorrowland is fully thread-safe. I have no reason to believe PromiseKit isn&rsquo;t, but (at the time of this writing) there are parts of Hydra that are incorrectly
-implemented in a non-thread-safe manner.</li>
+<li>Like Hydra but unlike PromiseKit, it provides a way to suppress a registered callback (e.g. because you don&rsquo;t care about the result anymore and don&rsquo;t want stale data affecting your UI). This is distinct from promise cancellation.</li>
+<li>Tomorrowland promises are fully generic over the error type, whereas both PromiseKit and Hydra only support using <code>Error</code> as the error type. This may result in more typing to construct a promise but it allows for much more powerful error handling. Tomorrowland also has some affordances for working with promises that use <code>Error</code> as the error type.</li>
+<li>Tomorrowland is fully thread-safe. I have no reason to believe PromiseKit isn&rsquo;t, but (at the time of this writing) there are parts of Hydra that are incorrectly implemented in a non-thread-safe manner.</li>
 </ul>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='manually' class='heading'>Manually</h3>
@@ -159,18 +151,15 @@ implemented in a non-thread-safe manner.</li>
 <pre class="highlight plaintext"><code>github "lilyball/Tomorrowland" ~&gt; 1.0
 </code></pre>
 
-<p>The project file is configured to use Swift 5. The code can be compiled against Swift 4.2 instead, but I&rsquo;m not aware of any way to instruct Carthage to override the
-swift version during compilation.</p>
+<p>The project file is configured to use Swift 5. The code can be compiled against Swift 4.2 instead, but I&rsquo;m not aware of any way to instruct Carthage to override the swift version during compilation.</p>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
 <pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'Tomorrowland'</span><span class="p">,</span> <span class="s1">'~&gt; 1.0'</span>
 </code></pre>
 
-<p>The podspec declares support for both Swift 4.2 and Swift 5.0, but selecting the Swift version requires using CoocaPods 1.7.0 or later. When using CocoaPods 1.6
-or earlier the Swift version will default to 5.0.</p>
+<p>The podspec declares support for both Swift 4.2 and Swift 5.0, but selecting the Swift version requires using CoocaPods 1.7.0 or later. When using CocoaPods 1.6 or earlier the Swift version will default to 5.0.</p>
 <h3 id='swiftpm' class='heading'>SwiftPM</h3>
 
-<p>Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding
-compatibility would necessitate publicly exposing the private Obj-C module).</p>
+<p>Tomorrowland currently relies on a private Obj-C module for its atomics. This arrangement means it is not compatible with Swift Package Manager (as adding compatibility would necessitate publicly exposing the private Obj-C module).</p>
 <h2 id='usage' class='heading'>Usage</h2>
 <h3 id='creating-promises' class='heading'>Creating Promises</h3>
 
@@ -181,18 +170,11 @@ compatibility would necessitate publicly exposing the private Obj-C module).</p>
 <span class="p">})</span>
 </code></pre>
 
-<p>The body of this promise runs on the specified <code><a href="Enums/PromiseContext.html">PromiseContext</a></code>, which in this case is <code>.utility</code> (which means <code>DispatchQueue.global(qos: .utility)</code>).
-Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on the main thread. The available contexts
-include <code>.main</code>, every Dispatch QoS, a specific <code>DispatchQueue</code>, a specific <code>OperationQueue</code>, or the value <code>.immediate</code> which means to run the block
-synchronously. There&rsquo;s also the special context <code>.auto</code>, which evaluates to <code>.main</code> on the main thread and <code>.default</code> otherwise.</p>
+<p>The body of this promise runs on the specified <code><a href="Enums/PromiseContext.html">PromiseContext</a></code>, which in this case is <code>.utility</code> (which means <code>DispatchQueue.global(qos: .utility)</code>). Unlike callbacks, all created promises must specify a context, so as to avoid accidentally running expensive computations on the main thread. The available contexts include <code>.main</code>, every Dispatch QoS, a specific <code>DispatchQueue</code>, a specific <code>OperationQueue</code>, or the value <code>.immediate</code> which means to run the block synchronously. There&rsquo;s also the special context <code>.auto</code>, which evaluates to <code>.main</code> on the main thread and <code>.default</code> otherwise.</p>
 
-<p><strong>Note:</strong> The <code>.immediate</code> context can be dangerous to use for callback handlers and should be avoided in most cases. It&rsquo;s primarily intended for creating
-promises, and whenever it&rsquo;s used with a callback handler the handler must be prepared to execute on <em>any thread</em>. For callbacks it&rsquo;s usually only useful for short
-thread-agnostic callbacks, such as an <code>.onRequestCancel</code> that does nothing more than cancelling a <code>URLSessionTask</code>.</p>
+<p><strong>Note:</strong> The <code>.immediate</code> context can be dangerous to use for callback handlers and should be avoided in most cases. It&rsquo;s primarily intended for creating promises, and whenever it&rsquo;s used with a callback handler the handler must be prepared to execute on <em>any thread</em>. For callbacks it&rsquo;s usually only useful for short thread-agnostic callbacks, such as an <code>.onRequestCancel</code> that does nothing more than cancelling a <code>URLSessionTask</code>.</p>
 
-<p>The body of a <code><a href="Structs/Promise.html">Promise</a></code> receives a &ldquo;resolver&rdquo;, which it must use to fulfill, reject, or cancel the promise. If the resolver goes out of scope without being used, the
-promise is automatically cancelled. If the promise&rsquo;s error type is <code>Error</code>, the promise body may also throw an error (as seen above), which is then used to reject the
-promise. This resolver can also be used to observe cancellation requests using <code>resolver.onRequestCancel</code>, as seen here:</p>
+<p>The body of a <code><a href="Structs/Promise.html">Promise</a></code> receives a &ldquo;resolver&rdquo;, which it must use to fulfill, reject, or cancel the promise. If the resolver goes out of scope without being used, the promise is automatically cancelled. If the promise&rsquo;s error type is <code>Error</code>, the promise body may also throw an error (as seen above), which is then used to reject the promise. This resolver can also be used to observe cancellation requests using <code>resolver.onRequestCancel</code>, as seen here:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">promise</span> <span class="o">=</span> <span class="kt">Promise</span><span class="o">&lt;</span><span class="kt">Data</span><span class="p">,</span><span class="kt">Error</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">immediate</span><span class="p">,</span> <span class="p">{</span> <span class="p">(</span><span class="n">resolver</span><span class="p">)</span> <span class="k">in</span>
     <span class="k">let</span> <span class="nv">task</span> <span class="o">=</span> <span class="n">urlSession</span><span class="o">.</span><span class="nf">dataTask</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span> <span class="k">in</span>
         <span class="k">if</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="n">data</span> <span class="p">{</span>
@@ -210,24 +192,16 @@ promise. This resolver can also be used to observe cancellation requests using <
 <span class="p">})</span>
 </code></pre>
 
-<p>Resolvers also have a convenience method <code>handleCallback()</code> that is intended to make it easy to wrap framework callbacks in promises. This method returns a
-closure that can be used as a callback directly. It also takes an optional <code>isCancelError</code> parameter that can be used to indicate when an error represents
-cancellation. For example:</p>
+<p>Resolvers also have a convenience method <code>handleCallback()</code> that is intended to make it easy to wrap framework callbacks in promises. This method returns a closure that can be used as a callback directly. It also takes an optional <code>isCancelError</code> parameter that can be used to indicate when an error represents cancellation. For example:</p>
 <pre class="highlight swift"><code><span class="n">geocoder</span><span class="o">.</span><span class="nf">reverseGeocodeLocation</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="n">resolver</span><span class="o">.</span><span class="nf">handleCallback</span><span class="p">(</span><span class="nv">isCancelError</span><span class="p">:</span> <span class="p">{</span> <span class="kt">CLError</span><span class="o">.</span><span class="n">geocodeCanceled</span> <span class="o">~=</span> <span class="nv">$0</span> <span class="p">}))</span>
 </code></pre>
 <h3 id='using-promises' class='heading'>Using Promises</h3>
 
-<p>Once you have a promise, you can register callbacks to be executed when the promise is resolved. Most callback methods require a context, but for some of them
-(<code>then</code>, <code>catch</code>, <code>always</code>, and <code>tryThen</code>) you can omit the context and it will default to <code>.auto</code>, which means the main thread if the callback is registered from the
-main thread, otherwise the dispatch queue with QoS <code>.default</code>.</p>
+<p>Once you have a promise, you can register callbacks to be executed when the promise is resolved. Most callback methods require a context, but for some of them (<code>then</code>, <code>catch</code>, <code>always</code>, and <code>tryThen</code>) you can omit the context and it will default to <code>.auto</code>, which means the main thread if the callback is registered from the main thread, otherwise the dispatch queue with QoS <code>.default</code>.</p>
 
-<p>When you register a callback, the method also returns a <code><a href="Structs/Promise.html">Promise</a></code>. All callback registration methods return a new <code><a href="Structs/Promise.html">Promise</a></code> even if the callback doesn&rsquo;t affect the
-value of the promise. The reason for this is so chained callbacks always guarantee that the previous callback finished executing before the new one starts, even
-when using concurrent contexts (e.g. <code>.utility</code>), and so cancelling the returned promise doesn&rsquo;t cancel the original one if any other callbacks were registered on
-it.</p>
+<p>When you register a callback, the method also returns a <code><a href="Structs/Promise.html">Promise</a></code>. All callback registration methods return a new <code><a href="Structs/Promise.html">Promise</a></code> even if the callback doesn&rsquo;t affect the value of the promise. The reason for this is so chained callbacks always guarantee that the previous callback finished executing before the new one starts, even when using concurrent contexts (e.g. <code>.utility</code>), and so cancelling the returned promise doesn&rsquo;t cancel the original one if any other callbacks were registered on it.</p>
 
-<p>Most callback registration methods also have versions that allow you to return a <code><a href="Structs/Promise.html">Promise</a></code> from your callback. In this event, the resulting <code><a href="Structs/Promise.html">Promise</a></code> waits for the
-promise you returned to resolve before adopting its value. This allows for easy composition of promises.</p>
+<p>Most callback registration methods also have versions that allow you to return a <code><a href="Structs/Promise.html">Promise</a></code> from your callback. In this event, the resulting <code><a href="Structs/Promise.html">Promise</a></code> waits for the promise you returned to resolve before adopting its value. This allows for easy composition of promises.</p>
 <pre class="highlight swift"><code><span class="nf">showLoadingIndicator</span><span class="p">()</span>
 <span class="nf">fetchUserCredentials</span><span class="p">()</span><span class="o">.</span><span class="nf">flatMap</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="k">default</span><span class="p">)</span> <span class="p">{</span> <span class="p">(</span><span class="n">credentials</span><span class="p">)</span> <span class="k">in</span>
     <span class="c1">// This returns a new promise</span>
@@ -247,25 +221,14 @@ promise you returned to resolve before adopting its value. This allows for easy 
 <span class="p">}</span>
 </code></pre>
 
-<p>When composing callbacks that return promises, you may run into issues with incompatible error types. There are convenience methods for working with promises
-whose errors are compatible with <code>Error</code>, but they don&rsquo;t cover all cases. If you find yourself hitting one of these cases, any <code><a href="Structs/Promise.html">Promise</a></code> whose error type conforms to
-<code>Error</code> has a property <code>.upcast</code> that will convert that error into an <code>Error</code> to allow for easier composition of promises.</p>
+<p>When composing callbacks that return promises, you may run into issues with incompatible error types. There are convenience methods for working with promises whose errors are compatible with <code>Error</code>, but they don&rsquo;t cover all cases. If you find yourself hitting one of these cases, any <code><a href="Structs/Promise.html">Promise</a></code> whose error type conforms to <code>Error</code> has a property <code>.upcast</code> that will convert that error into an <code>Error</code> to allow for easier composition of promises.</p>
 
-<p>Tomorrowland also offers a typealias <code><a href="Typealiases.html#/s:12Tomorrowland10StdPromisea">StdPromise&lt;Value&gt;</a></code> as shorthand for <code><a href="Structs/Promise.html">Promise&lt;T,Error&gt;</a></code>. This is frequently useful to avoid having to repeat the types,
-such as with <code>StdPromise(fulfilled: someValue)</code> instead of <code>Promise&lt;SomeValue,Error&gt;(fulfilled: someValue)</code>.</p>
+<p>Tomorrowland also offers a typealias <code><a href="Typealiases.html#/s:12Tomorrowland10StdPromisea">StdPromise&lt;Value&gt;</a></code> as shorthand for <code><a href="Structs/Promise.html">Promise&lt;T,Error&gt;</a></code>. This is frequently useful to avoid having to repeat the types, such as with <code>StdPromise(fulfilled: someValue)</code> instead of <code>Promise&lt;SomeValue,Error&gt;(fulfilled: someValue)</code>.</p>
 <h3 id='cancelling-and-invalidation' class='heading'>Cancelling and Invalidation</h3>
 
-<p>All promises expose a method <code>.requestCancel()</code>. It is named such because this doesn&rsquo;t actually guarantee that the promise will be cancelled. If the promise
-supports cancellation, this method will trigger a callback that the promise can use to cancel its work. But promises that don&rsquo;t support cancellation will ignore this
-and will eventually fulfill or reject as normal. Naturally, requesting cancellation of a promise that has already been resolved does nothing, even if the callbacks have
-not yet been invoked.</p>
+<p>All promises expose a method <code>.requestCancel()</code>. It is named such because this doesn&rsquo;t actually guarantee that the promise will be cancelled. If the promise supports cancellation, this method will trigger a callback that the promise can use to cancel its work. But promises that don&rsquo;t support cancellation will ignore this and will eventually fulfill or reject as normal. Naturally, requesting cancellation of a promise that has already been resolved does nothing, even if the callbacks have not yet been invoked.</p>
 
-<p>In order to handle the issue of a promise being resolved after you no longer care about it, there is a separate mechanism called a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>
-that can be used to suppress callbacks. All callback methods have an optional <code>token</code> parameter that accepts a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>.  If provided,
-calling <code>invalidate()</code> on the token prior to the callback being executed guarantees the callback will not fire. If the callback returns a value that is required in order
-to resolve the <code><a href="Structs/Promise.html">Promise</a></code> returned from the callback registration method, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled instead. <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s can be used
-with multiple callbacks at once, and a single token can be re-used as much as desired. It is recommended that you take advantage of both invalidation tokens and
-cancellation. This may look like</p>
+<p>In order to handle the issue of a promise being resolved after you no longer care about it, there is a separate mechanism called a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> that can be used to suppress callbacks. All callback methods have an optional <code>token</code> parameter that accepts a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>.  If provided, calling <code>invalidate()</code> on the token prior to the callback being executed guarantees the callback will not fire. If the callback returns a value that is required in order to resolve the <code><a href="Structs/Promise.html">Promise</a></code> returned from the callback registration method, the resulting <code><a href="Structs/Promise.html">Promise</a></code> is cancelled instead. <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s can be used with multiple callbacks at once, and a single token can be re-used as much as desired. It is recommended that you take advantage of both invalidation tokens and cancellation. This may look like</p>
 <pre class="highlight swift"><code><span class="kd">class</span> <span class="kt">URLImageView</span><span class="p">:</span> <span class="kt">UIImageView</span> <span class="p">{</span>
     <span class="kd">private</span> <span class="k">var</span> <span class="nv">promise</span><span class="p">:</span> <span class="kt">StdPromise</span><span class="o">&lt;</span><span class="kt">Void</span><span class="o">&gt;</span><span class="p">?</span>
     <span class="kd">private</span> <span class="k">let</span> <span class="nv">invalidationToken</span> <span class="o">=</span> <span class="kt">PromiseInvalidationToken</span><span class="p">()</span>
@@ -294,19 +257,11 @@ cancellation. This may look like</p>
 <span class="p">}</span>
 </code></pre>
 
-<p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.requestCancelOnInvalidate(_:)</code> that can register any number of <code><a href="Structs/Promise.html">Promise</a></code>s to be automatically
-requested to cancel (using <code>.requestCancel()</code>) the next time the token is invalidated. <code><a href="Structs/Promise.html">Promise</a></code> also has the same method (except it takes a token as the
-argument) as a convenience for calling <code>.requestCancelOnInvalidate(_:)</code> on the token. This can be used to terminate a promise chain without ever assigning
-the promise to a local variable. <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.cancelWithoutInvalidating()</code> which cancels any associated promises
-without invalidating the token.</p>
+<p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.requestCancelOnInvalidate(_:)</code> that can register any number of <code><a href="Structs/Promise.html">Promise</a></code>s to be automatically requested to cancel (using <code>.requestCancel()</code>) the next time the token is invalidated. <code><a href="Structs/Promise.html">Promise</a></code> also has the same method (except it takes a token as the argument) as a convenience for calling <code>.requestCancelOnInvalidate(_:)</code> on the token. This can be used to terminate a promise chain without ever assigning the promise to a local variable. <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> also has a method <code>.cancelWithoutInvalidating()</code> which cancels any associated promises without invalidating the token.</p>
 
-<p>By default <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with
-<code>requestCancelOnInvalidate(_:)</code> as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be
-disabled with an optional parameter to <code>init</code>.</p>
+<p>By default <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s will invalidate themselves automatically when deinitialized. This is primarily useful in conjunction with <code>requestCancelOnInvalidate(_:)</code> as it allows you to automatically cancel your promises when object that owns the token deinits. This behavior can be disabled with an optional parameter to <code>init</code>.</p>
 
-<p><code><a href="Structs/Promise.html">Promise</a></code> also has a convenience method <code>requestCancelOnDeinit(_:)</code> which can be used to request the <code><a href="Structs/Promise.html">Promise</a></code> to be cancelled when a given object
-deinits. This is equivalent to adding a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> property to the object (configured to invalidate on deinit) and requesting cancellation when
-the token invalidates, but can be used if the token would otherwise not be explicitly invalidated.</p>
+<p><code><a href="Structs/Promise.html">Promise</a></code> also has a convenience method <code>requestCancelOnDeinit(_:)</code> which can be used to request the <code><a href="Structs/Promise.html">Promise</a></code> to be cancelled when a given object deinits. This is equivalent to adding a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> property to the object (configured to invalidate on deinit) and requesting cancellation when the token invalidates, but can be used if the token would otherwise not be explicitly invalidated.</p>
 
 <p>Using these methods, the above <code>loadImage(from:)</code> can be rewritten as the following including cancellation:</p>
 <pre class="highlight swift"><code><span class="kd">class</span> <span class="kt">URLImageView</span><span class="p">:</span> <span class="kt">UIImageView</span> <span class="p">{</span>
@@ -336,17 +291,10 @@ the token invalidates, but can be used if the token would otherwise not be expli
 </code></pre>
 <h4 id='invalidation-token-chaining' class='heading'>Invalidation token chaining</h4>
 
-<p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s can be arranged in a tree such that invalidating one token will cascade this invalidation down to other tokens. This is
-accomplished by calling <code>childToken.chainInvalidation(from: parentToken)</code>. Practically speaking this is no different than just manually invalidating each
-child token yourself after invalidating the parent token, but it&rsquo;s provided as a convenience to make it easy to have fine-grained invalidation control while also having
-a simple way to bulk-invalidate tokens. For example, you might have separate tokens for different view controllers that all chain invalidation from a single token that
-gets invalidated when the user logs out, thus automatically invalidating all your user-dependent network requests at once while still allowing each view controller the
-ability to invalidate just its own requests independently.</p>
+<p><code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s can be arranged in a tree such that invalidating one token will cascade this invalidation down to other tokens. This is accomplished by calling <code>childToken.chainInvalidation(from: parentToken)</code>. Practically speaking this is no different than just manually invalidating each child token yourself after invalidating the parent token, but it&rsquo;s provided as a convenience to make it easy to have fine-grained invalidation control while also having a simple way to bulk-invalidate tokens. For example, you might have separate tokens for different view controllers that all chain invalidation from a single token that gets invalidated when the user logs out, thus automatically invalidating all your user-dependent network requests at once while still allowing each view controller the ability to invalidate just its own requests independently.</p>
 <h4 id='code-tokenpromise-code' class='heading'><code><a href="Structs/TokenPromise.html">TokenPromise</a></code></h4>
 
-<p>In order to avoid the repetition of passing a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to multiple <code><a href="Structs/Promise.html">Promise</a></code> methods as well as cancelling the resulting promise, a type
-<code><a href="Structs/TokenPromise.html">TokenPromise</a></code> exists that handles this for you. You can create a <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> with the <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenyAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code> method. This allows you to take code like
-the following:</p>
+<p>In order to avoid the repetition of passing a <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code> to multiple <code><a href="Structs/Promise.html">Promise</a></code> methods as well as cancelling the resulting promise, a type <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> exists that handles this for you. You can create a <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> with the <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9withTokenyAA0dB0Vyxq_GAA0b12InvalidationD0VF">Promise.withToken(_:)</a></code> method. This allows you to take code like the following:</p>
 <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">loadModel</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">promiseToken</span><span class="o">.</span><span class="nf">invalidate</span><span class="p">()</span>
     <span class="kt">MyModel</span><span class="o">.</span><span class="nf">fetchFromNetworkAsPromise</span><span class="p">()</span>
@@ -372,30 +320,16 @@ the following:</p>
 </code></pre>
 <h4 id='automatic-cancellation-propagation' class='heading'>Automatic cancellation propagation</h4>
 
-<p>Nearly all callback registration methods will automatically propagate cancellation requests from the child to the parent if the parent has no other observers. If all
-observers for a promise request cancellation, the cancellation request will propagate upwards at this time. This means that a promise will not automatically cancel
-as long as there&rsquo;s at least one interested observer. Do note that promises that have no observers do not get automatically cancelled, this only happens if there&rsquo;s at
-least one observer (which then requests cancellation). Automatic cancellation propagation also requires that the promise itself no longer be in scope. For this reason
-you should avoid holding onto promises long-term and instead use the <code>.cancellable</code> property or <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>&lsquo;s
-<code>requestCancelOnInvalidate(_:)</code> if you want to be able to cancel the promise later.</p>
+<p>Nearly all callback registration methods will automatically propagate cancellation requests from the child to the parent if the parent has no other observers. If all observers for a promise request cancellation, the cancellation request will propagate upwards at this time. This means that a promise will not automatically cancel as long as there&rsquo;s at least one interested observer. Do note that promises that have no observers do not get automatically cancelled, this only happens if there&rsquo;s at least one observer (which then requests cancellation). Automatic cancellation propagation also requires that the promise itself no longer be in scope. For this reason you should avoid holding onto promises long-term and instead use the <code>.cancellable</code> property or <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>&lsquo;s <code>requestCancelOnInvalidate(_:)</code> if you want to be able to cancel the promise later.</p>
 
-<p>Automatic cancellation propagation also works with the utility functions <code>when(fulfilled:)</code> and <code>when(first:)</code> as well as the convenience methods
-<code>timeout(on:delay:)</code> and <code>delay(on:_:)</code>.</p>
+<p>Automatic cancellation propagation also works with the utility functions <code>when(fulfilled:)</code> and <code>when(first:)</code> as well as the convenience methods <code>timeout(on:delay:)</code> and <code>delay(on:_:)</code>.</p>
 
-<p>Promises have a couple of methods that do not participate in automatic cancellation propagation. You can use <code>tap(on:token:_:)</code> as an alternative to <code>always</code> in
-order to register an observer that won&rsquo;t interfere with the existing automatic cancellation propagation (this is suitable for inserting into the middle of a promise
-chain). You can also use <code>tap()</code> as a more generic version of this.</p>
+<p>Promises have a couple of methods that do not participate in automatic cancellation propagation. You can use <code>tap(on:token:_:)</code> as an alternative to <code>always</code> in order to register an observer that won&rsquo;t interfere with the existing automatic cancellation propagation (this is suitable for inserting into the middle of a promise chain). You can also use <code>tap()</code> as a more generic version of this.</p>
 
 <p>Note that <code>ignoringCancel()</code> disables automatic cancellation propagation on the receiver. Once you invoke this on a promise, it will never automatically cancel.</p>
 <h5 id='code-propagatingcancellation-on-cancelrequested-code' class='heading'><code>propagatingCancellation(on:cancelRequested:)</code></h5>
 
-<p>In some cases you may need to hold onto a promise without blocking cancellation propagation from its children. The primary use-case here is deduplicating access to
-an asynchronous resource (such as a network load). In this scenario you may wish to hold onto a promise and return a new child for every client requesting the same
-resource, without preventing cancellation of the resource load if all clients cancel their requests. This can be accomplished by holding onto the result of calling
-<code>.propagatingCancellation(on:cancelRequested:)</code>. The promise returned from this method will propagate cancellation to its parent as soon as all children
-have requested cancellation even if the promise is still in scope. When cancellation is requested, the <code>cancelRequested</code> handler will be invoked immediately prior to
-propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load). An
-example of this might look like:</p>
+<p>In some cases you may need to hold onto a promise without blocking cancellation propagation from its children. The primary use-case here is deduplicating access to an asynchronous resource (such as a network load). In this scenario you may wish to hold onto a promise and return a new child for every client requesting the same resource, without preventing cancellation of the resource load if all clients cancel their requests. This can be accomplished by holding onto the result of calling <code>.propagatingCancellation(on:cancelRequested:)</code>. The promise returned from this method will propagate cancellation to its parent as soon as all children have requested cancellation even if the promise is still in scope. When cancellation is requested, the <code>cancelRequested</code> handler will be invoked immediately prior to propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load). Returning a new child to each client can be done using <code>makeChild()</code>. An example of this might look like:</p>
 <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">loadResource</span><span class="p">(</span><span class="n">at</span> <span class="nv">url</span><span class="p">:</span> <span class="kt">URL</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">let</span> <span class="nv">promise</span><span class="p">:</span> <span class="kt">StdPromise</span><span class="o">&lt;</span><span class="kt">Model</span><span class="o">&gt;</span>
     <span class="k">if</span> <span class="k">let</span> <span class="nv">existingPromise</span> <span class="o">=</span> <span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="p">{</span>
@@ -409,24 +343,16 @@ example of this might look like:</p>
         <span class="n">resourceLoads</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">promise</span>
     <span class="p">}</span>
     <span class="c1">// Return a new child for each request so all clients have to cancel, not just one.</span>
-    <span class="k">return</span> <span class="n">promise</span><span class="o">.</span><span class="nf">then</span><span class="p">(</span><span class="nv">on</span><span class="p">:</span> <span class="o">.</span><span class="n">immediate</span><span class="p">,</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span> <span class="p">})</span>
+    <span class="k">return</span> <span class="n">promise</span><span class="o">.</span><span class="nf">makeChild</span><span class="p">()</span>
 <span class="p">}</span>
 </code></pre>
 <h3 id='the-special-code-nowor-_-code-context' class='heading'>The special <code>.nowOr(_:)</code> context</h3>
 
-<p>There is a special context <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO5nowOryA2CcACmF">PromiseContext.nowOr(_:)</a></code> that behaves a bit differently than other contexts. This context is special in that its callback executes
-differently depending on whether the promise it&rsquo;s being registered on has already resolved by the time the callback is registered. If the promise has already
-resolved then <code>.nowOr(context)</code> behaves like <code>.immediate</code>, otherwise it behaves like the wrapped <code>context</code>. This context is intended to be used to replace
-code that would otherwise check if the <code>promise.result</code> is non-<code>nil</code> prior to registering a callback.</p>
+<p>There is a special context <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO5nowOryA2CcACmF">PromiseContext.nowOr(_:)</a></code> that behaves a bit differently than other contexts. This context is special in that its callback executes differently depending on whether the promise it&rsquo;s being registered on has already resolved by the time the callback is registered. If the promise has already resolved then <code>.nowOr(context)</code> behaves like <code>.immediate</code>, otherwise it behaves like the wrapped <code>context</code>. This context is intended to be used to replace code that would otherwise check if the <code>promise.result</code> is non-<code>nil</code> prior to registering a callback.</p>
 
-<p>If this context is used in <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code> it always behaves like <code>.immediate</code>, and if it&rsquo;s used in <code><a href="Structs/DelayedPromise.html#/s:12Tomorrowland14DelayedPromiseV2on_ACyxq_GAA0C7ContextO_yAA0C0V8ResolverVyxq__Gctcfc">DelayedPromise.init(on:_:)</a></code> it always behaves
-like the wrapped context.</p>
+<p>If this context is used in <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code> it always behaves like <code>.immediate</code>, and if it&rsquo;s used in <code><a href="Structs/DelayedPromise.html#/s:12Tomorrowland14DelayedPromiseV2on_ACyxq_GAA0C7ContextO_yAA0C0V8ResolverVyxq__Gctcfc">DelayedPromise.init(on:_:)</a></code> it always behaves like the wrapped context.</p>
 
-<p>There is a property <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> that can be accessed from within a callback registered with <code>.nowOr(_:)</code> to determine if the callback
-is executing synchronously or asynchronously. When accessed from any other context it returns <code>false</code>. When registering a callback with <code>.immediate</code> from
-within a callback where <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> is <code>true</code>, the nested callback will inherit the <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag if and only
-if the nested callback is also executing synchronously. This is a bit subtle but is intended to allow <code>Promise(on: .immediate, { … })</code> to inherit the flag from
-its surrounding scope.</p>
+<p>There is a property <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> that can be accessed from within a callback registered with <code>.nowOr(_:)</code> to determine if the callback is executing synchronously or asynchronously. When accessed from any other context it returns <code>false</code>. When registering a callback with <code>.immediate</code> from within a callback where <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> is <code>true</code>, the nested callback will inherit the <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag if and only if the nested callback is also executing synchronously. This is a bit subtle but is intended to allow <code>Promise(on: .immediate, { … })</code> to inherit the flag from its surrounding scope.</p>
 
 <p>An example of how this context might be used is when populating an image view from a network request:</p>
 <pre class="highlight swift"><code><span class="nf">createNetworkRequestAsPromise</span><span class="p">()</span>
@@ -445,41 +371,28 @@ its surrounding scope.</p>
 <p>There are a few helper functions that can be used to deal with multiple promises.</p>
 <h4 id='code-when-fulfilled-code' class='heading'><code>when(fulfilled:)</code></h4>
 
-<p><code>when(fulfilled:)</code> is a global function that takes either an array of promises or 2–6 promises as separate arguments, and returns a single promise that is
-eventually fulfilled with the values of all input promises. With the array version all input promises must have the same type and the result is fulfilled with an array.
-With the separate argument version the promises may have unique value types (but the same error type) and the result is fulfilled with a tuple.</p>
+<p><code>when(fulfilled:)</code> is a global function that takes either an array of promises or 2–6 promises as separate arguments, and returns a single promise that is eventually fulfilled with the values of all input promises. With the array version all input promises must have the same type and the result is fulfilled with an array. With the separate argument version the promises may have unique value types (but the same error type) and the result is fulfilled with a tuple.</p>
 
-<p>If any of the input promises is rejected or cancelled, the resulting promise is immediately rejected or cancelled as well. If multiple input promises are rejected or
-cancelled, the first such one affects the result.</p>
+<p>If any of the input promises is rejected or cancelled, the resulting promise is immediately rejected or cancelled as well. If multiple input promises are rejected or cancelled, the first such one affects the result.</p>
 
 <p>This function has an optional parameter <code>cancelOnFailure:</code> that, if provided as <code>true</code>, will cancel all input promises if any of them are rejected.</p>
 <h4 id='code-when-first-code' class='heading'><code>when(first:)</code></h4>
 
-<p><code>when(first:)</code> is a global function that takes an array of promises of the same type, and returns a single promise that eventually adopts the same value or error as
-the first input promise that gets fulfilled or rejected. Cancelled input promises are ignored, unless all input promsies are cancelled, at which point the resulting
-promise will be cancelled as well.</p>
+<p><code>when(first:)</code> is a global function that takes an array of promises of the same type, and returns a single promise that eventually adopts the same value or error as the first input promise that gets fulfilled or rejected. Cancelled input promises are ignored, unless all input promsies are cancelled, at which point the resulting promise will be cancelled as well.</p>
 
-<p>This function has an optional parameter <code>cancelRemaining:</code> that, if provided as <code>true</code>, will cancel the remaining input promises as soon as one of them is fulfilled
-or rejected.</p>
+<p>This function has an optional parameter <code>cancelRemaining:</code> that, if provided as <code>true</code>, will cancel the remaining input promises as soon as one of them is fulfilled or rejected.</p>
 <h4 id='code-promise-timeout-on-delay-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code></h4>
 
-<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn&rsquo;t
-resolved within the given interval.</p>
+<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> is a method that returns a new promise that adopts the same value as the receiver, or is rejected with an error if the receiver isn&rsquo;t resolved within the given interval.</p>
 <h4 id='code-promise-delay-on-_-code' class='heading'><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">Promise.delay(on:_:)</a></code></h4>
 
-<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">Promise.delay(on:_:)</a></code> is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for
-testing purposes.</p>
+<p><code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV5delay2on_ACyxq_GAA0B7ContextO_SdtF">Promise.delay(on:_:)</a></code> is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for testing purposes.</p>
 <h3 id='objective-c' class='heading'>Objective-C</h3>
 
-<p>Tomorrowland has Obj-C compatibility in the form of <code>TWLPromise&lt;ValueType,ErrorType&gt;</code>. This is a parallel promise implementation that can be bridged to/from
-<code><a href="Structs/Promise.html">Promise</a></code> and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while <code>TWLPromise</code> is
-generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).</p>
+<p>Tomorrowland has Obj-C compatibility in the form of <code>TWLPromise&lt;ValueType,ErrorType&gt;</code>. This is a parallel promise implementation that can be bridged to/from <code><a href="Structs/Promise.html">Promise</a></code> and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while <code>TWLPromise</code> is generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).</p>
 <h3 id='callback-lifetimes' class='heading'>Callback lifetimes</h3>
 
-<p>Callbacks registered on promises will be retained until the promise is resolved. If a callback is invoked (or would be invoked if the relevant invalidation token hadn&rsquo;t
-been invalidated), Tomorrowland guarantees that it will release the callback on the context it was invoked on. If the callback is not invoked (e.g. it&rsquo;s a <code>then(on:_:)</code>
-callback but the promise was rejected) then no guarantees are made as to the context the callback is released on. If you need to ensure it&rsquo;s released on the
-appropriate context (e.g. if it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>.mapResult</code> variants.</p>
+<p>Callbacks registered on promises will be retained until the promise is resolved. If a callback is invoked (or would be invoked if the relevant invalidation token hadn&rsquo;t been invalidated), Tomorrowland guarantees that it will release the callback on the context it was invoked on. If the callback is not invoked (e.g. it&rsquo;s a <code>then(on:_:)</code> callback but the promise was rejected) then no guarantees are made as to the context the callback is released on. If you need to ensure it&rsquo;s released on the appropriate context (e.g. if it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>.mapResult</code> variants.</p>
 <h2 id='requirements' class='heading'>Requirements</h2>
 
 <p>Requires a minimum of iOS 9, macOS 10.10, watchOS 2.0, or tvOS 9.0.</p>
@@ -497,25 +410,32 @@ appropriate context (e.g. if it captures an object that must deallocate on the m
 
 <p>Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.</p>
 <h2 id='version-history' class='heading'>Version History</h2>
+<h3 id='v1-4-0' class='heading'>v1.4.0</h3>
+
+<ul>
+<li>Fix the cancellation propagation behavior of <code><a href="Structs/Promise/Resolver.html#/s:12Tomorrowland7PromiseV8ResolverV7resolve4withyAA0B6ResultOyxq_G_tF">Promise.Resolver.resolve(with:)</a></code> and the <code>flatMap</code> family of methods. Previously, requesting cancellation of the promise associated with the resolver (for <code>resolve(with:)</code>, or the returned promise for the <code>flatMap</code> family) would immediately request cancellation of the upstream promise even if the upstream promise had other children. The new behavior fixes this such that it participates in automatic cancellation propagation just like any other child promise (<a href="https://github.com/lilyball/Tomorrowland/issues/54" title="Resolver.resolve(with: Promise) handles cancellation incorrectly">#54</a>).</li>
+<li>Slightly optimize stack usage when chaining one promise to another.</li>
+<li>Avoid using stack space for chained promises that don&rsquo;t involve a callback. For example, when the promise returned from a <code>flatMap(on:token:_:)</code> resolves it will resolve the outer promise without using additional stack frames. You can think of it like tail calling functions. This affects not just <code>flatMap</code> but also operations such as <code>tap()</code>, <code>ignoringCancel()</code>, and more. This also applies to Obj-C (with <code>TWLPromise</code>).</li>
+</ul>
+
+<p>Note: This does not affect the variants that implicitly upcast from some <code>E: Swift.Error</code> to <code>Swift.Error</code> such as <code>tryFlatMap(on:token:_:)</code>.</p>
+
+<ul>
+<li>Change cancellation propagation behavior of <code>onCancel</code>. Like <code>tap</code>, it doesn&rsquo;t prevent automatic cancellation propagation if the parent has other children and all other children request cancellation. Unlike <code>tap</code>, requesting cancellation of <code>onCancel</code> when there are no other children will propagate cancellation to the parent. The motivation here is attaching an <code>onCancel</code> observer shouldn&rsquo;t prevent cancellation that would otherwise occur, but when it&rsquo;s the only child it should behave like the other standard observers (<a href="https://github.com/lilyball/Tomorrowland/issues/57" title="onCancel() handler prevents automatic cancellation propagation">#57</a>).</li>
+<li>Add method <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV9makeChildACyxq_GyF">Promise.makeChild()</a></code>. This returns a new child of the receiver that adopts the receiver&rsquo;s value and propagates cancellation like any other observer. The purpose here is to be used when handing back multiple children of one parent to callers, as handing back the parent means any one caller can cancel it without the other callers&rsquo; participation. This is particularly useful in conjunction with <code>propagatingCancellation(on:cancelRequested:)</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/56" title="Add Promise.makeChild()">#56</a>).</li>
+</ul>
 <h3 id='v1-3-0' class='heading'>v1.3.0</h3>
 
 <ul>
-<li>Add <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> (<code>TWLPromiseContext.isExecutingNow</code> in Obj-C) that returns <code>true</code> if accessed from within a callback registered
-with <code>.nowOr(_:)</code> and executing synchronously, or <code>false</code> otherwise. If accessed from within a callback (or <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code>) registered with
-<code>.immediate</code> and running synchronously, it inherits the surrounding scope&rsquo;s <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag. This is intended to allow
-<code>Promise(on: .immediate, { … })</code> to query the surrounding scope&rsquo;s flag (<a href="https://github.com/lilyball/Tomorrowland/issues/53" title="Can we add something like PromiseContext.isExecutingNow?">#53</a>).</li>
+<li>Add <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> (<code>TWLPromiseContext.isExecutingNow</code> in Obj-C) that returns <code>true</code> if accessed from within a callback registered with <code>.nowOr(_:)</code> and executing synchronously, or <code>false</code> otherwise. If accessed from within a callback (or <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on_ACyxq_GAA0B7ContextO_yAC8ResolverVyxq__Gctcfc">Promise.init(on:_:)</a></code>) registered with <code>.immediate</code> and running synchronously, it inherits the surrounding scope&rsquo;s <code><a href="Enums/PromiseContext.html#/s:12Tomorrowland14PromiseContextO14isExecutingNowSbvpZ">PromiseContext.isExecutingNow</a></code> flag. This is intended to allow <code>Promise(on: .immediate, { … })</code> to query the surrounding scope&rsquo;s flag (<a href="https://github.com/lilyball/Tomorrowland/issues/53" title="Can we add something like PromiseContext.isExecutingNow?">#53</a>).</li>
 <li>Add convenience methods to Obj-C for doing then+catch together, as this is a common pattern and chaining Obj-C methods is a little awkward (<a href="https://github.com/lilyball/Tomorrowland/issues/45" title="Add convenience methods to Obj-C for then+catch">#45</a>).</li>
-<li>Change <code>Promise.timeout</code>&rsquo;s default context to <code>.nowOr(.auto)</code> for the <code>Error</code> overload as well.</li>
-<li>Change the behavior of <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> when the <code>delay</code> is less than or equal to zero, the <code>context</code> is <code>.immediate</code> or <code>.nowOr(_:)</code>, and the
-upstream promise hasn&rsquo;t resolved yet. Previously the timeout would occur asynchronously and the upstream promise would get a chance to race the timeout. With
-the new behavior the timeout occurs synchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/49" title="timeout should skip the timer if the delay is &lt;= 0">#49</a>).</li>
+<li>Change <code>Promise.timeout</code>&lsquo;s default context to <code>.nowOr(.auto)</code> for the <code>Error</code> overload as well.</li>
+<li>Change the behavior of <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV7timeout2on5delayACyxAA0B12TimeoutErrorOyq_GGAA0B7ContextO_SdtF">Promise.timeout(on:delay:)</a></code> when the <code>delay</code> is less than or equal to zero, the <code>context</code> is <code>.immediate</code> or <code>.nowOr(_:)</code>, and the upstream promise hasn&rsquo;t resolved yet. Previously the timeout would occur asynchronously and the upstream promise would get a chance to race the timeout. With the new behavior the timeout occurs synchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/49" title="timeout should skip the timer if the delay is &lt;= 0">#49</a>).</li>
 </ul>
 <h3 id='v1-2-0' class='heading'>v1.2.0</h3>
 
 <ul>
-<li>Add <code>PromiseContext.nowOr(context)</code> (<code>+[TWLContext nowOrContext:]</code> in Obj-C) that runs the callback synchronously when registered if the promise
-has already resolved, otherwise registers the callback to run on <code>context</code>. This can be used to replace code that previously would have required checking
-<code>promise.result</code> prior to registering the callback (<a href="https://github.com/lilyball/Tomorrowland/issues/34" title="Add a .mainImmediate context">#34</a>).</li>
+<li>Add <code>PromiseContext.nowOr(context)</code> (<code>+[TWLContext nowOrContext:]</code> in Obj-C) that runs the callback synchronously when registered if the promise has already resolved, otherwise registers the callback to run on <code>context</code>. This can be used to replace code that previously would have required checking <code>promise.result</code> prior to registering the callback (<a href="https://github.com/lilyball/Tomorrowland/issues/34" title="Add a .mainImmediate context">#34</a>).</li>
 </ul>
 
 <p>For example:</p>
@@ -525,30 +445,20 @@ has already resolved, otherwise registers the callback to run on <code>context</
 </code></pre>
 
 <ul>
-<li>Add <code><a href="Structs/Promise/Resolver.html#/s:12Tomorrowland7PromiseV8ResolverV18hasRequestedCancelSbvp">Promise.Resolver.hasRequestedCancel</a></code> (<code>TWLResolver.cancelRequested</code> in Obj-C) that returns <code>true</code> if the promise has been requested to
-cancel or is already cancelled, or <code>false</code> if it hasn&rsquo;t been requested to cancel or is fulfilled or rejected. This can be used when a promise initializer takes
-significant time in a manner not easily interrupted by an <code>onRequestCancel</code> handler (<a href="https://github.com/lilyball/Tomorrowland/issues/47" title="Add Promise.Resolver.isCancelled property">#47</a>).</li>
-<li>Change <code>Promise.timeout</code>&rsquo;s default context from <code>.auto</code> to <code>.nowOr(.auto)</code>. This behaves the same as <code>.auto</code> in most cases, except if the receiver has
-already been resolved this will cause the returned promise to likewise already be resolved (<a href="https://github.com/lilyball/Tomorrowland/issues/50" title="Consider changing timeout&#39;s default context to .nowOr(.auto)">#50</a>).</li>
-<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when5first15cancelRemainingAA7PromiseVyxq_GSayAGG_Sbtr0_lF">when(first:cancelRemaining:)</a></code> returns an already-cancelled promise if all input promises were previously cancelled, instead of cancelling the
-returned promise asynchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/51" title="when(first:cancelRemaining:) won&#39;t cancel synchronously if all inputs have cancelled">#51</a>).</li>
-<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when9fulfilled3qos15cancelOnFailureAA7PromiseVySayxGq_GSayAGyxq_GG_8Dispatch0I3QoSV0J6SClassOSbtr0_lF">when(fulfilled:qos:cancelOnFailure:)</a></code> returns an already-resolved promise if either all input promises were previously fulfliled or any input
-promise was previously rejected or cancelled (<a href="https://github.com/lilyball/Tomorrowland/issues/52" title="when(fulfilled:…) should be able to resolve synchronously">#52</a>).</li>
+<li>Add <code><a href="Structs/Promise/Resolver.html#/s:12Tomorrowland7PromiseV8ResolverV18hasRequestedCancelSbvp">Promise.Resolver.hasRequestedCancel</a></code> (<code>TWLResolver.cancelRequested</code> in Obj-C) that returns <code>true</code> if the promise has been requested to cancel or is already cancelled, or <code>false</code> if it hasn&rsquo;t been requested to cancel or is fulfilled or rejected. This can be used when a promise initializer takes significant time in a manner not easily interrupted by an <code>onRequestCancel</code> handler (<a href="https://github.com/lilyball/Tomorrowland/issues/47" title="Add Promise.Resolver.isCancelled property">#47</a>).</li>
+<li>Change <code>Promise.timeout</code>&rsquo;s default context from <code>.auto</code> to <code>.nowOr(.auto)</code>. This behaves the same as <code>.auto</code> in most cases, except if the receiver has already been resolved this will cause the returned promise to likewise already be resolved (<a href="https://github.com/lilyball/Tomorrowland/issues/50" title="Consider changing timeout&#39;s default context to .nowOr(.auto)">#50</a>).</li>
+<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when5first15cancelRemainingAA7PromiseVyxq_GSayAGG_Sbtr0_lF">when(first:cancelRemaining:)</a></code> returns an already-cancelled promise if all input promises were previously cancelled, instead of cancelling the returned promise asynchronously (<a href="https://github.com/lilyball/Tomorrowland/issues/51" title="when(first:cancelRemaining:) won&#39;t cancel synchronously if all inputs have cancelled">#51</a>).</li>
+<li>Ensure <code><a href="Functions.html#/s:12Tomorrowland4when9fulfilled3qos15cancelOnFailureAA7PromiseVySayxGq_GSayAGyxq_GG_8Dispatch0I3QoSV0J6SClassOSbtr0_lF">when(fulfilled:qos:cancelOnFailure:)</a></code> returns an already-resolved promise if either all input promises were previously fulfliled or any input promise was previously rejected or cancelled (<a href="https://github.com/lilyball/Tomorrowland/issues/52" title="when(fulfilled:…) should be able to resolve synchronously">#52</a>).</li>
 </ul>
 <h3 id='v1-1-1' class='heading'>v1.1.1</h3>
 
 <ul>
-<li>Fix memory leaks in <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code> and
-<code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV05chainC04from34includingCancelWithoutInvalidatingyAC_SbtF">PromiseInvalidationToken.chainInvalidation(from:includingCancelWithoutInvalidating:)</a></code> when cleaning up <code>nil</code> nodes prior to pushing on the
-new node (<a href="https://github.com/lilyball/Tomorrowland/issues/48" title="Memory leak in PromiseInvalidationToken">#48</a>).</li>
+<li>Fix memory leaks in <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code> and <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV05chainC04from34includingCancelWithoutInvalidatingyAC_SbtF">PromiseInvalidationToken.chainInvalidation(from:includingCancelWithoutInvalidating:)</a></code> when cleaning up <code>nil</code> nodes prior to pushing on the new node (<a href="https://github.com/lilyball/Tomorrowland/issues/48" title="Memory leak in PromiseInvalidationToken">#48</a>).</li>
 </ul>
 <h3 id='v1-1-0' class='heading'>v1.1.0</h3>
 
 <ul>
-<li>Add new method <code>.propagatingCancellation(on:cancelRequested:)</code> that can be used to create a long-lived promise that propagates cancellation from its
-children to its parent while it&rsquo;s still alive. Normally promises don&rsquo;t propagate cancellation until they themselves are released, in case more children are going to be
-added. This new method is intended to be used when deduplicating requests for an asynchronous resource (such as a network load) such that the resource request
-can be cancelled in the event that no children care about it anymore (<a href="https://github.com/lilyball/Tomorrowland/issues/46" title="A way to hold onto a promise without blocking cancellation propagation from children">#46</a>).</li>
+<li>Add new method <code>.propagatingCancellation(on:cancelRequested:)</code> that can be used to create a long-lived promise that propagates cancellation from its children to its parent while it&rsquo;s still alive. Normally promises don&rsquo;t propagate cancellation until they themselves are released, in case more children are going to be added. This new method is intended to be used when deduplicating requests for an asynchronous resource (such as a network load) such that the resource request can be cancelled in the event that no children care about it anymore (<a href="https://github.com/lilyball/Tomorrowland/issues/46" title="A way to hold onto a promise without blocking cancellation propagation from children">#46</a>).</li>
 </ul>
 <h3 id='v1-0-1' class='heading'>v1.0.1</h3>
 
@@ -558,27 +468,18 @@ can be cancelled in the event that no children care about it anymore (<a href="h
 <h3 id='v1-0-0' class='heading'>v1.0.0</h3>
 
 <ul>
-<li>Fix a rather serious bug where <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s would not deinit as long as any promise whose callback was tied to the token was still unresolved.
-This meant that the default <code>invalidateOnDeinit</code> behavior would not trigger and the callback would still fire even though there were no more external references
-to the token, and this meant any promises configured to be cancelled when the promise invalidated would not cancel. Tokens used purely for
-<code>requestCancelOnInvalidate(_:)</code> would still deallocate, and tokens would still deallocate after any associated promises had resolved.</li>
-<li>Tweak the atomic memory ordering used in <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s. After a careful re-reading I don&rsquo;t believe I was issuing the correct fences previously,
-making it possible for tokens whose associated promise callbacks were executing concurrently with a call to <code>requestCancelOnInvalidate(_:)</code> to read the
-wrong generation value, and for tokens that had <code>requestCancelOnInvalidate(_:)</code> invoked concurrently on multiple threads to corrupt the generation.</li>
-<li>Add <code>PromiseInvalidationToken.chainInvalidation(from:)</code> to invalidate a token whenever another token invalidates. This allows for building a tree of
-tokens in order to have both fine-grained and bulk invalidation at the same time. Tokens chained together this way stay chained forever (<a href="https://github.com/lilyball/Tomorrowland/issues/43" title="Add PromiseInvalidationToken.chainInvalidation(from: PromiseInvalidationToken)">#43</a>).</li>
-<li>Update project file to Swift 5.0. The source already supported this. This change should only affect people using <a href="https://github.com/carthage/carthage">Carthage</a> or anyone adding building this
-framework from source.</li>
-<li>Update the podspec to list both Swift 4.2 and Swift 5.0. With CocoaPods 1.7.0 or later your <code>Podfile</code> can now declare which version of Swift it&rsquo;s compatible with.
-For anyone using CocoaPods 1.6 or earlier it will default to Swift 5.0.</li>
+<li>Fix a rather serious bug where <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s would not deinit as long as any promise whose callback was tied to the token was still unresolved. This meant that the default <code>invalidateOnDeinit</code> behavior would not trigger and the callback would still fire even though there were no more external references to the token, and this meant any promises configured to be cancelled when the promise invalidated would not cancel. Tokens used purely for <code>requestCancelOnInvalidate(_:)</code> would still deallocate, and tokens would still deallocate after any associated promises had resolved.</li>
+<li>Tweak the atomic memory ordering used in <code><a href="Structs/PromiseInvalidationToken.html">PromiseInvalidationToken</a></code>s. After a careful re-reading I don&rsquo;t believe I was issuing the correct fences previously, making it possible for tokens whose associated promise callbacks were executing concurrently with a call to <code>requestCancelOnInvalidate(_:)</code> to read the wrong generation value, and for tokens that had <code>requestCancelOnInvalidate(_:)</code> invoked concurrently on multiple threads to corrupt the generation.</li>
+<li>Add <code>PromiseInvalidationToken.chainInvalidation(from:)</code> to invalidate a token whenever another token invalidates. This allows for building a tree of tokens in order to have both fine-grained and bulk invalidation at the same time. Tokens chained together this way stay chained forever (<a href="https://github.com/lilyball/Tomorrowland/issues/43" title="Add PromiseInvalidationToken.chainInvalidation(from: PromiseInvalidationToken)">#43</a>).</li>
+<li>Update project file to Swift 5.0. The source already supported this. This change should only affect people using <a href="https://github.com/carthage/carthage">Carthage</a> or anyone adding building this framework from source.</li>
+<li>Update the podspec to list both Swift 4.2 and Swift 5.0. With CocoaPods 1.7.0 or later your <code>Podfile</code> can now declare which version of Swift it&rsquo;s compatible with. For anyone using CocoaPods 1.6 or earlier it will default to Swift 5.0.</li>
 </ul>
 <h3 id='v0-6-0' class='heading'>v0.6.0</h3>
 
 <ul>
 <li>Make <code><a href="Structs/DelayedPromise.html">DelayedPromise</a></code> conform to <code>Equatable</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/37" title="DelayedPromise should conform to Equatable">#37</a>).</li>
 <li>Add convenience functions for working with <code>Swift.Result</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/39" title="Add some minimal support for Result">#39</a>).</li>
-<li>Mark all the deprecated functions as unavailable instead. This restores the ability to write code like <code>promise.then({ foo?($0) })</code> without it incorrectly
-resolving to the deprecated form of <code>map(_:)</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/35" title="Move deprecations to unavailable">#35</a>).</li>
+<li>Mark all the deprecated functions as unavailable instead. This restores the ability to write code like <code>promise.then({ foo?($0) })</code> without it incorrectly resolving to the deprecated form of <code>map(_:)</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/35" title="Move deprecations to unavailable">#35</a>).</li>
 <li>Rename <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV6resultACyxq_GAA0B6ResultOyxq_G_tcfc">Promise.init(result:)</a></code> and <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">Promise.init(on:result:after:)</a></code> to <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV4withACyxq_GAA0B6ResultOyxq_G_tcfc">Promise.init(with:)</a></code> and <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on4with5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">Promise.init(on:with:after:)</a></code> (<a href="https://github.com/lilyball/Tomorrowland/issues/40" title="Rename Promise.init(result:) to Promise.init(with:)">#40</a>).</li>
 </ul>
 <h3 id='v0-5-1' class='heading'>v0.5.1</h3>
@@ -588,28 +489,23 @@ resolving to the deprecated form of <code>map(_:)</code> (<a href="https://githu
 <li>Ensure that if a user-supplied callback is invoked, it is also released on the context where it was invoked (<a href="https://github.com/lilyball/Tomorrowland/issues/38" title="Dealloc completion blocks on the context they&#39;re scheduled on">#38</a>).</li>
 </ul>
 
-<p>This guarantee is only made for callbacks that are invoked (ignoring tokens). What this means is when using e.g. <code>.then(on:_:)</code> if the promise is fulfilled, the
-  <code>onSuccess</code> block will be released on the provided context, but if the promise is rejected no such guarantee is made. If you rely on the context it&rsquo;s released on
-  (e.g. it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>mapResult</code> variants.</p>
+<p>This guarantee is only made for callbacks that are invoked (ignoring tokens). What this means is when using e.g. <code>.then(on:_:)</code> if the promise is fulfilled, the <code>onSuccess</code> block will be released on the provided context, but if the promise is rejected no such guarantee is made. If you rely on the context it&rsquo;s released on (e.g. it captures an object that must deallocate on the main thread) then you can use <code>.always</code> or one of the <code>mapResult</code> variants.</p>
 <h3 id='v0-5-0' class='heading'>v0.5.0</h3>
 
 <ul>
 <li>Rename a lot of methods on <code><a href="Structs/Promise.html">Promise</a></code> and <code><a href="Structs/TokenPromise.html">TokenPromise</a></code> (<a href="https://github.com/lilyball/Tomorrowland/issues/5" title="Should we adopt .map, .flatMap terminology?">#5</a>).</li>
 </ul>
 
-<p>This gets rid of most overrides, leaving the only overridden methods to be ones that handle either <code>Swift.Error</code> or <code>E: Swift.Error</code>, and even these overrides
-  are removed in the Swift 5 compiler.</p>
+<p>This gets rid of most overrides, leaving the only overridden methods to be ones that handle either <code>Swift.Error</code> or <code>E: Swift.Error</code>, and even these overrides are removed in the Swift 5 compiler.</p>
 
-<p><code>then</code>  is now <code>map</code> or <code>flatMap</code>, <code>recover</code>&rsquo;s override is now <code>flatMapError</code>, <code>always</code>&rsquo;s override is now <code>flatMapResult</code>, and similar renames were made for
-  the <code>try</code> variants.</p>
+<p><code>then</code>  is now <code>map</code> or <code>flatMap</code>, <code>recover</code>&rsquo;s override is now <code>flatMapError</code>, <code>always</code>&rsquo;s override is now <code>flatMapResult</code>, and similar renames were made for the <code>try</code> variants.</p>
 
 <ul>
 <li>Add a new <code>then</code> method whose block returns <code>Void</code>. The returned promise resolves to the same result as the original promise.</li>
 <li>Add new <code>mapError</code> and <code>tryMapError</code> methods.</li>
 <li>Add new <code>mapResult</code> and <code>tryMapResult</code> methods.</li>
 <li>Extend <code>tryFlatMapError</code> to be available on all <code><a href="Structs/Promise.html">Promise</a></code>s instead of just those whose error type is <code>Swift.Error</code>.</li>
-<li>Remove the default <code>.auto</code> value for the <code>on context:</code> parameter to most calls. It&rsquo;s now only provided for the &ldquo;terminal&rdquo; callbacks, the ones that don&rsquo;t return a
-value from the handler. This avoids the common problem of running trivial maps on the main thread unnecessarily (<a href="https://github.com/lilyball/Tomorrowland/issues/33" title="Remove default context parameter from map, etc">#33</a>).</li>
+<li>Remove the default <code>.auto</code> value for the <code>on context:</code> parameter to most calls. It&rsquo;s now only provided for the &ldquo;terminal&rdquo; callbacks, the ones that don&rsquo;t return a value from the handler. This avoids the common problem of running trivial maps on the main thread unnecessarily (<a href="https://github.com/lilyball/Tomorrowland/issues/33" title="Remove default context parameter from map, etc">#33</a>).</li>
 </ul>
 <h3 id='v0-4-3' class='heading'>v0.4.3</h3>
 
@@ -629,23 +525,16 @@ value from the handler. This avoids the common problem of running trivial maps o
 <h3 id='v0-4' class='heading'>v0.4</h3>
 
 <ul>
-<li>Improve the behavior of <code>.delay(on:_:)</code> and <code>.timeout(on:delay:)</code> when using <code>PromiseContext.operationQueue</code>. The relevant operation is now added
-to the queue immediately and only becomes ready once the delay/timeout has elapsed.</li>
+<li>Improve the behavior of <code>.delay(on:_:)</code> and <code>.timeout(on:delay:)</code> when using <code>PromiseContext.operationQueue</code>. The relevant operation is now added to the queue immediately and only becomes ready once the delay/timeout has elapsed.</li>
 <li>Add <code>-[TWLPromise initCancelled]</code> to construct a pre-cancelled promise.</li>
-<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on9fulfilled5afterACyxq_GAA0B7ContextO_xSdtcfc">Promise.init(on:fulfilled:after:)</a></code>, <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on8rejected5afterACyxq_GAA0B7ContextO_q_Sdtcfc">Promise.init(on:rejected:after:)</a></code>, and <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">Promise.init(on:result:after:)</a></code>. These initializers produce
-something akin to <code>Promise(fulfilled: value).delay(after)</code> except they respond to cancellation immediately. This makes them more suitable for use as
-cancellable timers, as opposed to <code>.delay(_:)</code> which is more intended for debugging (<a href="https://github.com/lilyball/Tomorrowland/issues/27" title="Add Promise(fulfilled:after:) and Promise(rejected:after:)">#27</a>).</li>
-<li>Try to clean up the callback list when calling <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code>. Any deallocated promises at the head of the
-callback list will be removed. This will help keep the callback list from growing uncontrollably when a token is used merely to cancel all promises when the owner
-deallocates as opposed to being periodically invalidated during its lifetime (<a href="https://github.com/lilyball/Tomorrowland/issues/25" title="PromiseInvalidationTokenBox should clean up the callback list when possible">#25</a>).</li>
-<li>Cancel the <code>.delay(_:)</code> timer if <code>.requestCancel()</code> is invoked and the upstream promise cancelled. This way requested cancels will skip the delay, but
-unexpected cancels will still delay the result (<a href="https://github.com/lilyball/Tomorrowland/issues/26" title="Make delay cancelable">#26</a>).</li>
+<li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on9fulfilled5afterACyxq_GAA0B7ContextO_xSdtcfc">Promise.init(on:fulfilled:after:)</a></code>, <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on8rejected5afterACyxq_GAA0B7ContextO_q_Sdtcfc">Promise.init(on:rejected:after:)</a></code>, and <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV2on6result5afterACyxq_GAA0B7ContextO_AA0B6ResultOyxq_GSdtcfc">Promise.init(on:result:after:)</a></code>. These initializers produce something akin to <code>Promise(fulfilled: value).delay(after)</code> except they respond to cancellation immediately. This makes them more suitable for use as cancellable timers, as opposed to <code>.delay(_:)</code> which is more intended for debugging (<a href="https://github.com/lilyball/Tomorrowland/issues/27" title="Add Promise(fulfilled:after:) and Promise(rejected:after:)">#27</a>).</li>
+<li>Try to clean up the callback list when calling <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25requestCancelOnInvalidateyyAA0B0Vyxq_Gr0_lF">PromiseInvalidationToken.requestCancelOnInvalidate(_:)</a></code>. Any deallocated promises at the head of the callback list will be removed. This will help keep the callback list from growing uncontrollably when a token is used merely to cancel all promises when the owner deallocates as opposed to being periodically invalidated during its lifetime (<a href="https://github.com/lilyball/Tomorrowland/issues/25" title="PromiseInvalidationTokenBox should clean up the callback list when possible">#25</a>).</li>
+<li>Cancel the <code>.delay(_:)</code> timer if <code>.requestCancel()</code> is invoked and the upstream promise cancelled. This way requested cancels will skip the delay, but unexpected cancels will still delay the result (<a href="https://github.com/lilyball/Tomorrowland/issues/26" title="Make delay cancelable">#26</a>).</li>
 </ul>
 <h3 id='v0-3-4' class='heading'>v0.3.4</h3>
 
 <ul>
-<li>Add <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25cancelWithoutInvalidatingyyF">PromiseInvalidationToken.cancelWithoutInvalidating()</a></code>. This method cancels any associated promises without invalidating the token, thus
-allowing for any <code>onCancel</code> and <code>always</code> handlers on the promises to fire (<a href="https://github.com/lilyball/Tomorrowland/issues/23" title="Add PromiseInvalidationToken.cancelWithoutInvalidation()">#23</a>).</li>
+<li>Add <code><a href="Structs/PromiseInvalidationToken.html#/s:12Tomorrowland24PromiseInvalidationTokenV25cancelWithoutInvalidatingyyF">PromiseInvalidationToken.cancelWithoutInvalidating()</a></code>. This method cancels any associated promises without invalidating the token, thus allowing for any <code>onCancel</code> and <code>always</code> handlers on the promises to fire (<a href="https://github.com/lilyball/Tomorrowland/issues/23" title="Add PromiseInvalidationToken.cancelWithoutInvalidation()">#23</a>).</li>
 <li>Add missing <code>Promise</code>↔<code>ObjCPromise</code> bridging methods for the case of <code>Value: AnyObject, Error == Swift.Error</code> (<a href="https://github.com/lilyball/Tomorrowland/issues/24" title="Add Swift&lt;-&gt;ObjC bridging methods for Value: AnyObject, Error == Swift.Error">#24</a>).</li>
 </ul>
 <h3 id='v0-3-3' class='heading'>v0.3.3</h3>
@@ -676,8 +565,7 @@ allowing for any <code>onCancel</code> and <code>always</code> handlers on the p
 <ul>
 <li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV25requestCancelOnInvalidateyACyxq_GAA0B17InvalidationTokenVF">Promise.requestCancelOnInvalidate(_:)</a></code> as a convenience for <code>token.requestCancelOnInvalidate(_:)</code>.</li>
 <li>Add <code><a href="Structs/Promise.html#/s:12Tomorrowland7PromiseV21requestCancelOnDeinityACyxq_GyXlF">Promise.requestCancelOnDeinit(_:)</a></code> as a convenience for adding a token property to an object that invalites on deinit.</li>
-<li>Better support for <code>OperationQueue</code> with <code>delay</code>/<code>timeout</code>. Instead of using the <code>OperationQueue</code>&rsquo;s underlying queue, we instead use a <code>.userInitiated</code>
-queue for the timer and hop onto the <code>OperationQueue</code> to resolve the promise.</li>
+<li>Better support for <code>OperationQueue</code> with <code>delay</code>/<code>timeout</code>. Instead of using the <code>OperationQueue</code>&rsquo;s underlying queue, we instead use a <code>.userInitiated</code> queue for the timer and hop onto the <code>OperationQueue</code> to resolve the promise.</li>
 </ul>
 <h3 id='v0-2' class='heading'>v0.2</h3>
 
@@ -693,7 +581,7 @@ queue for the timer and hop onto the <code>OperationQueue</code> to resolve the 
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-05-23)</p>
+          <p>&copy; 2020 <a class="link" href="https://github.com/lilyball/Tomorrowland" target="_blank" rel="external">Lily Ballard</a>. All rights reserved. (Last updated: 2020-07-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.13.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external">Realm</a> project.</p>
         </section>
       </article>
