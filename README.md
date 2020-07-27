@@ -1,6 +1,6 @@
 # Tomorrowland
 
-[![Version](https://img.shields.io/badge/version-v1.3.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
+[![Version](https://img.shields.io/badge/version-v1.4.0-blue.svg)](https://github.com/lilyball/Tomorrowland/releases/latest)
 ![Platforms](https://img.shields.io/badge/platforms-ios%20%7C%20macos%20%7C%20watchos%20%7C%20tvos-lightgrey.svg)
 ![Languages](https://img.shields.io/badge/languages-swift%20%7C%20objc-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
@@ -347,7 +347,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Version History
 
-### Development
+### v1.4.0
 
 - Fix the cancellation propagation behavior of `Promise.Resolver.resolve(with:)` and the `flatMap` family of methods. Previously, requesting cancellation of the promise associated with the resolver (for `resolve(with:)`, or the returned promise for the `flatMap` family) would immediately request cancellation of the upstream promise even if the upstream promise had other children. The new behavior fixes this such that it participates in automatic cancellation propagation just like any other child promise ([#54][]).
 - Slightly optimize stack usage when chaining one promise to another.
