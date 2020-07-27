@@ -317,8 +317,8 @@ an asynchronous resource (such as a network load). In this scenario you may wish
 resource, without preventing cancellation of the resource load if all clients cancel their requests. This can be accomplished by holding onto the result of calling
 `.propagatingCancellation(on:cancelRequested:)`. The promise returned from this method will propagate cancellation to its parent as soon as all children
 have requested cancellation even if the promise is still in scope. When cancellation is requested, the `cancelRequested` handler will be invoked immediately prior to
-propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load). An
-example of this might look like:
+propagating cancellation upwards; this enables you to release your reference to the promise (so a new request by a client will create a brand new resource load).
+Returning a new child to each client can be done using `makeChild()`. An example of this might look like:
 
 ```swift
 func loadResource(at url: URL) {
@@ -334,7 +334,7 @@ func loadResource(at url: URL) {
         resourceLoads[url] = promise
     }
     // Return a new child for each request so all clients have to cancel, not just one.
-    return promise.then(on: .immediate, { _ in })
+    return promise.makeChild()
 }
 ```
 
@@ -450,8 +450,12 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   other children request cancellation. Unlike `tap`, requesting cancellation of `onCancel` when there are no other children will propagate cancellation to the parent. The
   motivation here is attaching an `onCancel` observer shouldn't prevent cancellation that would otherwise occur, but when it's the only child it should behave like the
   other standard observers ([#57][]).
+- Add method `Promise.makeChild()`. This returns a new child of the receiver that adopts the receiver's value and propagates cancellation like any other observer.
+  The purpose here is to be used when handing back multiple children of one parent to callers, as handing back the parent means any one caller can cancel it without
+  the other callers' participation. This is particularly useful in conjunction with `propagatingCancellation(on:cancelRequested:)` ([#56][]).
 
 [#54]: https://github.com/lilyball/Tomorrowland/issues/54 "Resolver.resolve(with: Promise) handles cancellation incorrectly"
+[#56]: https://github.com/lilyball/Tomorrowland/issues/56 "Add Promise.makeChild()"
 [#57]: https://github.com/lilyball/Tomorrowland/issues/57 "onCancel() handler prevents automatic cancellation propagation"
 
 ### v1.3.0

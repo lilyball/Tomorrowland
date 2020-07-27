@@ -293,6 +293,17 @@
     [self waitForExpectations:@[expectation] timeout:1];
 }
 
+- (void)testMakeChild {
+    TWLResolver<NSNumber*,NSString*> *resolver;
+    __auto_type promise = [[TWLPromise<NSNumber*,NSString*> alloc] initWithResolver:&resolver];
+    __auto_type promise2 = [promise makeChild];
+    XCTAssertNotEqualObjects(promise, promise2);
+    TWLAssertPromiseNotResolved(promise2);
+    [resolver fulfillWithValue:@42];
+    TWLAssertPromiseFulfilledWithValue(promise, @42);
+    TWLAssertPromiseFulfilledWithValue(promise2, @42);
+}
+
 - (void)testExtremeChaining {
     // Piping one promise to another should support extreme recursion without blowing the stack.
     

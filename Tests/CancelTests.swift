@@ -492,6 +492,21 @@ final class CancelTests: XCTestCase {
         }
     }
     
+    func testPropagateCancelMakeChild() {
+        let expectations: [XCTestExpectation]
+        let sema: DispatchSemaphore
+        do {
+            let promise: Promise<Int,String>
+            (promise, sema) = Promise<Int,String>.makeCancellablePromise(error: "foo")
+            let promise2 = promise.makeChild()
+            expectations = [promise, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+            promise2.requestCancel()
+        }
+        sema.signal()
+        wait(for: expectations, timeout: 0)
+
+    }
+    
     func testPropagateCancelTryFlatMapResultThrowing() {
         struct DummyError: Swift.Error {}
         let expectations: [XCTestExpectation]

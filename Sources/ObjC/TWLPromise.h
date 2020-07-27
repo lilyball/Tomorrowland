@@ -495,6 +495,16 @@ NS_SWIFT_NAME(ObjCPromise)
 /// \returns A new promise that will resolve to the same value as the receiver.
 - (TWLPromise<ValueType,ErrorType> *)propagatingCancellationOnContext:(TWLContext *)context cancelRequestedHandler:(void (^)(TWLPromise<ValueType,ErrorType> *promise))cancelRequested NS_SWIFT_NAME(propagatingCancellation(on:cancelRequested:));
 
+/// Returns a promise that adopts the same value as the receiver.
+///
+/// This method is used in order to hand back child promises to callers so that they cannot directly
+/// request cancellation of a shared parent promise. This is most useful in conjunction with
+/// \c -propagatingCancellationOnContext:cancelRequestedHandler: but could also be used any time a
+/// shared promise is given to multiple callers.
+///
+/// \returns A new promise that will resolve to the same value as the receiver.
+- (TWLPromise<ValueType,ErrorType> *)makeChild;
+
 /// Returns the promise's value if it's already been resolved.
 ///
 /// If the return value is \c YES and both \a *outValue and \a *outError are \c nil this means the

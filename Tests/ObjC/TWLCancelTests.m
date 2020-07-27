@@ -417,6 +417,20 @@
     }];
 }
 
+- (void)testPropagateCancelMakeChild {
+    NSArray<XCTestExpectation*> *expectations;
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    @autoreleasepool {
+        TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+        TWLPromise *promise2 = [promise makeChild];
+        expectations = @[TWLExpectationCancelOnContext(TWLContext.immediate, promise),
+                         TWLExpectationCancelOnContext(TWLContext.immediate, promise2)];
+        [promise2 requestCancel];
+    }
+    dispatch_semaphore_signal(sema);
+    [self waitForExpectations:expectations timeout:0];
+}
+
 - (void)testPropagateCancelDelayedPromise {
     NSArray<XCTestExpectation*> *expectations;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);

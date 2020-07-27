@@ -416,6 +416,13 @@
     return promise;
 }
 
+- (TWLPromise *)makeChild {
+    TWLResolver *resolver;
+    auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
+    [self pipeToResolver:resolver];
+    return promise;
+}
+
 - (BOOL)getValue:(id  _Nullable __strong *)outValue error:(id  _Nullable __strong *)outError {
     return [_box getValue:outValue error:outError];
 }

@@ -1157,6 +1157,10 @@ public struct Promise<Value,Error> {
     /// (such as a network load) without preventing cancellation of the load in the event that no
     /// children care about it anymore.
     ///
+    /// - Important: Do not give the returned promise directly to callers. Instead always hand back
+    ///   a child, such as returned from `makeChild`. Otherwise automatic cancellation propagation
+    ///   won't work as expected.
+    ///
     /// - Parameter context: The context to invoke the callback on.
     /// - Parameter cancelRequested: The callback that is invoked when the promise is requested to
     ///   cancel, either because `.requestCancel()` was invoked on it directly or because all
@@ -1182,6 +1186,20 @@ public struct Promise<Value,Error> {
         }
         // Seal the promise now. This allows cancellation propagation.
         promise._box.seal()
+        return promise
+    }
+    
+    /// Returns a promise that adopts the same value as the receiver.
+    ///
+    /// This method is used in order to hand back child promises to callers so that they cannot
+    /// directly request cancellation of a shared parent promise. This is most useful in conjunction
+    /// with `propagatingCancellation(on:cancelRequested:)` but could also be used any time a shared
+    /// promise is given to multiple callers.
+    ///
+    /// - Returns: A new promise that will resolve to the same value as the receiver.
+    public func makeChild() -> Promise<Value,Error> {
+        let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
+        pipe(to: resolver)
         return promise
     }
     

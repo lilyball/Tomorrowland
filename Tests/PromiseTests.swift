@@ -463,6 +463,16 @@ final class PromiseTests: XCTestCase {
         wait(for: [innerExpectation, outerExpectation], timeout: 1)
     }
     
+    func testMakeChild() {
+        let (promise, resolver) = Promise<Int,String>.makeWithResolver()
+        let promise2 = promise.makeChild()
+        XCTAssertNotEqual(promise, promise2);
+        XCTAssertNil(promise2.result);
+        resolver.fulfill(with: 42)
+        XCTAssertEqual(promise.result, .value(42))
+        XCTAssertEqual(promise2.result, .value(42))
+    }
+    
     func testUpcast() {
         struct DummyError: Error {}
         let promise = Promise<Int,DummyError>(rejected: DummyError())
@@ -565,8 +575,8 @@ final class PromiseTests: XCTestCase {
             })
             blockChildPromise = childPromise
         }
-        let promise1 = childPromise.then(on: .immediate, { _ in })
-        let promise2 = childPromise.then(on: .immediate, { _ in })
+        let promise1 = childPromise.makeChild()
+        let promise2 = childPromise.makeChild()
         promise1.requestCancel()
         guard XCTWaiter(delegate: self).wait(for: [notYetExpectation], timeout: 0) == .completed else {
             XCTFail("Cancel requested on child too early")
@@ -578,7 +588,7 @@ final class PromiseTests: XCTestCase {
         wait(for: [childExpectation, requestExpectation] + cancelExpectations, timeout: 0, enforceOrder: true)
         
         // Adding new children at this point causes no problems, they're just insta-cancelled.
-        let promise3 = childPromise.then(on: .immediate, { _ in })
+        let promise3 = childPromise.makeChild()
         XCTAssertEqual(promise3.result, .cancelled)
         
         withExtendedLifetime(childPromise) {} // Ensure childPromise lives to this point
@@ -662,7 +672,7 @@ final class PromiseTests: XCTestCase {
                 childExpectation.fulfill()
             })
         }
-        childPromise.then(on: .immediate, { _ in }).requestCancel()
+        childPromise.makeChild().requestCancel()
         // cancel should already be enqueued on the queue at this point. No need for a timeout
         queue.waitUntilAllOperationsAreFinished()
         wait(for: [childExpectation], timeout: 0)
@@ -710,13 +720,13 @@ final class PromiseTests: XCTestCase {
             childPromise = rootPromise.propagatingCancellation(on: .immediate, cancelRequested: { _ in
                 childExpectation.fulfill()
             })
-            let child2Promise = rootPromise.then(on: .immediate, { _ in })
+            let child2Promise = rootPromise.makeChild()
             child2Expectation = XCTestExpectation(on: .immediate, onSuccess: child2Promise, expectedValue: 42)
             child2Promise.tap().always(on: .immediate, { _ in
                 notYetExpectation.fulfill()
             })
         }
-        childPromise.then(on: .immediate, { _ in }).requestCancel()
+        childPromise.makeChild().requestCancel()
         wait(for: [notYetExpectation, childExpectation], timeout: 0)
         sema.signal()
         wait(for: [rootPromiseCancelExpectation, child2Expectation], timeout: 1)
