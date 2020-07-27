@@ -362,7 +362,7 @@
     auto promise = [[TWLPromise alloc] initWithResolver:&resolver];
     auto tokenBox = token.box;
     auto generation = tokenBox.generation;
-    enqueueCallback(self, YES, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void), BOOL isSynchronous){
+    enqueueCallback(self, NO, handler, ^(id _Nullable value, id _Nullable error, void (^(^oneshot)(void))(void), BOOL isSynchronous){
         if (value) {
             [resolver fulfillWithValue:value];
         } else if (error) {
@@ -377,7 +377,18 @@
             }];
         }
     });
-    propagateCancellation(resolver, self);
+    __weak TWLObjCPromiseBox *box = _box;
+    [resolver whenCancelRequestedOnContext:TWLContext.immediate handler:^(TWLResolver * _Nonnull resolver) {
+        // We told the parent that we weren't going to propagate cancellation, in order to prevent
+        // whenCancelled from interfering with cancellation of other children. But if cancellation
+        // of whenCancelled is requested, we want to behave as though we did mark ourselves as
+        // propagating cancellation. We can do that by incrementing the observer count now. This is
+        // safe to do even if the parent has resolved as propagating cancellation at that point does
+        // nothing.
+        TWLObjCPromiseBox *strongBox = box;
+        [strongBox incrementObserverCount];
+        [strongBox propagateCancel];
+    }];
     return promise;
 }
 

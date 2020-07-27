@@ -446,8 +446,13 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
   such as `tap()`, `ignoringCancel()`, and more. This also applies to Obj-C (with `TWLPromise`).
   
   Note: This does not affect the variants that implicitly upcast from some `E: Swift.Error` to `Swift.Error` such as `tryFlatMap(on:token:_:)`.
+- Change cancellation propagation behavior of `onCancel`. Like `tap`, it doesn't prevent automatic cancellation propagation if the parent has other children and all
+  other children request cancellation. Unlike `tap`, requesting cancellation of `onCancel` when there are no other children will propagate cancellation to the parent. The
+  motivation here is attaching an `onCancel` observer shouldn't prevent cancellation that would otherwise occur, but when it's the only child it should behave like the
+  other standard observers ([#57][]).
 
 [#54]: https://github.com/lilyball/Tomorrowland/issues/54 "Resolver.resolve(with: Promise) handles cancellation incorrectly"
+[#57]: https://github.com/lilyball/Tomorrowland/issues/57 "onCancel() handler prevents automatic cancellation propagation"
 
 ### v1.3.0
 

@@ -401,20 +401,95 @@ final class CancelTests: XCTestCase {
     }
     
     func testPropagateCancelOnCancel() {
-        let expectations: [XCTestExpectation]
-        let sema: DispatchSemaphore
-        do {
-            let promise: Promise<Int,String>
-            (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
-            let cancelExpectation = XCTestExpectation(description: "onCancel")
-            let promise2 = promise.onCancel(on: .utility, {
-                cancelExpectation.fulfill()
-            })
-            expectations = [XCTestExpectation(onCancel: promise), XCTestExpectation(onCancel: promise2), cancelExpectation]
-            promise2.requestCancel()
+        XCTContext.runActivity(named: "One observer") { _ in
+            XCTContext.runActivity(named: "onCancel left alive") { _ in
+                // Validate that sealing the upstream promise doesn't immediately cancel it. We want
+                // this assurance because onCancel does custom things with the observer ount.
+                let expectations: [XCTestExpectation]
+                let sema: DispatchSemaphore
+                do {
+                    let promise: Promise<Int,String>
+                    (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+                    let promise2 = promise.onCancel(on: .immediate, {
+                        XCTFail("callback invoked")
+                    })
+                    expectations = [promise, promise2].map({ XCTestExpectation(onSuccess: $0, expectedValue: 2) })
+                }
+                sema.signal()
+                wait(for: expectations, timeout: 1)
+            }
+            
+            XCTContext.runActivity(named: "onCancel cancelled") { _ in
+                let expectations: [XCTestExpectation]
+                let sema: DispatchSemaphore
+                do {
+                    let promise: Promise<Int,String>
+                    (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+                    let cancelExpectation = XCTestExpectation(description: "onCancel")
+                    let promise2 = promise.onCancel(on: .immediate, {
+                        cancelExpectation.fulfill()
+                    })
+                    promise2.requestCancel()
+                    // no cancellation should occur yet as promise is still sealed
+                    XCTAssertNil(promise.result)
+                    XCTAssertNil(promise2.result)
+                    expectations = [promise, promise2].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+                        + [cancelExpectation]
+                }
+                sema.signal()
+                wait(for: expectations, timeout: 0)
+            }
         }
-        sema.signal()
-        wait(for: expectations, timeout: 1)
+        
+        XCTContext.runActivity(named: "More observers") { _ in
+            XCTContext.runActivity(named: "onCancel left alive") { _ in
+                // Validate that onCancel doesn't prevent automatic cancellation propagation
+                let expectations: [XCTestExpectation]
+                let sema: DispatchSemaphore
+                do {
+                    let promise: Promise<Int,String>
+                    (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+                    let cancelExpectation = XCTestExpectation(description: "onCancel")
+                    let promise2 = promise.onCancel(on: .immediate, {
+                        cancelExpectation.fulfill()
+                    })
+                    let promise3 = promise.catch(on: .utility, { _ in
+                        XCTFail("callback invoked")
+                    })
+                    promise3.requestCancel() // cancel extra observer
+                    // no cancellation should occur yet as promise is still sealed
+                    XCTAssertNil(promise.result)
+                    XCTAssertNil(promise2.result)
+                    XCTAssertNil(promise3.result)
+                    expectations = [promise, promise2, promise3].map({ XCTestExpectation(on: .immediate, onCancel: $0) })
+                        + [cancelExpectation]
+                }
+                // promise is sealed, cancellation should occur
+                sema.signal()
+                wait(for: expectations, timeout: 0)
+            }
+            
+            XCTContext.runActivity(named: "onCancel cancelled, others alive") { _ in
+                // Validate that requesting cancellation of onCancel won't cancel parent if there
+                // are other living children.
+                let expectations: [XCTestExpectation]
+                let sema: DispatchSemaphore
+                do {
+                    let promise: Promise<Int,String>
+                    (promise, sema) = Promise<Int,String>.makeCancellablePromise(value: 2)
+                    let promise2 = promise.onCancel(on: .utility, {
+                        XCTFail("callback invoked")
+                    })
+                    let promise3 = promise.catch(on: .utility, { _ in
+                        XCTFail("callback invoked")
+                    })
+                    promise2.requestCancel() // cancel onCancel observer
+                    expectations = [promise, promise2, promise3].map({ XCTestExpectation(on: .immediate, onSuccess: $0, expectedValue: 2) })
+                }
+                sema.signal()
+                wait(for: expectations, timeout: 1)
+            }
+        }
     }
     
     func testPropagateCancelTryFlatMapResultThrowing() {

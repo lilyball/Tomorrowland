@@ -423,6 +423,13 @@ NS_SWIFT_NAME(ObjCPromise)
 
 /// Registers a callback that will be invoked when the promise is cancelled.
 ///
+/// \note Like <code>-tap</code>, \c -whenCancelled does not prevent automatic cancellation
+/// propagation if the parent has multiple children and all other children have requested
+/// cancellation. Unlike <code>-tap</code>, requesting cancellation of \c -whenCancelled will cancel
+/// the parent if the parent has no other children. <code>-whenCancelled</code>'s behavior differs
+/// from the other standard obsrevers here as attaching a \c -whenCancelled observer to a promise
+/// that would otherwise be cancelled should not prevent the cancellation.
+///
 /// \note This method assumes a context of <tt>.automatic</tt>, which evaluates to \c .main when
 /// invoked on the main thread, otherwise <tt>.defaultQoS</tt>. If you want to specify the context,
 /// use \c -whenCancelledOnContext:handler: instead.
@@ -433,12 +440,26 @@ NS_SWIFT_NAME(ObjCPromise)
 - (TWLPromise<ValueType,ErrorType> *)whenCancelled:(void (^)(void))handler NS_SWIFT_NAME(onCancel(_:));
 /// Registers a callback that will be invoked when the promise is cancelled.
 ///
+/// \note Like <code>-tap</code>, \c -whenCancelled does not prevent automatic cancellation
+/// propagation if the parent has multiple children and all other children have requested
+/// cancellation. Unlike <code>-tap</code>, requesting cancellation of \c -whenCancelled will cancel
+/// the parent if the parent has no other children. <code>-whenCancelled</code>'s behavior differs
+/// from the other standard obsrevers here as attaching a \c -whenCancelled observer to a promise
+/// that would otherwise be cancelled should not prevent the cancellation.
+///
 /// \param context The context to invoke the callback on.
 /// \param handler The callback that is invoked when the promise is cancelled.
 /// \returns A new promise that will resolve to the same value as the receiver. You may safely
 /// ignore this value.
 - (TWLPromise<ValueType,ErrorType> *)whenCancelledOnContext:(TWLContext *)context handler:(void (^)(void))handler NS_SWIFT_NAME(onCancel(on:_:));
 /// Registers a callback that will be invoked when the promise is cancelled.
+///
+/// \note Like <code>-tap</code>, \c -whenCancelled does not prevent automatic cancellation
+/// propagation if the parent has multiple children and all other children have requested
+/// cancellation. Unlike <code>-tap</code>, requesting cancellation of \c -whenCancelled will cancel
+/// the parent if the parent has no other children. <code>-whenCancelled</code>'s behavior differs
+/// from the other standard obsrevers here as attaching a \c -whenCancelled observer to a promise
+/// that would otherwise be cancelled should not prevent the cancellation. 
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on

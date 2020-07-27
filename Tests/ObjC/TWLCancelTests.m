@@ -325,21 +325,96 @@
 }
 
 - (void)testPropagateCancelWhenCancelled {
-    NSArray<XCTestExpectation*> *expectations;
-    dispatch_semaphore_t sema;
-    @autoreleasepool {
-        TWLPromise *promise = makeCancellablePromiseWithError(@"foo", &sema);
-        XCTestExpectation *cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"whenCancelRequested"];
-        TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.utility handler:^{
-            [cancelExpectation fulfill];
+    [XCTContext runActivityNamed:@"One observer" block:^(id<XCTActivity> _Nonnull activity) {
+        [XCTContext runActivityNamed:@"whenCancelled left alive" block:^(id<XCTActivity> _Nonnull activity) {
+            // Validate that sealing the upstream promise doesn't immediately cancel it. We want
+            // this assurance because whenCancelled does custom things with the observer ount.
+            NSArray<XCTestExpectation*> *expectations;
+            dispatch_semaphore_t sema;
+            @autoreleasepool {
+                TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+                TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.utility handler:^{
+                    XCTFail(@"callback invoked");
+                }];
+                expectations = @[TWLExpectationSuccessWithValue(promise, @2),
+                                 TWLExpectationSuccessWithValue(promise2, @2)];
+            }
+            dispatch_semaphore_signal(sema);
+            [self waitForExpectations:expectations timeout:1];
         }];
-        expectations = @[TWLExpectationCancel(promise),
-                         TWLExpectationCancel(promise2),
-                         cancelExpectation];
-        [promise2 requestCancel];
-    }
-    dispatch_semaphore_signal(sema);
-    [self waitForExpectations:expectations timeout:1];
+        
+        [XCTContext runActivityNamed:@"whenCancelled cancelled" block:^(id<XCTActivity> _Nonnull activity) {
+            NSArray<XCTestExpectation*> *expectations;
+            dispatch_semaphore_t sema;
+            @autoreleasepool {
+                TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+                XCTestExpectation *cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"whenCancelled"];
+                TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.immediate handler:^{
+                    [cancelExpectation fulfill];
+                }];
+                [promise2 requestCancel];
+                // no cancellation should occur yet as promise is still sealed
+                TWLAssertPromiseNotResolved(promise);
+                TWLAssertPromiseNotResolved(promise2);
+                expectations = @[TWLExpectationCancelOnContext(TWLContext.immediate, promise),
+                                 TWLExpectationCancelOnContext(TWLContext.immediate, promise2),
+                                 cancelExpectation];
+            }
+            dispatch_semaphore_signal(sema);
+            [self waitForExpectations:expectations timeout:0];
+        }];
+    }];
+    
+    [XCTContext runActivityNamed:@"More observers" block:^(id<XCTActivity> _Nonnull activity) {
+        [XCTContext runActivityNamed:@"whenCancelled left alive" block:^(id<XCTActivity> _Nonnull activity) {
+            // Validate that whenCancelled doesn't prevent automatic cancellation propagation
+            NSArray<XCTestExpectation*> *expectations;
+            dispatch_semaphore_t sema;
+            @autoreleasepool {
+                TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+                XCTestExpectation *cancelExpectation = [[XCTestExpectation alloc] initWithDescription:@"whenCancelled"];
+                TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.immediate handler:^{
+                    [cancelExpectation fulfill];
+                }];
+                TWLPromise *promise3 = [promise catchOnContext:TWLContext.utility handler:^(id _Nonnull error) {
+                    XCTFail(@"callback invoked");
+                }];
+                [promise3 requestCancel]; // cancel extra observer
+                // no cancellation should occur yet as promise is still sealed
+                TWLAssertPromiseNotResolved(promise);
+                TWLAssertPromiseNotResolved(promise2);
+                TWLAssertPromiseNotResolved(promise3);
+                expectations = @[TWLExpectationCancelOnContext(TWLContext.immediate, promise),
+                                 TWLExpectationCancelOnContext(TWLContext.immediate, promise2),
+                                 cancelExpectation];
+            }
+            // promise is sealed, cancellation should occur
+            dispatch_semaphore_signal(sema);
+            [self waitForExpectations:expectations timeout:0];
+        }];
+        
+        [XCTContext runActivityNamed:@"whenCancelled cancelled, others alive" block:^(id<XCTActivity> _Nonnull activity) {
+            // Validate that requesting cancellation of whenCancelled won't cancel parent if there
+            // are other living children.
+            NSArray<XCTestExpectation*> *expectations;
+            dispatch_semaphore_t sema;
+            @autoreleasepool {
+                TWLPromise *promise = makeCancellablePromiseWithValue(@2, &sema);
+                TWLPromise *promise2 = [promise whenCancelledOnContext:TWLContext.utility handler:^{
+                    XCTFail(@"callback invoked");
+                }];
+                TWLPromise *promise3 = [promise catchOnContext:TWLContext.utility handler:^(id _Nonnull error) {
+                    XCTFail(@"callback invoked");
+                }];
+                [promise2 requestCancel]; // cancel whenCancelled observer
+                expectations = @[TWLExpectationSuccessWithValueOnContext(TWLContext.immediate, promise, @2),
+                                 TWLExpectationSuccessWithValueOnContext(TWLContext.immediate, promise2, @2),
+                                 TWLExpectationSuccessWithValueOnContext(TWLContext.immediate, promise3, @2)];
+            }
+            dispatch_semaphore_signal(sema);
+            [self waitForExpectations:expectations timeout:1];
+        }];
+    }];
 }
 
 - (void)testPropagateCancelDelayedPromise {

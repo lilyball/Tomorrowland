@@ -1088,6 +1088,13 @@ public struct Promise<Value,Error> {
     
     /// Registers a callback that will be invoked when the promise is cancelled.
     ///
+    /// - Note: Like `tap`, `onCancel` does not prevent automatic cancellation propagation if the
+    ///   parent has multiple children and all other children have requested cancellation. Unlike
+    ///   `tap`, requesting cancellation of `onCancel` will cancel the parent if the parent has no
+    ///   other children. `onCancel`'s behavior differs from the other standard obsrevers here as
+    ///   attaching an `onCancel` observer to a promise that would otherwise be cancelled should not
+    ///   prevent the cancellation.
+    ///
     /// - Parameter context: The context to invoke the callback on. If not provided, defaults to
     ///   `.auto`, which evaluates to `.main` when invoked on the main thread, otherwise `.default`.
     /// - Parameter token: An optional `PromiseInvalidatonToken`. If provided, calling
@@ -1099,7 +1106,7 @@ public struct Promise<Value,Error> {
     public func onCancel(on context: PromiseContext = .auto, token: PromiseInvalidationToken? = nil, _ onCancel: @escaping () -> Void) -> Promise<Value,Error> {
         let (promise, resolver) = Promise<Value,Error>.makeWithResolver()
         let token = token?.box
-        _seal.enqueue(makeOneshot: onCancel) { [generation=token?.generation] (result, onCancel, isSynchronous) in
+        _seal.enqueue(willPropagateCancel: false, makeOneshot: onCancel) { [generation=token?.generation] (result, onCancel, isSynchronous) in
             switch result {
             case .value(let value):
                 resolver.fulfill(with: value)
@@ -1115,7 +1122,17 @@ public struct Promise<Value,Error> {
                 }
             }
         }
-        resolver.propagateCancellation(to: self)
+        resolver.onRequestCancel(on: .immediate) { [weak _box] (_) in
+            // We told the parent that we weren't going to propagate cancellation, in order to
+            // prevent onCancel from interfering with cancellation of other children. But if
+            // cancellation of onCancel is requested, we want to behave as though we did mark
+            // ourselves as propagating cancellation. We can do that by incrementing the observer
+            // count now. This is safe to do even if the parent has resolved as propagating
+            // cancellation at that point does nothing.
+            guard let box = _box else { return }
+            box.incrementObserverCount()
+            box.propagateCancel()
+        }
         return promise
     }
     
