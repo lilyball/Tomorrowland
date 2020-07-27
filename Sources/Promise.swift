@@ -1064,7 +1064,8 @@ public struct Promise<Value,Error> {
     ///
     /// The returned `Promise` will always resolve with the same value that its receiver does, but
     /// it won't affect the timing of any of the receiver's other observers and it won't affect
-    /// automatic cancellation propagation behavior.
+    /// automatic cancellation propagation behavior. Requesting cancellation of the returned
+    /// `Promise` does nothing.
     ///
     /// `tap().always(on:token:_:)` behaves the same as `tap(on:token:_:)` except it returns a new
     /// `Promise` whereas `tap(on:token:_:)` returns the receiver and can be inserted into any

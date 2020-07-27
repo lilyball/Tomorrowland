@@ -409,7 +409,7 @@ NS_SWIFT_NAME(ObjCPromise)
 ///
 /// The returned promise will always resolve with the same value that its receiver does, but it
 /// won't affect the timing of any of the receiver's other observers and it won't affect automatic
-/// cancellation propagation behavior.
+/// cancellation propagation behavior. Requesting cancellation of the returned promise does nothing.
 ///
 /// <tt>[[promise tap] always:…]</tt> behaves the same as \c -tap: except it returns a new promise
 /// whereas \c -tap: returns the receiver and can be inserted into any promise chain without
@@ -459,7 +459,7 @@ NS_SWIFT_NAME(ObjCPromise)
 /// cancellation. Unlike <code>-tap</code>, requesting cancellation of \c -whenCancelled will cancel
 /// the parent if the parent has no other children. <code>-whenCancelled</code>'s behavior differs
 /// from the other standard obsrevers here as attaching a \c -whenCancelled observer to a promise
-/// that would otherwise be cancelled should not prevent the cancellation. 
+/// that would otherwise be cancelled should not prevent the cancellation.
 ///
 /// \param context The context to invoke the callback on.
 /// \param token An optional <tt>TWLInvalidationToken</tt>. If provided, calling \c -invalidate on
