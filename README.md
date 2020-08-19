@@ -321,6 +321,14 @@ This function has an optional parameter `cancelRemaining:` that, if provided as 
 
 `Promise.delay(on:_:)` is a method that returns a new promise that adopts the same result as the receiver after the specified delay. It is intended primarily for testing purposes.
 
+### `PromiseOperation`
+
+`PromiseOperation` is an `Operation` subclass that wraps a `Promise` and allows for delayed execution of the promise handler. It's created just like `Promise`, with `init(on:_:)`, but it doesn't run the handler until the operation is started (either by calling `start()` or by adding it to an `OperationQueue`). The operation has a `.promise` property that returns a `Promise` that will resolve to the results of the computation, but can be accessed before the handler is invoked. If the operation is put on a queue and is initialized with the `.immediate` context, the provided handler will run on the queue.
+
+Requesting cancellation of the `PromiseOperation.promise` is identical to calling `PromiseOperation.cancel()`. If the operation has already started, cancellation support is at the discretion of the provided handler, just like with a normal `Promise`. If the operation has not yet started, cancelling it will prevent the handler from ever executing, though the returned promise itself won't cancel until the operation has moved to the `isFinished` state (e.g. by being started).
+
+The use of `PromiseOperation` instead of a `Promise` allows for delaying execution of the promise, setting up dependencies, controlling concurrency with the operation queue's `maxConcurrentOperationCount`, and generally integrating with existing operation queues.
+
 ### Objective-C
 
 Tomorrowland has Obj-C compatibility in the form of `TWLPromise<ValueType,ErrorType>`. This is a parallel promise implementation that can be bridged to/from `Promise` and supports all of the same functionality. Note that some of the method names are different (due to lack of overloading), and while `TWLPromise` is generic over its types, the return values of callback registration methods that return new promises are not parameterized (due to inability to have generic methods).
@@ -346,6 +354,12 @@ http://opensource.org/licenses/MIT) at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you shall be dual licensed as above, without any additional terms or conditions.
 
 ## Version History
+
+### Development
+
+- Add `PromiseOperation` class (`TWLPromiseOperation` in Obj-C) that integrates promises with `OperationQueue`s. It can also be used similarly to `DelayedPromise` if you simply want more control over when the promise handler actually executes. `PromiseOperation` is useful if you want to be able to set up dependencies between promises or control concurrent execution counts ([#58][]).
+
+[#58]: https://github.com/lilyball/Tomorrowland/issues/58 "Add Operation subclass that works with Promise"
 
 ### v1.4.0
 

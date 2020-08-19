@@ -8,5 +8,6 @@ explicit module Tomorrowland.Private {
     header "TWLOneshotBlock.h"
     header "TWLThreadLocal.h"
     header "TWLBlockOperation.h"
+    header "TWLAsyncOperation+Private.h"
     export *
 }

@@ -32,7 +32,8 @@
         _context = context;
         _callback = [handler copy];
         _promise = [[TWLPromise alloc] initDelayed];
-    } return self;
+    }
+    return self;
 }
 
 - (TWLPromise *)promise {

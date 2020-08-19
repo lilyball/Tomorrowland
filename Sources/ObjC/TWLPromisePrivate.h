@@ -27,7 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, readonly) std::tuple<BOOL,ValueType _Nullable,ErrorType _Nullable> result;
 #endif
 - (BOOL)getValue:(ValueType __strong _Nullable * _Nullable)outValue error:(ErrorType __strong _Nullable * _Nullable)outError;
+- (void)resolveOrCancelWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
 - (void)propagateCancel;
+- (void)seal;
 
 @end
 

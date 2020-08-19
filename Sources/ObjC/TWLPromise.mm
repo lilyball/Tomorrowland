@@ -38,9 +38,7 @@
     id _Nullable _value;
     id _Nullable _error;
 }
-- (void)resolveOrCancelWithValue:(nullable ValueType)value error:(nullable ErrorType)error;
 - (void)requestCancel;
-- (void)seal;
 @end
 
 @interface TWLThreadDictionaryKey : NSObject <NSCopying>

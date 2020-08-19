@@ -55,6 +55,14 @@
 		A04B87BA2479E7A9009282B6 /* TWLPromise+Convenience.h in Headers */ = {isa = PBXBuildFile; fileRef = A04B87B82479E7A9009282B6 /* TWLPromise+Convenience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A04B87BB2479E7A9009282B6 /* TWLPromise+Convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = A04B87B92479E7A9009282B6 /* TWLPromise+Convenience.m */; };
 		A04B87BD2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A04B87BC2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m */; };
+		A061537624ECEF7A002C044B /* TWLAsyncOperation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = A061537424ECEF79002C044B /* TWLAsyncOperation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		A061537724ECEF7A002C044B /* TWLAsyncOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A061537524ECEF79002C044B /* TWLAsyncOperation.m */; };
+		A061537924ECF3D5002C044B /* PromiseOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A061537824ECF3D5002C044B /* PromiseOperation.swift */; };
+		A061537C24ECF4C0002C044B /* TWLAsyncOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = A061537A24ECF4C0002C044B /* TWLAsyncOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A061537F24ED00CF002C044B /* PromiseOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A061537E24ED00CF002C044B /* PromiseOperationTests.swift */; };
+		A061538624EE39AD002C044B /* TWLPromiseOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = A061538424EE39AD002C044B /* TWLPromiseOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A061538724EE39AD002C044B /* TWLPromiseOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = A061538524EE39AD002C044B /* TWLPromiseOperation.m */; };
+		A061538924EE4ACB002C044B /* TWLPromiseOperationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A061538824EE4ACB002C044B /* TWLPromiseOperationTests.m */; };
 		A075ABAF2478E5EB006BC9E7 /* XCTestCase+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A075ABAE2478E5EB006BC9E7 /* XCTestCase+Helpers.swift */; };
 		AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DC1FECCD680029A283 /* Utilities.swift */; };
 		AB1FF3DF1FECD0740029A283 /* UtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1FF3DE1FECD0740029A283 /* UtilityTests.swift */; };
@@ -137,6 +145,14 @@
 		A04B87B82479E7A9009282B6 /* TWLPromise+Convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TWLPromise+Convenience.h"; sourceTree = "<group>"; };
 		A04B87B92479E7A9009282B6 /* TWLPromise+Convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TWLPromise+Convenience.m"; sourceTree = "<group>"; };
 		A04B87BC2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "TWLPromise+ConvenienceTests.m"; sourceTree = "<group>"; };
+		A061537424ECEF79002C044B /* TWLAsyncOperation+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TWLAsyncOperation+Private.h"; sourceTree = "<group>"; };
+		A061537524ECEF79002C044B /* TWLAsyncOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLAsyncOperation.m; sourceTree = "<group>"; };
+		A061537824ECF3D5002C044B /* PromiseOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseOperation.swift; sourceTree = "<group>"; };
+		A061537A24ECF4C0002C044B /* TWLAsyncOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLAsyncOperation.h; sourceTree = "<group>"; };
+		A061537E24ED00CF002C044B /* PromiseOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiseOperationTests.swift; sourceTree = "<group>"; };
+		A061538424EE39AD002C044B /* TWLPromiseOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TWLPromiseOperation.h; sourceTree = "<group>"; };
+		A061538524EE39AD002C044B /* TWLPromiseOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseOperation.m; sourceTree = "<group>"; };
+		A061538824EE4ACB002C044B /* TWLPromiseOperationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TWLPromiseOperationTests.m; sourceTree = "<group>"; };
 		A075ABAE2478E5EB006BC9E7 /* XCTestCase+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+Helpers.swift"; sourceTree = "<group>"; };
 		A075ABB02478E913006BC9E7 /* XCTestCase+Helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "XCTestCase+Helpers.h"; sourceTree = "<group>"; };
 		AB1FF3DC1FECCD680029A283 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -195,6 +211,7 @@
 			children = (
 				0A843A381FFF5F7700D171B4 /* TWLPromiseTests.m */,
 				A04B87BC2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m */,
+				A061538824EE4ACB002C044B /* TWLPromiseOperationTests.m */,
 				0ACA1F76200095F400A65481 /* TWLDelayedPromiseTests.m */,
 				AB3E33B02015B9AB00E1228C /* TWLCancelTests.m */,
 				0ACA1F8720032DC700A65481 /* TWLWhenTests.m */,
@@ -217,12 +234,15 @@
 				0AFD1B6A1FFE050A00AB2029 /* TWLContextPrivate.h */,
 				0AFD1B691FFE050A00AB2029 /* TWLContext.m */,
 				0A843A331FFF477300D171B4 /* Bridging.swift */,
+				A061538424EE39AD002C044B /* TWLPromiseOperation.h */,
+				A061538524EE39AD002C044B /* TWLPromiseOperation.m */,
 				0ACA1F70200090B200A65481 /* TWLDelayedPromise.h */,
 				0ACA1F71200090B200A65481 /* TWLDelayedPromise.m */,
 				0ACA1F832003243E00A65481 /* TWLWhen.h */,
 				0ACA1F842003243E00A65481 /* TWLWhen.m */,
 				0ACA1F7A2000B3F400A65481 /* TWLUtilities.h */,
 				0ACA1F782000B3EB00A65481 /* TWLUtilities.m */,
+				A061537A24ECF4C0002C044B /* TWLAsyncOperation.h */,
 				0A843A311FFF3FC500D171B4 /* objc_cast.h */,
 			);
 			path = ObjC;
@@ -255,6 +275,7 @@
 			children = (
 				0AFF276F1FE0E4D10006D95A /* Promise.swift */,
 				AB9F708320A9020C00B4426F /* TokenPromise.swift */,
+				A061537824ECF3D5002C044B /* PromiseOperation.swift */,
 				0A2CDAA51FF34FC500B9C652 /* DelayedPromise.swift */,
 				ABDC7F771FEB840200036FCD /* When.swift */,
 				AB1FF3DC1FECCD680029A283 /* Utilities.swift */,
@@ -278,6 +299,7 @@
 				A075ABB02478E913006BC9E7 /* XCTestCase+Helpers.h */,
 				0AFF27631FE0E3F40006D95A /* PromiseTests.swift */,
 				AB9F708520A915AC00B4426F /* TokenPromiseTests.swift */,
+				A061537E24ED00CF002C044B /* PromiseOperationTests.swift */,
 				0A2CDAA71FF3557D00B9C652 /* DelayedPromiseTests.swift */,
 				AB1FF3E31FEDF9450029A283 /* CancelTests.swift */,
 				ABDC7F811FEB980500036FCD /* WhenTests.swift */,
@@ -307,6 +329,8 @@
 				0AFD1B5B1FFC1E1100AB2029 /* TWLThreadLocal.m */,
 				0A2C6AD821A7BB350088C802 /* TWLBlockOperation.h */,
 				0A2C6AD921A7BB350088C802 /* TWLBlockOperation.m */,
+				A061537424ECEF79002C044B /* TWLAsyncOperation+Private.h */,
+				A061537524ECEF79002C044B /* TWLAsyncOperation.m */,
 			);
 			path = Private;
 			sourceTree = "<group>";
@@ -320,10 +344,12 @@
 			files = (
 				0AFD1B6D1FFE051A00AB2029 /* TWLContextPrivate.h in Headers */,
 				A04B87BA2479E7A9009282B6 /* TWLPromise+Convenience.h in Headers */,
+				A061538624EE39AD002C044B /* TWLPromiseOperation.h in Headers */,
 				0AFD1B5E1FFC1E1A00AB2029 /* TWLThreadLocal.h in Headers */,
 				0ACA1F752000934D00A65481 /* TWLPromisePrivate.h in Headers */,
 				0AFF27741FE0E4FC0006D95A /* TWLPromiseBox.h in Headers */,
 				0A9482161FE8EC7C00EF7EFE /* TWLPromiseInvalidationTokenBox.h in Headers */,
+				A061537C24ECF4C0002C044B /* TWLAsyncOperation.h in Headers */,
 				0ACA1F72200090B200A65481 /* TWLDelayedPromise.h in Headers */,
 				ABDC7F7F1FEB909800036FCD /* TWLOneshotBlock.h in Headers */,
 				0AFD1B651FFE018200AB2029 /* TWLPromise.h in Headers */,
@@ -333,6 +359,7 @@
 				0ACA1F7B2000B3F400A65481 /* TWLUtilities.h in Headers */,
 				0ACA1F852003243E00A65481 /* TWLWhen.h in Headers */,
 				0A843A321FFF3FC500D171B4 /* objc_cast.h in Headers */,
+				A061537624ECEF7A002C044B /* TWLAsyncOperation+Private.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,11 +463,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A061537724ECEF7A002C044B /* TWLAsyncOperation.m in Sources */,
 				0A362AA42027B50600807361 /* ObjectiveC.swift in Sources */,
 				AB8FF1F7221879DA00A619CC /* Deprecations.swift in Sources */,
 				A04B87BB2479E7A9009282B6 /* TWLPromise+Convenience.m in Sources */,
 				0AFD1B5C1FFC1E1100AB2029 /* TWLThreadLocal.m in Sources */,
 				AB1FF3DD1FECCD680029A283 /* Utilities.swift in Sources */,
+				A061537924ECF3D5002C044B /* PromiseOperation.swift in Sources */,
 				0ACA1F792000B3EB00A65481 /* TWLUtilities.m in Sources */,
 				ABDC7F781FEB840200036FCD /* When.swift in Sources */,
 				0AFF27701FE0E4D10006D95A /* Promise.swift in Sources */,
@@ -457,6 +486,7 @@
 				0ACA1F862003243E00A65481 /* TWLWhen.m in Sources */,
 				0ACA1F73200090B200A65481 /* TWLDelayedPromise.m in Sources */,
 				0AFD1B661FFE018200AB2029 /* TWLPromise.mm in Sources */,
+				A061538724EE39AD002C044B /* TWLPromiseOperation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,10 +503,12 @@
 				0ACA1F77200095F400A65481 /* TWLDelayedPromiseTests.m in Sources */,
 				0A14B5712027BB310081C4C8 /* ObjectiveCTests.swift in Sources */,
 				AB9F708620A915AC00B4426F /* TokenPromiseTests.swift in Sources */,
+				A061537F24ED00CF002C044B /* PromiseOperationTests.swift in Sources */,
 				0AFD1B601FFC1FF700AB2029 /* PrivateTests.swift in Sources */,
 				0A2CDAA81FF3557D00B9C652 /* DelayedPromiseTests.swift in Sources */,
 				0AFF27641FE0E3F40006D95A /* PromiseTests.swift in Sources */,
 				A075ABAF2478E5EB006BC9E7 /* XCTestCase+Helpers.swift in Sources */,
+				A061538924EE4ACB002C044B /* TWLPromiseOperationTests.m in Sources */,
 				A01C4C1E24AFFECF005C870A /* TWLBlockThread.m in Sources */,
 				A04B87BD2479EBCC009282B6 /* TWLPromise+ConvenienceTests.m in Sources */,
 				AB3E33B12015B9AB00E1228C /* TWLCancelTests.m in Sources */,

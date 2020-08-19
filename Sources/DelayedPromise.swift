@@ -82,15 +82,26 @@ internal class DelayedPromiseBox<T,E>: PromiseBox<T,E> {
     }
     
     func toPromise(with seal: PromiseSeal<T,E>) -> Promise<T,E> {
-        let promise = Promise<T,E>(seal: seal)
-        if transitionState(to: .empty) {
-            let resolver = Promise<T,E>.Resolver(box: self)
-            let (context, callback) = _promiseInfo.unsafelyUnwrapped
-            _promiseInfo = nil
-            context.execute(isSynchronous: false) {
-                callback(resolver)
-            }
+        execute()
+        return Promise<T,E>(seal: seal)
+    }
+    
+    /// If the box is `.delayed`, transitions to `.empty` and then executes the callback.
+    func execute() {
+        guard transitionState(to: .empty) else { return }
+        let resolver = Promise<T,E>.Resolver(box: self)
+        let (context, callback) = _promiseInfo.unsafelyUnwrapped
+        _promiseInfo = nil
+        context.execute(isSynchronous: false) {
+            callback(resolver)
         }
-        return promise
+    }
+    
+    /// If the box is `.delayed`, transitions to `.empty` without executing the callback, and then
+    /// cancels the box.
+    func emptyAndCancel() {
+        guard transitionState(to: .empty) else { return }
+        _promiseInfo = nil
+        resolveOrCancel(with: .cancelled)
     }
 }
