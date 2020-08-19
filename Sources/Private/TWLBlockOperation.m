@@ -27,7 +27,12 @@
 }
 
 - (BOOL)isReady {
-    return [super isReady] && atomic_load_explicit(&_markedReady, memory_order_relaxed);
+    return [super isReady]
+    && (atomic_load_explicit(&_markedReady, memory_order_relaxed)
+        // If we're cancelled, ignore the atomic bool since we won't be doing work.
+        // This matches the default behavior of `[super isReady]` with respect to
+        // dependencies as well.
+        || self.isCancelled);
 }
 
 - (void)markReady {
